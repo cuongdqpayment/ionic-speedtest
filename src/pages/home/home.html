@@ -1,14 +1,56 @@
 <ion-header>
   <ion-navbar>
     <ion-title>
-      Ionic Blank
+      HOME
     </ion-title>
   </ion-navbar>
 </ion-header>
 
 <ion-content padding>
-  The world is your oyster.
-  <p>
-    If you get lost, the <a href="http://ionicframework.com/docs/v2">docs</a> will be your guide.
-  </p>
+  <ion-grid>
+    <ion-row>
+      <ion-col class="card-meter" col-12 col-xl-3 col-lg-3 col-md-4 col-sm-6>
+        <ion-card>
+          <div class="graphArea">
+            <div class="graphName">Download</div>
+            <canvas class="meter" id="dlMeter"></canvas>
+            <div class="meterText" id="dlText"></div>
+            <div class="unit">Mbps</div>
+          </div>
+        </ion-card>
+      </ion-col>
+      <ion-col class="card-meter" col-12 col-xl-3 col-lg-3 col-md-4 col-sm-6>
+        <ion-card>
+          <div id="startStopBtn" (click)="startStop()"></div>
+          <ion-item>
+            <ion-row>
+              <ion-col>
+                Your IP:
+              </ion-col>
+              <ion-col>
+                {{objISP?.processedString}}
+              </ion-col>
+            </ion-row>
+            <ion-row>
+                {{objISP?.rawIspInfo?.org}} {{objISP?.rawIspInfo?.city}} {{objISP?.rawIspInfo?.region}} {{objISP?.rawIspInfo?.country}}
+            </ion-row>
+          </ion-item>
+          <ion-item>
+              <ion-row>
+                <ion-col>
+                  Server IP:
+                </ion-col>
+                <ion-col>
+                  {{objISP?.server?.ip}} {{objISP?.server?.distance}}
+                </ion-col>
+              </ion-row>
+              <ion-row>
+                  {{objISP?.server?.org}} {{objISP?.server?.city}} {{objISP?.server?.country}}
+              </ion-row>
+            </ion-item>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+
 </ion-content>
