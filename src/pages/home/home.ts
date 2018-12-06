@@ -92,7 +92,7 @@ export class HomePage {
         }  
         if (this.objISP&&this.objISP.server){
           //neu server tim thay thi test nhe
-          this.apiHttp.download()
+          this.apiHttp.multiDownload()
           .then(result=>{
             console.log(result);
 

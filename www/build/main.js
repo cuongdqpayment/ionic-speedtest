@@ -65,6 +65,7 @@ var worker = null;
 var data = null;
 var interval = null;
 var isRuning = false;
+var idx = 0;
 //khai bao thanh phan cua trang nay
 var HomePage = /** @class */ (function () {
     function HomePage(navCtrl, apiGraph, apiHttp) {
@@ -73,10 +74,19 @@ var HomePage = /** @class */ (function () {
         this.apiHttp = apiHttp;
         this.objMeter = {
             graphName: 'Download',
-            meter: 'dlMeter',
-            meterText: 'dlText',
             unit: 'Mbps',
         };
+        this.objResult = {
+            id: 1,
+            time: '20181204 11:34:44',
+            ip: '10.141..2-ss',
+            server: '10.1.1.1 -- unkwow',
+            jitter: '0.09',
+            ping: '123',
+            download: '64.11',
+            upload: '76.3',
+        };
+        this.results = [];
     }
     HomePage.prototype.ngOnInit = function () {
         this.apiGraph.initUI(meterBk, dlColor, progColor);
@@ -102,13 +112,6 @@ var HomePage = /** @class */ (function () {
             this.apiHttp.setWorker(worker);
             //tao canvas đồng hồ html5
             this.apiGraph.initUI(meterBk, dlColor, progColor);
-            //gui lenh len httpClient gui len
-            //chi test thoi khong su dung
-            /* worker.postMessage(JSON.stringify({
-              command:'start', //bao cho Worker bat dau lam
-              work:'dowload_test', //lay dia chi ip cho toi
-              message:'Hello Worker message! '
-            })); */
             //thuc thi goi lenh download nhe
             this.apiHttp.getISP()
                 .then(function (data) {
@@ -123,7 +126,7 @@ var HomePage = /** @class */ (function () {
                 }
                 if (_this.objISP && _this.objISP.server) {
                     //neu server tim thay thi test nhe
-                    _this.apiHttp.download()
+                    _this.apiHttp.multiDownload()
                         .then(function (result) {
                         console.log(result);
                     })
@@ -149,16 +152,14 @@ var HomePage = /** @class */ (function () {
     };
     HomePage.prototype.onMessageProcess = function (e) {
         var workerReplyData = JSON.parse(e.data);
+        //cap nhap nhan
         if (workerReplyData
-            && workerReplyData.work === 'get-ip'
             && workerReplyData.command === 'report'
-            && workerReplyData.message === 'start'
             && !workerReplyData.status //trang thai
         ) {
-            //khoi tao Graph voi nhan getIP
-            //(data, meterBk, dlColor, progColor);
-            //this.apiGraph.initUI()
+            this.initUI(workerReplyData.work);
         }
+        //cap nhap tien trinh 
         if (workerReplyData
             && workerReplyData.command === 'status'
             && workerReplyData.results) {
@@ -175,10 +176,69 @@ var HomePage = /** @class */ (function () {
             }
             this.apiGraph.updateUI(data, meterBk, dlColor, progColor);
         }
+        //cap nhap ket qua
+        if (workerReplyData
+            && workerReplyData.command === 'report'
+            && workerReplyData.work //co cong viec gi
+            && workerReplyData.status //hoan thanh
+            && workerReplyData.data //du lieu
+        ) {
+            this.updateUI(workerReplyData.work, workerReplyData.data);
+        }
+    };
+    HomePage.prototype.initUI = function (work) {
+        if (work === 'get-ip') {
+            this.objMeter = {
+                graphName: 'Checking your IP',
+                unit: 'ms',
+            };
+            this.apiGraph.initUI(progColor, pingColor, progColor);
+        }
+        else if (work === 'download') {
+            this.objMeter = {
+                graphName: 'Download',
+                unit: 'Mbps',
+            };
+            this.apiGraph.initUI(progColor, dlColor, progColor);
+        }
+        else if (work === 'upload') {
+            this.objMeter = {
+                graphName: 'Upload',
+                unit: 'Mbps',
+            };
+            this.apiGraph.initUI(progColor, ulColor, progColor);
+        }
+        else if (work === 'Ping') {
+            this.objMeter = {
+                graphName: 'Ping',
+                unit: 'ms',
+            };
+            this.apiGraph.initUI(progColor, pingColor, progColor);
+        }
+        else if (work === 'jitter') {
+            this.objMeter = {
+                graphName: 'Jitter',
+                unit: 'ms',
+            };
+            this.apiGraph.initUI(progColor, jitColor, progColor);
+        }
+    };
+    HomePage.prototype.updateUI = function (work, d) {
+        //co cong viec va ket qua
+        if (work === 'get-ip') {
+            this.objResult.id = ++idx;
+            this.objResult.ip = d.processedString + ' - ' + d.rawIspInfo.org
+                + d.rawIspInfo.city + d.rawIspInfo.region
+                + d.rawIspInfo.country;
+            this.objResult.server = d.server.ip + ' - ' + d.server.org
+                + d.server.city + d.server.region
+                + d.server.country;
+            this.results.push(this.objResult);
+        }
     };
     HomePage = __decorate([
         Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["m" /* Component */])({
-            selector: 'page-home',template:/*ion-inline-start:"D:\IONIC\ionic-speedtest-client\src\pages\home\home.html"*/'<ion-header>\n\n  <ion-navbar>\n\n    <ion-title>\n\n      HOME\n\n    </ion-title>\n\n  </ion-navbar>\n\n</ion-header>\n\n\n\n<ion-content padding>\n\n  <ion-grid>\n\n    <ion-row>\n\n      <ion-col col-24 col-xl-6 col-lg-6 col-md-12 col-sm-12>\n\n        <ion-card class="card-meter">\n\n          <div class="graphArea">\n\n            <div class="graphName">{{objMeter?.graphName}}</div>\n\n            <canvas class="meter" id="dlMeter"></canvas>\n\n            <div class="meterText" id="dlText"></div>\n\n            <div class="unit">{{objMeter?.unit}}</div>\n\n          </div>\n\n          <p>Your IP: {{objISP?.processedString}} - {{objISP?.rawIspInfo?.org}} {{objISP?.rawIspInfo?.city}}\n\n            {{objISP?.rawIspInfo?.region}} {{objISP?.rawIspInfo?.country}}</p>\n\n          <p>\n\n            Server IP: {{objISP?.server?.ip}} - {{objISP?.server?.org}} {{objISP?.server?.city}}\n\n            {{objISP?.server?.region}}\n\n            {{objISP?.server?.country}} {{objISP?.server?.distance}}\n\n          </p>\n\n          <div id="startStopBtn" (click)="startStop()"></div>\n\n        </ion-card>\n\n      </ion-col>\n\n    </ion-row>\n\n  </ion-grid>\n\n  <ion-card class="card-meter">\n\n    <div id="resultBtn"></div>\n\n    <ion-grid>\n\n      <ion-row>\n\n        <ion-col col-1>\n\n          Id\n\n        </ion-col>\n\n        <ion-col col-3>\n\n          Time\n\n        </ion-col>\n\n        <ion-col col-4>\n\n          YourIp\n\n        </ion-col>\n\n        <ion-col col-4>\n\n          ServerIP\n\n        </ion-col>\n\n        <ion-col col-3>\n\n          Jitter\n\n        </ion-col>\n\n        <ion-col col-3>\n\n          Ping\n\n        </ion-col>\n\n        <ion-col col-3>\n\n          Download\n\n        </ion-col>\n\n        <ion-col col-3>\n\n          Upload\n\n        </ion-col>\n\n      </ion-row>\n\n\n\n      <ion-row *ngFor="let result of results">\n\n          <ion-col col-1>\n\n            {{result?.id}}\n\n          </ion-col>\n\n          <ion-col col-3>\n\n              {{result?.time}}\n\n          </ion-col>\n\n          <ion-col col-4>\n\n              {{result?.ip}}\n\n          </ion-col>\n\n          <ion-col col-4>\n\n              {{result?.server}}\n\n          </ion-col>\n\n          <ion-col col-3>\n\n              {{result?.jitter}}\n\n          </ion-col>\n\n          <ion-col col-3>\n\n              {{result?.ping}}\n\n          </ion-col>\n\n          <ion-col col-3>\n\n              {{result?.download}}\n\n          </ion-col>\n\n          <ion-col col-3>\n\n              {{result?.upload}}\n\n          </ion-col>\n\n        </ion-row>\n\n    </ion-grid>\n\n  </ion-card>\n\n</ion-content>'/*ion-inline-end:"D:\IONIC\ionic-speedtest-client\src\pages\home\home.html"*/
+            selector: 'page-home',template:/*ion-inline-start:"/Users/cuongdq/IONIC/ionic-speedtest-client-css-js-chart/src/pages/home/home.html"*/'<ion-header>\n  <ion-navbar>\n    <ion-title>\n      HOME\n    </ion-title>\n  </ion-navbar>\n</ion-header>\n\n<ion-content padding>\n  <ion-grid>\n    <ion-row>\n      <ion-col col-24 col-xl-6 col-lg-6 col-md-12 col-sm-12>\n        <ion-card class="card-meter">\n          <div class="graphArea">\n            <div class="graphName">{{objMeter?.graphName}}</div>\n            <canvas class="meter" id="dlMeter"></canvas>\n            <div class="meterText" id="dlText"></div>\n            <div class="unit">{{objMeter?.unit}}</div>\n          </div>\n          <p>Your IP: {{objISP?.processedString}} - {{objISP?.rawIspInfo?.org}} {{objISP?.rawIspInfo?.city}}\n            {{objISP?.rawIspInfo?.region}} {{objISP?.rawIspInfo?.country}}</p>\n          <p>\n            Server IP: {{objISP?.server?.ip}} - {{objISP?.server?.org}} {{objISP?.server?.city}}\n            {{objISP?.server?.region}}\n            {{objISP?.server?.country}} {{objISP?.server?.distance}}\n          </p>\n          <div id="startStopBtn" (click)="startStop()"></div>\n        </ion-card>\n      </ion-col>\n    </ion-row>\n  </ion-grid>\n  <ion-card class="card-meter">\n    <div id="resultBtn"></div>\n    <ion-grid>\n      <ion-row>\n        <ion-col col-1>\n          Id\n        </ion-col>\n        <ion-col col-3>\n          Time\n        </ion-col>\n        <ion-col col-4>\n          YourIp\n        </ion-col>\n        <ion-col col-4>\n          ServerIP\n        </ion-col>\n        <ion-col col-3>\n          Jitter\n        </ion-col>\n        <ion-col col-3>\n          Ping\n        </ion-col>\n        <ion-col col-3>\n          Download\n        </ion-col>\n        <ion-col col-3>\n          Upload\n        </ion-col>\n      </ion-row>\n\n      <ion-row *ngFor="let result of results">\n          <ion-col col-1>\n            {{result?.id}}\n          </ion-col>\n          <ion-col col-3>\n              {{result?.time}}\n          </ion-col>\n          <ion-col col-4>\n              {{result?.ip}}\n          </ion-col>\n          <ion-col col-4>\n              {{result?.server}}\n          </ion-col>\n          <ion-col col-3>\n              {{result?.jitter}}\n          </ion-col>\n          <ion-col col-3>\n              {{result?.ping}}\n          </ion-col>\n          <ion-col col-3>\n              {{result?.download}}\n          </ion-col>\n          <ion-col col-3>\n              {{result?.upload}}\n          </ion-col>\n        </ion-row>\n    </ion-grid>\n  </ion-card>\n</ion-content>'/*ion-inline-end:"/Users/cuongdq/IONIC/ionic-speedtest-client-css-js-chart/src/pages/home/home.html"*/
         })
         //class dieu khien rieng cua no
         ,
@@ -290,9 +350,13 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 
 
 var speedtestServer = 'https://cuongdq-speedtest.herokuapp.com';
+var xhr = []; //tao da luong de truy cap server
+var totLoaded = 0.0;
+var http;
 var ApiSpeedTestService = /** @class */ (function () {
     function ApiSpeedTestService(httpClient) {
         this.httpClient = httpClient;
+        http = httpClient;
     }
     //bien worker de truyen message giua cac thread voi nhau
     ApiSpeedTestService.prototype.setWorker = function (worker) {
@@ -306,6 +370,7 @@ var ApiSpeedTestService = /** @class */ (function () {
             command: 'report',
             work: 'get-ip',
             status: false,
+            startTime: new Date().getTime(),
             message: 'start'
         });
         return this.httpClient.get(speedtestServer + "/speedtest/get-ip")
@@ -316,6 +381,7 @@ var ApiSpeedTestService = /** @class */ (function () {
                 work: 'get-ip',
                 data: data,
                 status: true,
+                endTime: new Date().getTime(),
                 message: 'success' //
             });
             return data;
@@ -324,10 +390,17 @@ var ApiSpeedTestService = /** @class */ (function () {
     //2. Test dowload
     ApiSpeedTestService.prototype.download = function () {
         var _this = this;
+        //totLoaded = 0.0; // total number of loaded bytes
+        var startT = new Date().getTime(); // timestamp when test was started
+        var graceTimeDone = false; //set to true after the grace time is past
+        var failed = false; // set to true if a stream fails
+        var dlMultistream = 10; //so luong lay du lieu 
+        var multistreamDelay = 300; //delay lay du lieu theo luong
         this.postMessage({
             command: 'report',
             work: 'download',
             status: false,
+            startTime: startT,
             message: 'start'
         });
         return this.httpClient.get(speedtestServer + "/speedtest/download") //them tham so goi 
@@ -338,6 +411,8 @@ var ApiSpeedTestService = /** @class */ (function () {
                 work: 'download',
                 data: data,
                 status: true,
+                startTime: startT,
+                endTime: new Date().getTime(),
                 message: 'success'
             });
             return data;
@@ -348,11 +423,147 @@ var ApiSpeedTestService = /** @class */ (function () {
             this.worker.postMessage(JSON.stringify(object));
         }
     };
+    ApiSpeedTestService.prototype.downloadOne = function (i, step) {
+        return new Promise(function (resolve, reject) {
+            var prevLoaded = 0; // number of bytes loaded last time onprogress was called
+            var req = new __WEBPACK_IMPORTED_MODULE_0__angular_common_http__["d" /* HttpRequest */]('GET', speedtestServer + "/speedtest/download", { reportProgress: true,
+                responseType: 'arraybuffer' }); // 'arraybuffer' | 'blob' | 'json' | 'text'
+            xhr[i] = req; //thread i
+            http.request(req)
+                .subscribe(function (event) {
+                switch (event.type) {
+                    case __WEBPACK_IMPORTED_MODULE_0__angular_common_http__["c" /* HttpEventType */].Sent:
+                        console.log('1. Request sent!');
+                        //1. console.log(event); //tra ve {type:0}
+                        //this.getHttpEvent().next(event);
+                        break;
+                    case __WEBPACK_IMPORTED_MODULE_0__angular_common_http__["c" /* HttpEventType */].ResponseHeader:
+                        console.log('2. Response header received!');
+                        //console.log(event); // tra ve thong tin cua header
+                        //this.getHttpEvent().next(event);
+                        break;
+                    case __WEBPACK_IMPORTED_MODULE_0__angular_common_http__["c" /* HttpEventType */].UploadProgress:
+                        //truong hop download nen khong co cai nay
+                        console.log('HttpEventType.UploadProgress!');
+                        console.log(event);
+                        //this.getHttpEvent().next(event);
+                        //const percentDone = Math.round(100 * event.loaded / event.total);
+                        /* console.log(`Posting in progress! ${percentDone}% \n
+                        Bytes being upload: ${event.loaded} \n
+                        Total no. of bytes to upload: ${event.total}`); */
+                        break;
+                    case __WEBPACK_IMPORTED_MODULE_0__angular_common_http__["c" /* HttpEventType */].DownloadProgress:
+                        //lay tong so byte nhan duoc
+                        //console.log('3. HttpEventType.DownloadProgress!');
+                        //console.log(event); // event.type va event.loaded (so byte loaded)
+                        var loadDiff = event.loaded <= 0 ? 0 : (event.loaded - prevLoaded);
+                        if (isNaN(loadDiff) || !isFinite(loadDiff) || loadDiff < 0) {
+                            reject({
+                                code: 403,
+                                message: 'isNaN(loadDiff) || !isFinite(loadDiff) || loadDiff < 0'
+                            });
+                        }
+                        totLoaded += loadDiff;
+                        prevLoaded = event.loaded;
+                        //console.log(totLoaded);
+                        break;
+                    case __WEBPACK_IMPORTED_MODULE_0__angular_common_http__["c" /* HttpEventType */].Response:
+                        console.log('4. HttpEventType.Response');
+                        //console.log(event); //HttpResponse co body, header ...
+                        //console.log('finish!', event.body); //toan du lieu nhan duoc
+                        /* this.getHttpEvent().next(event);
+                        /* tlog('dl stream finished ' + i)
+                        try { xhr[i].abort() } catch (e) { } // reset the stream data to empty ram
+                        testStream(i, 0) */
+                        resolve(totLoaded); //da xong mot step tren mot thread tra ve so luong dowload
+                        break;
+                }
+            }, function (err) {
+                console.log(err);
+                reject(err);
+            });
+        });
+    };
+    ApiSpeedTestService.prototype.multiDownload = function () {
+        var _this = this;
+        totLoaded = 0.0;
+        var maxStep = 1; //moi luong chay qua 5 buoc thi dung lai
+        var maxTime = 100; //5s //qua thoi gian thi dung lai
+        var maxThread = 1; //so luong chay 10
+        var delayThread = 300;
+        var oneThreadFuntion = this.downloadOne;
+        var startT = new Date().getTime(); // timestamp when test was started
+        /* let graceTimeDone = false; //set to true after the grace time is past
+        let failed = false; // set to true if a stream fails
+        let dlMultistream = 10; //so luong lay du lieu
+        let multistreamDelay =  300; //delay lay du lieu theo luong */
+        this.postMessage({
+            command: 'report',
+            work: 'download',
+            status: false,
+            startTime: startT,
+            message: 'start'
+        });
+        return new Promise(function (resolve, reject) {
+            var startT = new Date().getTime(); // timestamp when test was started
+            var testStream = function (i, delay, step, doneThread) {
+                setTimeout(function () {
+                    var timeout = new Date().getTime() - startT;
+                    console.log("test thread: " + i + ", step: " + step + ', timeout: ' + timeout);
+                    oneThreadFuntion(i, step)
+                        .then(function (total) {
+                        console.log("A Step in a Thread: " + i + " finish Total loaded:");
+                        console.log(total);
+                        if (timeout < maxTime && step < maxStep) {
+                            console.log("progress " + step);
+                            //resolve('progress ' + i);
+                            testStream(i, 0, step + 1, doneThread); //goi tiep bien a
+                        }
+                        else {
+                            console.log("finish IN thread: " + i);
+                            //console.log(doneThread);
+                            if (doneThread)
+                                doneThread(i); //bao xong thread so i
+                            //resolve(total); //ket thuc thread voi n step mang tong so tra ve
+                        }
+                    }); //goi ham dowload thread i va step 
+                }.bind(this), 1 + delay);
+            }.bind(_this);
+            var countThreadDone = 0;
+            var callBackThread = function (threadId) {
+                console.log("finish thread CALLBACK: " + threadId);
+                countThreadDone++;
+                if (countThreadDone == maxThread) {
+                    console.log('XONG ROI NHE:' + countThreadDone);
+                    resolve('XONG!');
+                }
+            };
+            for (var j = 0; j < maxThread; j++) {
+                console.log("Thread " + j);
+                testStream(j, j * delayThread, 1, callBackThread); //chay tu step 1
+            }
+        })
+            .then(function (data) {
+            //Tra ve chu XONG!
+            //thong bao xu ly xong
+            _this.postMessage({
+                command: 'report',
+                work: 'download',
+                data: data,
+                status: true,
+                startTime: startT,
+                endTime: new Date().getTime(),
+                message: 'success'
+            });
+            return data; //tra ve phien sau 
+        });
+    };
     ApiSpeedTestService = __decorate([
         Object(__WEBPACK_IMPORTED_MODULE_1__angular_core__["A" /* Injectable */])(),
-        __metadata("design:paramtypes", [__WEBPACK_IMPORTED_MODULE_0__angular_common_http__["a" /* HttpClient */]])
+        __metadata("design:paramtypes", [typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_0__angular_common_http__["a" /* HttpClient */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_0__angular_common_http__["a" /* HttpClient */]) === "function" && _a || Object])
     ], ApiSpeedTestService);
     return ApiSpeedTestService;
+    var _a;
 }());
 
 //# sourceMappingURL=apiSpeedTestService.js.map
@@ -485,7 +696,7 @@ var MyApp = /** @class */ (function () {
         });
     }
     MyApp = __decorate([
-        Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["m" /* Component */])({template:/*ion-inline-start:"D:\IONIC\ionic-speedtest-client\src\app\app.html"*/'<ion-nav [root]="rootPage"></ion-nav>\n\n'/*ion-inline-end:"D:\IONIC\ionic-speedtest-client\src\app\app.html"*/
+        Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["m" /* Component */])({template:/*ion-inline-start:"/Users/cuongdq/IONIC/ionic-speedtest-client-css-js-chart/src/app/app.html"*/'<ion-nav [root]="rootPage"></ion-nav>\n'/*ion-inline-end:"/Users/cuongdq/IONIC/ionic-speedtest-client-css-js-chart/src/app/app.html"*/
         }),
         __metadata("design:paramtypes", [__WEBPACK_IMPORTED_MODULE_1_ionic_angular__["e" /* Platform */], __WEBPACK_IMPORTED_MODULE_2__ionic_native_status_bar__["a" /* StatusBar */], __WEBPACK_IMPORTED_MODULE_3__ionic_native_splash_screen__["a" /* SplashScreen */]])
     ], MyApp);

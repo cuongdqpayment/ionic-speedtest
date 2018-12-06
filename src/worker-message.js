@@ -15,23 +15,29 @@ this.addEventListener('message', function (e) {
                 }));
     }else if (data.command === 'start') { // bat dau chay
         if (data.work === 'dowload_test'){
+            //cong viec bat dau dowload 
+            //thiet lap cac tham so chuan bi dowload
+            
             setTimeout(() => {
-                postMessage(JSON.stringify({
+                //cong viec bat dau
+                /* postMessage(JSON.stringify({
                     command: 'reply',
                     results: 'Kết quả xử lý???',
                     message: 'Trả lời lệnh start dowload!'
-                }));
+                })); */
             }, 5000);
         }
     }else if (data.command === 'report') {
+        //neu lenh report thi bao cao truoc tiep den Home/Main
+        postMessage(e.data); //lay nguyen goc bao cao
         if (data.work === 'dowload_test'){
-            setTimeout(() => {
+            /* setTimeout(() => {
                 postMessage(JSON.stringify({
                     command: 'status',
                     results: 'Báo cáo kết quả download đây ',
                     message: 'Gửi kết quả dowload'
                 }));
-            }, 1000);
+            }, 1000); */
         }
     }
 });
