@@ -9,48 +9,82 @@
 <ion-content padding>
   <ion-grid>
     <ion-row>
-      <ion-col class="card-meter" col-12 col-xl-3 col-lg-3 col-md-4 col-sm-6>
-        <ion-card>
+      <ion-col col-24 col-xl-6 col-lg-6 col-md-12 col-sm-12>
+        <ion-card class="card-meter">
           <div class="graphArea">
-            <div class="graphName">Download</div>
+            <div class="graphName">{{objMeter?.graphName}}</div>
             <canvas class="meter" id="dlMeter"></canvas>
             <div class="meterText" id="dlText"></div>
-            <div class="unit">Mbps</div>
+            <div class="unit">{{objMeter?.unit}}</div>
           </div>
-        </ion-card>
-      </ion-col>
-      <ion-col class="card-meter" col-12 col-xl-3 col-lg-3 col-md-4 col-sm-6>
-        <ion-card>
+          <p>Your IP: {{objISP?.processedString}} - {{objISP?.rawIspInfo?.org}} {{objISP?.rawIspInfo?.city}}
+            {{objISP?.rawIspInfo?.region}} {{objISP?.rawIspInfo?.country}}</p>
+          <p>
+            Server IP: {{objISP?.server?.ip}} - {{objISP?.server?.org}} {{objISP?.server?.city}}
+            {{objISP?.server?.region}}
+            {{objISP?.server?.country}} {{objISP?.server?.distance}}
+          </p>
           <div id="startStopBtn" (click)="startStop()"></div>
-          <ion-item>
-            <ion-row>
-              <ion-col>
-                Your IP:
-              </ion-col>
-              <ion-col>
-                {{objISP?.processedString}}
-              </ion-col>
-            </ion-row>
-            <ion-row>
-                {{objISP?.rawIspInfo?.org}} {{objISP?.rawIspInfo?.city}} {{objISP?.rawIspInfo?.region}} {{objISP?.rawIspInfo?.country}}
-            </ion-row>
-          </ion-item>
-          <ion-item>
-              <ion-row>
-                <ion-col>
-                  Server IP:
-                </ion-col>
-                <ion-col>
-                  {{objISP?.server?.ip}} {{objISP?.server?.distance}}
-                </ion-col>
-              </ion-row>
-              <ion-row>
-                  {{objISP?.server?.org}} {{objISP?.server?.city}} {{objISP?.server?.country}}
-              </ion-row>
-            </ion-item>
         </ion-card>
       </ion-col>
     </ion-row>
   </ion-grid>
+  <ion-card class="card-meter">
+    <div id="resultBtn"></div>
+    <ion-grid>
+      <ion-row>
+        <ion-col col-1>
+          Id
+        </ion-col>
+        <ion-col col-3>
+          Time
+        </ion-col>
+        <ion-col col-4>
+          YourIp
+        </ion-col>
+        <ion-col col-4>
+          ServerIP
+        </ion-col>
+        <ion-col col-3>
+          Jitter
+        </ion-col>
+        <ion-col col-3>
+          Ping
+        </ion-col>
+        <ion-col col-3>
+          Download
+        </ion-col>
+        <ion-col col-3>
+          Upload
+        </ion-col>
+      </ion-row>
 
+      <ion-row *ngFor="let result of results">
+          <ion-col col-1>
+            {{result?.id}}
+          </ion-col>
+          <ion-col col-3>
+              {{result?.time}}
+          </ion-col>
+          <ion-col col-4>
+              {{result?.ip}}
+          </ion-col>
+          <ion-col col-4>
+              {{result?.server}}
+          </ion-col>
+          <ion-col col-3>
+              {{result?.jitter}}
+          </ion-col>
+          <ion-col col-3>
+              {{result?.ping}}
+          </ion-col>
+          <ion-col col-3>
+              {{result?.download}}
+          </ion-col>
+          <ion-col col-3>
+              {{result?.upload}}
+          </ion-col>
+        </ion-row>
+    </ion-grid>
+  </ion-card>
 </ion-content>

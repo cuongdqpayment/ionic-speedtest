@@ -28,14 +28,16 @@ this.addEventListener('message', function (e) {
             }, 5000);
         }
     }else if (data.command === 'report') {
+        //neu lenh report thi bao cao truoc tiep den Home/Main
+        postMessage(e.data); //lay nguyen goc bao cao
         if (data.work === 'dowload_test'){
-            setTimeout(() => {
+            /* setTimeout(() => {
                 postMessage(JSON.stringify({
                     command: 'status',
                     results: 'Báo cáo kết quả download đây ',
                     message: 'Gửi kết quả dowload'
                 }));
-            }, 1000);
+            }, 1000); */
         }
     }
 });

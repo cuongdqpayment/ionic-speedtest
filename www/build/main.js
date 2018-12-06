@@ -71,6 +71,12 @@ var HomePage = /** @class */ (function () {
         this.navCtrl = navCtrl;
         this.apiGraph = apiGraph;
         this.apiHttp = apiHttp;
+        this.objMeter = {
+            graphName: 'Download',
+            meter: 'dlMeter',
+            meterText: 'dlText',
+            unit: 'Mbps',
+        };
     }
     HomePage.prototype.ngOnInit = function () {
         this.apiGraph.initUI(meterBk, dlColor, progColor);
@@ -97,16 +103,17 @@ var HomePage = /** @class */ (function () {
             //tao canvas đồng hồ html5
             this.apiGraph.initUI(meterBk, dlColor, progColor);
             //gui lenh len httpClient gui len
-            worker.postMessage(JSON.stringify({
-                command: 'start',
-                work: 'dowload_test',
-                message: 'Hello Worker message! '
-            }));
+            //chi test thoi khong su dung
+            /* worker.postMessage(JSON.stringify({
+              command:'start', //bao cho Worker bat dau lam
+              work:'dowload_test', //lay dia chi ip cho toi
+              message:'Hello Worker message! '
+            })); */
             //thuc thi goi lenh download nhe
             this.apiHttp.getISP()
                 .then(function (data) {
                 _this.objISP = data;
-                console.log(data);
+                //console.log(data);
                 if (_this.objISP
                     && _this.objISP.processedString
                     && _this.objISP.rawIspInfo
@@ -114,34 +121,21 @@ var HomePage = /** @class */ (function () {
                     //ghi ket qua len form   
                     _this.objISP.server.distance = '(' + _this.objISP.server.distance + "km)";
                 }
+                if (_this.objISP && _this.objISP.server) {
+                    //neu server tim thay thi test nhe
+                    _this.apiHttp.download()
+                        .then(function (result) {
+                        console.log(result);
+                    })
+                        .catch(function (err) {
+                        console.log(err);
+                    });
+                }
             })
                 .catch(function (err) {
                 console.log(err);
             });
-            worker.onmessage = function (e) {
-                var workerReplyData = JSON.parse(e.data);
-                if (workerReplyData
-                    && workerReplyData.command === 'status'
-                    && workerReplyData.results) {
-                    //lay ket qua nhan duoc tu worker
-                    data = workerReplyData.results;
-                    /**
-                     * {
-                          testState: 1,
-                          dlStatus: i * 1000 * Math.random(),
-                          dlProgress: i++,
-                        }
-                     */
-                    //console.log(data);
-                    //console.log(data.dlProgress);
-                    if (data.dlProgress >= 1) {
-                        //tien trinh da xong 100% thi dung lai
-                        _this.clearRuning();
-                        //this.startStop(); //dao vi tri lai thoi
-                    }
-                    _this.apiGraph.updateUI(data, meterBk, dlColor, progColor);
-                }
-            };
+            worker.onmessage = function (e) { _this.onMessageProcess(e); };
             //cu 200ms gui kiem tra ket qua 1 lan
             interval = setInterval(function () {
                 if (!isRuning) {
@@ -153,16 +147,46 @@ var HomePage = /** @class */ (function () {
             }, 200);
         }
     };
+    HomePage.prototype.onMessageProcess = function (e) {
+        var workerReplyData = JSON.parse(e.data);
+        if (workerReplyData
+            && workerReplyData.work === 'get-ip'
+            && workerReplyData.command === 'report'
+            && workerReplyData.message === 'start'
+            && !workerReplyData.status //trang thai
+        ) {
+            //khoi tao Graph voi nhan getIP
+            //(data, meterBk, dlColor, progColor);
+            //this.apiGraph.initUI()
+        }
+        if (workerReplyData
+            && workerReplyData.command === 'status'
+            && workerReplyData.results) {
+            data = workerReplyData.results;
+            /**
+             * {
+                  testState: 1,
+                  dlStatus: i * 1000 * Math.random(),
+                  dlProgress: i++,
+                }
+             */
+            if (data.dlProgress >= 1) {
+                this.clearRuning();
+            }
+            this.apiGraph.updateUI(data, meterBk, dlColor, progColor);
+        }
+    };
     HomePage = __decorate([
         Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["m" /* Component */])({
-            selector: 'page-home',template:/*ion-inline-start:"/Users/cuongdq/IONIC/ionic-css-js-chart/src/pages/home/home.html"*/'<ion-header>\n  <ion-navbar>\n    <ion-title>\n      HOME\n    </ion-title>\n  </ion-navbar>\n</ion-header>\n\n<ion-content padding>\n  <ion-grid>\n    <ion-row>\n      <ion-col class="card-meter" col-12 col-xl-3 col-lg-3 col-md-4 col-sm-6>\n        <ion-card>\n          <div class="graphArea">\n            <div class="graphName">Download</div>\n            <canvas class="meter" id="dlMeter"></canvas>\n            <div class="meterText" id="dlText"></div>\n            <div class="unit">Mbps</div>\n          </div>\n        </ion-card>\n      </ion-col>\n      <ion-col class="card-meter" col-12 col-xl-3 col-lg-3 col-md-4 col-sm-6>\n        <ion-card>\n          <div id="startStopBtn" (click)="startStop()"></div>\n          <ion-item>\n            <ion-row>\n              <ion-col>\n                Your IP:\n              </ion-col>\n              <ion-col>\n                {{objISP?.processedString}}\n              </ion-col>\n            </ion-row>\n            <ion-row>\n                {{objISP?.rawIspInfo?.org}} {{objISP?.rawIspInfo?.city}} {{objISP?.rawIspInfo?.region}} {{objISP?.rawIspInfo?.country}}\n            </ion-row>\n          </ion-item>\n          <ion-item>\n              <ion-row>\n                <ion-col>\n                  Server IP:\n                </ion-col>\n                <ion-col>\n                  {{objISP?.server?.ip}} {{objISP?.server?.distance}}\n                </ion-col>\n              </ion-row>\n              <ion-row>\n                  {{objISP?.server?.org}} {{objISP?.server?.city}} {{objISP?.server?.country}}\n              </ion-row>\n            </ion-item>\n        </ion-card>\n      </ion-col>\n    </ion-row>\n  </ion-grid>\n\n</ion-content>'/*ion-inline-end:"/Users/cuongdq/IONIC/ionic-css-js-chart/src/pages/home/home.html"*/
+            selector: 'page-home',template:/*ion-inline-start:"D:\IONIC\ionic-speedtest-client\src\pages\home\home.html"*/'<ion-header>\n\n  <ion-navbar>\n\n    <ion-title>\n\n      HOME\n\n    </ion-title>\n\n  </ion-navbar>\n\n</ion-header>\n\n\n\n<ion-content padding>\n\n  <ion-grid>\n\n    <ion-row>\n\n      <ion-col col-24 col-xl-6 col-lg-6 col-md-12 col-sm-12>\n\n        <ion-card class="card-meter">\n\n          <div class="graphArea">\n\n            <div class="graphName">{{objMeter?.graphName}}</div>\n\n            <canvas class="meter" id="dlMeter"></canvas>\n\n            <div class="meterText" id="dlText"></div>\n\n            <div class="unit">{{objMeter?.unit}}</div>\n\n          </div>\n\n          <p>Your IP: {{objISP?.processedString}} - {{objISP?.rawIspInfo?.org}} {{objISP?.rawIspInfo?.city}}\n\n            {{objISP?.rawIspInfo?.region}} {{objISP?.rawIspInfo?.country}}</p>\n\n          <p>\n\n            Server IP: {{objISP?.server?.ip}} - {{objISP?.server?.org}} {{objISP?.server?.city}}\n\n            {{objISP?.server?.region}}\n\n            {{objISP?.server?.country}} {{objISP?.server?.distance}}\n\n          </p>\n\n          <div id="startStopBtn" (click)="startStop()"></div>\n\n        </ion-card>\n\n      </ion-col>\n\n    </ion-row>\n\n  </ion-grid>\n\n  <ion-card class="card-meter">\n\n    <div id="resultBtn"></div>\n\n    <ion-grid>\n\n      <ion-row>\n\n        <ion-col col-1>\n\n          Id\n\n        </ion-col>\n\n        <ion-col col-3>\n\n          Time\n\n        </ion-col>\n\n        <ion-col col-4>\n\n          YourIp\n\n        </ion-col>\n\n        <ion-col col-4>\n\n          ServerIP\n\n        </ion-col>\n\n        <ion-col col-3>\n\n          Jitter\n\n        </ion-col>\n\n        <ion-col col-3>\n\n          Ping\n\n        </ion-col>\n\n        <ion-col col-3>\n\n          Download\n\n        </ion-col>\n\n        <ion-col col-3>\n\n          Upload\n\n        </ion-col>\n\n      </ion-row>\n\n\n\n      <ion-row *ngFor="let result of results">\n\n          <ion-col col-1>\n\n            {{result?.id}}\n\n          </ion-col>\n\n          <ion-col col-3>\n\n              {{result?.time}}\n\n          </ion-col>\n\n          <ion-col col-4>\n\n              {{result?.ip}}\n\n          </ion-col>\n\n          <ion-col col-4>\n\n              {{result?.server}}\n\n          </ion-col>\n\n          <ion-col col-3>\n\n              {{result?.jitter}}\n\n          </ion-col>\n\n          <ion-col col-3>\n\n              {{result?.ping}}\n\n          </ion-col>\n\n          <ion-col col-3>\n\n              {{result?.download}}\n\n          </ion-col>\n\n          <ion-col col-3>\n\n              {{result?.upload}}\n\n          </ion-col>\n\n        </ion-row>\n\n    </ion-grid>\n\n  </ion-card>\n\n</ion-content>'/*ion-inline-end:"D:\IONIC\ionic-speedtest-client\src\pages\home\home.html"*/
         })
         //class dieu khien rieng cua no
         ,
-        __metadata("design:paramtypes", [typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["d" /* NavController */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["d" /* NavController */]) === "function" && _a || Object, typeof (_b = typeof __WEBPACK_IMPORTED_MODULE_2__services_apiMeterGraphService__["a" /* ApiGraphService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_2__services_apiMeterGraphService__["a" /* ApiGraphService */]) === "function" && _b || Object, typeof (_c = typeof __WEBPACK_IMPORTED_MODULE_3__services_apiSpeedTestService__["a" /* ApiSpeedTestService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_3__services_apiSpeedTestService__["a" /* ApiSpeedTestService */]) === "function" && _c || Object])
+        __metadata("design:paramtypes", [__WEBPACK_IMPORTED_MODULE_1_ionic_angular__["d" /* NavController */],
+            __WEBPACK_IMPORTED_MODULE_2__services_apiMeterGraphService__["a" /* ApiGraphService */],
+            __WEBPACK_IMPORTED_MODULE_3__services_apiSpeedTestService__["a" /* ApiSpeedTestService */]])
     ], HomePage);
     return HomePage;
-    var _a, _b, _c;
 }());
 
 //# sourceMappingURL=home.js.map
@@ -278,48 +302,57 @@ var ApiSpeedTestService = /** @class */ (function () {
     //1. Lay dia chi IP
     ApiSpeedTestService.prototype.getISP = function () {
         var _this = this;
+        this.postMessage({
+            command: 'report',
+            work: 'get-ip',
+            status: false,
+            message: 'start'
+        });
         return this.httpClient.get(speedtestServer + "/speedtest/get-ip")
             .toPromise()
             .then(function (data) {
-            if (_this.worker) {
-                _this.worker.postMessage(JSON.stringify({
-                    command: 'report',
-                    work: 'get-ip',
-                    data: data,
-                    status: true,
-                    message: 'Success'
-                }));
-            }
+            _this.postMessage({
+                command: 'report',
+                work: 'get-ip',
+                data: data,
+                status: true,
+                message: 'success' //
+            });
             return data;
         });
     };
     //2. Test dowload
     ApiSpeedTestService.prototype.download = function () {
         var _this = this;
+        this.postMessage({
+            command: 'report',
+            work: 'download',
+            status: false,
+            message: 'start'
+        });
         return this.httpClient.get(speedtestServer + "/speedtest/download") //them tham so goi 
             .toPromise()
             .then(function (data) {
-            if (_this.worker) {
-                _this.worker.postMessage(JSON.stringify({
-                    command: 'report',
-                    work: 'download',
-                    data: data,
-                    status: true,
-                    message: 'Success'
-                }));
-            }
+            _this.postMessage({
+                command: 'report',
+                work: 'download',
+                data: data,
+                status: true,
+                message: 'success'
+            });
             return data;
-        })
-            .catch(function (err) {
-            console.log(err);
         });
+    };
+    ApiSpeedTestService.prototype.postMessage = function (object) {
+        if (this.worker) {
+            this.worker.postMessage(JSON.stringify(object));
+        }
     };
     ApiSpeedTestService = __decorate([
         Object(__WEBPACK_IMPORTED_MODULE_1__angular_core__["A" /* Injectable */])(),
-        __metadata("design:paramtypes", [typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_0__angular_common_http__["a" /* HttpClient */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_0__angular_common_http__["a" /* HttpClient */]) === "function" && _a || Object])
+        __metadata("design:paramtypes", [__WEBPACK_IMPORTED_MODULE_0__angular_common_http__["a" /* HttpClient */]])
     ], ApiSpeedTestService);
     return ApiSpeedTestService;
-    var _a;
 }());
 
 //# sourceMappingURL=apiSpeedTestService.js.map
@@ -452,7 +485,7 @@ var MyApp = /** @class */ (function () {
         });
     }
     MyApp = __decorate([
-        Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["m" /* Component */])({template:/*ion-inline-start:"/Users/cuongdq/IONIC/ionic-css-js-chart/src/app/app.html"*/'<ion-nav [root]="rootPage"></ion-nav>\n'/*ion-inline-end:"/Users/cuongdq/IONIC/ionic-css-js-chart/src/app/app.html"*/
+        Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["m" /* Component */])({template:/*ion-inline-start:"D:\IONIC\ionic-speedtest-client\src\app\app.html"*/'<ion-nav [root]="rootPage"></ion-nav>\n\n'/*ion-inline-end:"D:\IONIC\ionic-speedtest-client\src\app\app.html"*/
         }),
         __metadata("design:paramtypes", [__WEBPACK_IMPORTED_MODULE_1_ionic_angular__["e" /* Platform */], __WEBPACK_IMPORTED_MODULE_2__ionic_native_status_bar__["a" /* StatusBar */], __WEBPACK_IMPORTED_MODULE_3__ionic_native_splash_screen__["a" /* SplashScreen */]])
     ], MyApp);
