@@ -1,4 +1,7 @@
 var i=0;
+var dlStatus = 0.0;
+var dlProgress = 0.0;
+
 this.addEventListener('message', function (e) {
     let data = JSON.parse(e.data);
     //console.log('commmand: ' + data.command);
@@ -8,8 +11,8 @@ this.addEventListener('message', function (e) {
                     command: 'status',
                     results: {
                         testState: 1,
-                        dlStatus: Math.round(i * 10 * Math.random()),
-                        dlProgress: i++/100,
+                        dlStatus: dlStatus, //toc do, 
+                        dlProgress: dlProgress,
                     },
                     message: 'Lệnh trả lời trạng thái'
                 }));
@@ -30,14 +33,15 @@ this.addEventListener('message', function (e) {
     }else if (data.command === 'report') {
         //neu lenh report thi bao cao truoc tiep den Home/Main
         postMessage(e.data); //lay nguyen goc bao cao
-        if (data.work === 'dowload_test'){
-            /* setTimeout(() => {
-                postMessage(JSON.stringify({
-                    command: 'status',
-                    results: 'Báo cáo kết quả download đây ',
-                    message: 'Gửi kết quả dowload'
-                }));
-            }, 1000); */
-        }
+
+    }else if (data.command === 'progress') { 
+        //thong bao tien trinh
+        //bao cao toc do, tien trinh la bao nhieu %
+        //de hien thi dong ho
+
+        dlProgress =  i++/100; //du lieu demo
+        dlStatus = Math.round(i * 10 * Math.random()) //du lieu demo
+        //postMessage(e.data); //lay nguyen goc bao cao
+        
     }
 });

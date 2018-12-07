@@ -63,7 +63,7 @@ var dlColor = "#6060AA", ulColor = "#309030", pingColor = "#AA6060", jitColor = 
 var progColor = "#EEEEEE";
 var worker = null;
 var data = null;
-var interval = null;
+//var interval = null;
 var isRuning = false;
 var idx = 0;
 //khai bao thanh phan cua trang nay
@@ -78,13 +78,13 @@ var HomePage = /** @class */ (function () {
         };
         this.objResult = {
             id: 1,
-            time: '20181204 11:34:44',
-            ip: '10.141..2-ss',
-            server: '10.1.1.1 -- unkwow',
-            jitter: '0.09',
-            ping: '123',
-            download: '64.11',
-            upload: '76.3',
+            time: '...',
+            ip: '...',
+            server: '...',
+            jitter: '...',
+            ping: '...',
+            download: '...',
+            upload: '...',
         };
         this.results = [];
     }
@@ -94,7 +94,7 @@ var HomePage = /** @class */ (function () {
     HomePage.prototype.clearRuning = function () {
         isRuning = false;
         this.apiGraph.I("startStopBtn").className = "";
-        clearInterval(interval);
+        //clearInterval(interval);
         worker = null;
         data = null;
     };
@@ -128,6 +128,7 @@ var HomePage = /** @class */ (function () {
                     //neu server tim thay thi test nhe
                     _this.apiHttp.multiDownload()
                         .then(function (result) {
+                        console.log('Thuc hien xong multiDownload: ');
                         console.log(result);
                     })
                         .catch(function (err) {
@@ -139,15 +140,6 @@ var HomePage = /** @class */ (function () {
                 console.log(err);
             });
             worker.onmessage = function (e) { _this.onMessageProcess(e); };
-            //cu 200ms gui kiem tra ket qua 1 lan
-            interval = setInterval(function () {
-                if (!isRuning) {
-                    //console.log('clear');
-                    clearInterval(interval);
-                }
-                if (worker)
-                    worker.postMessage(JSON.stringify({ command: 'status' }));
-            }, 200);
         }
     };
     HomePage.prototype.onMessageProcess = function (e) {
@@ -164,16 +156,9 @@ var HomePage = /** @class */ (function () {
             && workerReplyData.command === 'status'
             && workerReplyData.results) {
             data = workerReplyData.results;
-            /**
-             * {
-                  testState: 1,
-                  dlStatus: i * 1000 * Math.random(),
-                  dlProgress: i++,
-                }
-             */
-            if (data.dlProgress >= 1) {
-                this.clearRuning();
-            }
+            /* if (data.dlProgress >= 1 ){
+              this.clearRuning();
+            } */
             this.apiGraph.updateUI(data, meterBk, dlColor, progColor);
         }
         //cap nhap ket qua
@@ -183,6 +168,9 @@ var HomePage = /** @class */ (function () {
             && workerReplyData.status //hoan thanh
             && workerReplyData.data //du lieu
         ) {
+            //console.log(workerReplyData); //in ket qua cong viec hoan thanh
+            //this.clearRuning(); //xac dinh cong viec hoan thanh
+            //cap nhap thong tin len web
             this.updateUI(workerReplyData.work, workerReplyData.data);
         }
     };
@@ -224,29 +212,45 @@ var HomePage = /** @class */ (function () {
         }
     };
     HomePage.prototype.updateUI = function (work, d) {
-        //co cong viec va ket qua
+        //co cong viec va ket qua hoan thanh
         if (work === 'get-ip') {
-            this.objResult.id = ++idx;
-            this.objResult.ip = d.processedString + ' - ' + d.rawIspInfo.org
-                + d.rawIspInfo.city + d.rawIspInfo.region
-                + d.rawIspInfo.country;
-            this.objResult.server = d.server.ip + ' - ' + d.server.org
-                + d.server.city + d.server.region
-                + d.server.country;
-            this.results.push(this.objResult);
+            //cong viec hoan thanh lay ip
+            var dt = new Date();
+            var timeString = dt.toISOString().replace(/T/, ' ').replace(/\..+/, '')
+                + " GMT"
+                + dt.getTimezoneOffset() / 60
+                + " Local: "
+                + dt.toLocaleTimeString();
+            //cap nhap ket qua ip
+            var result = {
+                id: ++idx,
+                time: timeString,
+                ip: d.processedString + ' - ' + d.rawIspInfo.org
+                    + d.rawIspInfo.city + d.rawIspInfo.region
+                    + d.rawIspInfo.country,
+                server: d.server.ip + ' - ' + d.server.org
+                    + d.server.city + d.server.region
+                    + d.server.country
+            };
+            this.results.push(result);
+        }
+        else if (work == 'download') {
+            var result = this.results.pop();
+            result.download = d.dlStatus;
+            this.results.push(result);
+            this.clearRuning(); //da xong cac buoc
         }
     };
     HomePage = __decorate([
         Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["m" /* Component */])({
-            selector: 'page-home',template:/*ion-inline-start:"/Users/cuongdq/IONIC/ionic-speedtest-client-css-js-chart/src/pages/home/home.html"*/'<ion-header>\n  <ion-navbar>\n    <ion-title>\n      HOME\n    </ion-title>\n  </ion-navbar>\n</ion-header>\n\n<ion-content padding>\n  <ion-grid>\n    <ion-row>\n      <ion-col col-24 col-xl-6 col-lg-6 col-md-12 col-sm-12>\n        <ion-card class="card-meter">\n          <div class="graphArea">\n            <div class="graphName">{{objMeter?.graphName}}</div>\n            <canvas class="meter" id="dlMeter"></canvas>\n            <div class="meterText" id="dlText"></div>\n            <div class="unit">{{objMeter?.unit}}</div>\n          </div>\n          <p>Your IP: {{objISP?.processedString}} - {{objISP?.rawIspInfo?.org}} {{objISP?.rawIspInfo?.city}}\n            {{objISP?.rawIspInfo?.region}} {{objISP?.rawIspInfo?.country}}</p>\n          <p>\n            Server IP: {{objISP?.server?.ip}} - {{objISP?.server?.org}} {{objISP?.server?.city}}\n            {{objISP?.server?.region}}\n            {{objISP?.server?.country}} {{objISP?.server?.distance}}\n          </p>\n          <div id="startStopBtn" (click)="startStop()"></div>\n        </ion-card>\n      </ion-col>\n    </ion-row>\n  </ion-grid>\n  <ion-card class="card-meter">\n    <div id="resultBtn"></div>\n    <ion-grid>\n      <ion-row>\n        <ion-col col-1>\n          Id\n        </ion-col>\n        <ion-col col-3>\n          Time\n        </ion-col>\n        <ion-col col-4>\n          YourIp\n        </ion-col>\n        <ion-col col-4>\n          ServerIP\n        </ion-col>\n        <ion-col col-3>\n          Jitter\n        </ion-col>\n        <ion-col col-3>\n          Ping\n        </ion-col>\n        <ion-col col-3>\n          Download\n        </ion-col>\n        <ion-col col-3>\n          Upload\n        </ion-col>\n      </ion-row>\n\n      <ion-row *ngFor="let result of results">\n          <ion-col col-1>\n            {{result?.id}}\n          </ion-col>\n          <ion-col col-3>\n              {{result?.time}}\n          </ion-col>\n          <ion-col col-4>\n              {{result?.ip}}\n          </ion-col>\n          <ion-col col-4>\n              {{result?.server}}\n          </ion-col>\n          <ion-col col-3>\n              {{result?.jitter}}\n          </ion-col>\n          <ion-col col-3>\n              {{result?.ping}}\n          </ion-col>\n          <ion-col col-3>\n              {{result?.download}}\n          </ion-col>\n          <ion-col col-3>\n              {{result?.upload}}\n          </ion-col>\n        </ion-row>\n    </ion-grid>\n  </ion-card>\n</ion-content>'/*ion-inline-end:"/Users/cuongdq/IONIC/ionic-speedtest-client-css-js-chart/src/pages/home/home.html"*/
+            selector: 'page-home',template:/*ion-inline-start:"D:\IONIC\ionic-speedtest-client\src\pages\home\home.html"*/'<ion-header>\n\n  <ion-navbar>\n\n    <ion-title>\n\n      HOME\n\n    </ion-title>\n\n  </ion-navbar>\n\n</ion-header>\n\n\n\n<ion-content padding>\n\n  <ion-grid>\n\n    <ion-row>\n\n      <ion-col col-24 col-xl-6 col-lg-6 col-md-12 col-sm-12>\n\n        <ion-card class="card-meter">\n\n          <div class="graphArea">\n\n            <div class="graphName">{{objMeter?.graphName}}</div>\n\n            <canvas class="meter" id="dlMeter"></canvas>\n\n            <div class="meterText" id="dlText"></div>\n\n            <div class="unit">{{objMeter?.unit}}</div>\n\n          </div>\n\n          <p>Your IP: {{objISP?.processedString}} - {{objISP?.rawIspInfo?.org}} {{objISP?.rawIspInfo?.city}}\n\n            {{objISP?.rawIspInfo?.region}} {{objISP?.rawIspInfo?.country}}</p>\n\n          <p>\n\n            Server IP: {{objISP?.server?.ip}} - {{objISP?.server?.org}} {{objISP?.server?.city}}\n\n            {{objISP?.server?.region}}\n\n            {{objISP?.server?.country}} {{objISP?.server?.distance}}\n\n          </p>\n\n          <div id="startStopBtn" (click)="startStop()"></div>\n\n        </ion-card>\n\n      </ion-col>\n\n    </ion-row>\n\n  </ion-grid>\n\n  <ion-card class="card-meter">\n\n    <div id="resultBtn"></div>\n\n    <ion-grid>\n\n      <ion-row>\n\n        <ion-col col-1>\n\n          Id\n\n        </ion-col>\n\n        <ion-col col-3>\n\n          Time\n\n        </ion-col>\n\n        <ion-col col-4>\n\n          YourIp\n\n        </ion-col>\n\n        <ion-col col-4>\n\n          ServerIP\n\n        </ion-col>\n\n        <ion-col col-3>\n\n          Jitter\n\n        </ion-col>\n\n        <ion-col col-3>\n\n          Ping\n\n        </ion-col>\n\n        <ion-col col-3>\n\n          Download\n\n        </ion-col>\n\n        <ion-col col-3>\n\n          Upload\n\n        </ion-col>\n\n      </ion-row>\n\n\n\n      <ion-row *ngFor="let result of results">\n\n          <ion-col col-1>\n\n            {{result?.id}}\n\n          </ion-col>\n\n          <ion-col col-3>\n\n              {{result?.time}}\n\n          </ion-col>\n\n          <ion-col col-4>\n\n              {{result?.ip}}\n\n          </ion-col>\n\n          <ion-col col-4>\n\n              {{result?.server}}\n\n          </ion-col>\n\n          <ion-col col-3>\n\n              {{result?.jitter}}\n\n          </ion-col>\n\n          <ion-col col-3>\n\n              {{result?.ping}}\n\n          </ion-col>\n\n          <ion-col col-3>\n\n              {{result?.download}}\n\n          </ion-col>\n\n          <ion-col col-3>\n\n              {{result?.upload}}\n\n          </ion-col>\n\n        </ion-row>\n\n    </ion-grid>\n\n  </ion-card>\n\n</ion-content>'/*ion-inline-end:"D:\IONIC\ionic-speedtest-client\src\pages\home\home.html"*/
         })
         //class dieu khien rieng cua no
         ,
-        __metadata("design:paramtypes", [__WEBPACK_IMPORTED_MODULE_1_ionic_angular__["d" /* NavController */],
-            __WEBPACK_IMPORTED_MODULE_2__services_apiMeterGraphService__["a" /* ApiGraphService */],
-            __WEBPACK_IMPORTED_MODULE_3__services_apiSpeedTestService__["a" /* ApiSpeedTestService */]])
+        __metadata("design:paramtypes", [typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["d" /* NavController */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["d" /* NavController */]) === "function" && _a || Object, typeof (_b = typeof __WEBPACK_IMPORTED_MODULE_2__services_apiMeterGraphService__["a" /* ApiGraphService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_2__services_apiMeterGraphService__["a" /* ApiGraphService */]) === "function" && _b || Object, typeof (_c = typeof __WEBPACK_IMPORTED_MODULE_3__services_apiSpeedTestService__["a" /* ApiSpeedTestService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_3__services_apiSpeedTestService__["a" /* ApiSpeedTestService */]) === "function" && _c || Object])
     ], HomePage);
     return HomePage;
+    var _a, _b, _c;
 }());
 
 //# sourceMappingURL=home.js.map
@@ -350,8 +354,11 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 
 
 var speedtestServer = 'https://cuongdq-speedtest.herokuapp.com';
-var xhr = []; //tao da luong de truy cap server
+var metter;
+var xhr = null; //tao da luong de truy cap server
+var interval = null;
 var totLoaded = 0.0;
+var garbagePhp_chunkSize = 20;
 var http;
 var ApiSpeedTestService = /** @class */ (function () {
     function ApiSpeedTestService(httpClient) {
@@ -362,6 +369,50 @@ var ApiSpeedTestService = /** @class */ (function () {
     ApiSpeedTestService.prototype.setWorker = function (worker) {
         this.worker = worker;
     };
+    //ham trao doi du lieu voi worker 
+    ApiSpeedTestService.prototype.postMessage = function (object) {
+        if (this.worker) {
+            this.worker.postMessage(JSON.stringify(object));
+        }
+    };
+    //tham tham so cho url ? hoac & theo bien
+    //url_sep (url) { return url.match(/\?/) ? '&' : '?'; }
+    //clear Request khi test vuot qua thoi gian 
+    ApiSpeedTestService.prototype.clearRequests = function () {
+        //tlog('stopping pending XHRs')
+        //console.log('xoa request di:');
+        if (xhr) {
+            for (var i = 0; i < xhr.length; i++) {
+                try {
+                    xhr[i].onprogress = null;
+                    xhr[i].onload = null;
+                    xhr[i].onerror = null;
+                }
+                catch (e) { }
+                try {
+                    xhr[i].upload.onprogress = null;
+                    xhr[i].upload.onload = null;
+                    xhr[i].upload.onerror = null;
+                }
+                catch (e) { }
+                try {
+                    xhr[i].abort();
+                }
+                catch (e) { }
+                try {
+                    xhr[i].unsubscribe();
+                }
+                catch (e) { }
+                try {
+                    delete (xhr[i]);
+                }
+                catch (e) { }
+            }
+            xhr = null;
+        }
+        clearInterval(interval); //xoa luong thoi gian de chay cua no
+    };
+    ///////
     //cac ham speedtest
     //1. Lay dia chi IP
     ApiSpeedTestService.prototype.getISP = function () {
@@ -388,14 +439,26 @@ var ApiSpeedTestService = /** @class */ (function () {
         });
     };
     //2. Test dowload
-    ApiSpeedTestService.prototype.download = function () {
+    /**
+     * 10 thread x 20 step
+     */
+    ApiSpeedTestService.prototype.multiDownload = function () {
         var _this = this;
-        //totLoaded = 0.0; // total number of loaded bytes
+        totLoaded = 0.0;
+        xhr = []; //bat dau tao multithread
+        var maxThread = 10; //so luong chay 10 thread
+        var maxStep = 20; //moi luong chay qua 20 step
+        var durationTestInSecond = 15; //so giay chay test thu
+        var maxTime_ms = (durationTestInSecond / 2) * 1000; //thoi gian thu 10 s hoac 20 buoc
+        var delayThread = 300;
+        var oneThreadFuntion = this.downloadOne; //gan ham de chay download
+        var overheadCompensationFactor = 1.06; //can be changed to compensatie for transport overhead. (see doc.md for some other values)
+        var useMebibits;
+        var graceTimeDone = false; //bo thoi gian parse TCP de tinh toc do cho chinh xac 
+        var time_dlGraceTime = 1.5; //time to wait in seconds before actually measuring dl speed (wait for TCP window to increase)
         var startT = new Date().getTime(); // timestamp when test was started
-        var graceTimeDone = false; //set to true after the grace time is past
-        var failed = false; // set to true if a stream fails
-        var dlMultistream = 10; //so luong lay du lieu 
-        var multistreamDelay = 300; //delay lay du lieu theo luong
+        /* let graceTimeDone = false; //set to true after the grace time is past
+        let failed = false; // set to true if a stream fails*/
         this.postMessage({
             command: 'report',
             work: 'download',
@@ -403,49 +466,160 @@ var ApiSpeedTestService = /** @class */ (function () {
             startTime: startT,
             message: 'start'
         });
-        return this.httpClient.get(speedtestServer + "/speedtest/download") //them tham so goi 
-            .toPromise()
+        interval = setInterval(function () {
+            //console.log('gui thong bao tien trinh: ' + totLoaded);
+            var passTime = new Date().getTime() - startT;
+            var progress = 0;
+            if (graceTimeDone)
+                progress = passTime / (durationTestInSecond * 1000);
+            //reset thoi gian bat dau tinh toan toc doc
+            if (!graceTimeDone) {
+                if (passTime > 1000 * time_dlGraceTime) {
+                    if (totLoaded > 0) {
+                        startT = new Date().getTime(); //bat dau tinh thoi gian download
+                        totLoaded = 0.0; //reset bien lai
+                    }
+                    graceTimeDone = true;
+                }
+            }
+            else {
+                var speed = totLoaded / (passTime / 1000.0);
+                metter = ((speed * 8 * overheadCompensationFactor) / (useMebibits ? 1048576 : 1000000)).toFixed(2); // speed is multiplied by 8 to go from bytes to bits, overhead compensation is applied, then everything is divided by 1048576 or 1000000 to go to megabits/mebibits
+                //neu qua thoi gian thi reset cai interval nay di
+                //muon reset tien trinh dang dowload ve thi sao????
+                //lay totloaded thoi gian troi qua de tinh toan
+                //dua ve qua trinh
+                this.postMessage({
+                    command: 'progress',
+                    work: 'download',
+                    data: {
+                        dlProgress: progress,
+                        dlStatus: metter
+                    },
+                    status: false,
+                    startTime: startT,
+                    reportTime: new Date().getTime(),
+                    message: 'continue' //tiep tuc cho toi
+                });
+                if (progress >= 1) {
+                    //truong hop vuot qua thoi gian cho phep roi ma van chua ket thuc
+                    //bao ket thuc roi reset connection
+                    console.log('SLOW NETWORK');
+                    //send interupt
+                    //xem lai cac ham xoa request trong angular
+                    this.clearRequests();
+                }
+            }
+            //qua trinh = thoi gian troi qua chia cho thoi gian du dinh chay thu
+        }.bind(this), 200); //cu 200ms thi thong bao ket qua cho metter
+        return new Promise(function (resolve, reject) {
+            var startT = new Date().getTime(); // timestamp when test was started
+            var testStream = function (i, delay, step, doneThread) {
+                setTimeout(function () {
+                    var timeout = new Date().getTime() - startT;
+                    //console.log("test thread: " + i + ", step: " + step + ', timeout: ' + timeout);
+                    oneThreadFuntion(i, step) //tien trinh nay chay rat cham neu mang cham
+                        .then(function (total) {
+                        /* console.log("A Step in a Thread: " + i + " finish Total loaded:");
+                        console.log(total); */
+                        if (timeout < maxTime_ms && step < maxStep) {
+                            //console.log("progress " + step);
+                            //resolve('progress ' + i);
+                            try {
+                                xhr[i].abort();
+                            }
+                            catch (e) { } // reset the stream data to empty ram
+                            testStream(i, 0, step + 1, doneThread); //goi tiep bien a
+                        }
+                        else {
+                            //console.log("finish IN thread: " + i);
+                            //console.log(doneThread);
+                            if (doneThread)
+                                doneThread(i); //bao xong thread so i
+                            //resolve(total); //ket thuc thread voi n step mang tong so tra ve
+                        }
+                    })
+                        .catch(function (err) {
+                        //truong hop da reset ket qua gui ve sau thi
+                        //console.log(err);
+                    }); //goi ham dowload thread i va step 
+                }.bind(this), 1 + delay);
+            }.bind(_this);
+            var countThreadDone = 0;
+            var callBackThread = function (threadId) {
+                //console.log("finish thread CALLBACK: " + threadId);
+                countThreadDone++;
+                if (countThreadDone == maxThread) {
+                    console.log('XONG ROI NHE:' + countThreadDone);
+                    resolve(totLoaded); //tra ve tong so luong bit nhan duoc
+                }
+            };
+            for (var j = 0; j < maxThread; j++) {
+                //console.log("Thread " + j);
+                testStream(j, j * delayThread, 1, callBackThread); //chay tu step 1
+            }
+        })
             .then(function (data) {
+            //reset interval clear no di
+            clearInterval(interval);
+            //Tra ve chu XONG!
+            _this.postMessage({
+                command: 'progress',
+                work: 'download',
+                data: {
+                    dlProgress: 1,
+                    dlStatus: metter
+                },
+                status: false,
+                startTime: startT,
+                reportTime: new Date().getTime(),
+                message: 'finish' //tiep tuc cho toi
+            });
+            //thong bao xu ly xong
             _this.postMessage({
                 command: 'report',
                 work: 'download',
-                data: data,
+                data: {
+                    dlProgress: 1,
+                    dlStatus: metter,
+                    totLoaded: data
+                },
                 status: true,
                 startTime: startT,
                 endTime: new Date().getTime(),
                 message: 'success'
             });
-            return data;
+            return 'DOWNLOAD STOP!'; //tra ve cho phien goi no
         });
-    };
-    ApiSpeedTestService.prototype.postMessage = function (object) {
-        if (this.worker) {
-            this.worker.postMessage(JSON.stringify(object));
-        }
     };
     ApiSpeedTestService.prototype.downloadOne = function (i, step) {
         return new Promise(function (resolve, reject) {
             var prevLoaded = 0; // number of bytes loaded last time onprogress was called
-            var req = new __WEBPACK_IMPORTED_MODULE_0__angular_common_http__["d" /* HttpRequest */]('GET', speedtestServer + "/speedtest/download", { reportProgress: true,
-                responseType: 'arraybuffer' }); // 'arraybuffer' | 'blob' | 'json' | 'text'
-            xhr[i] = req; //thread i
-            http.request(req)
+            var req = new __WEBPACK_IMPORTED_MODULE_0__angular_common_http__["d" /* HttpRequest */]('GET', speedtestServer + "/speedtest/download", 
+            //neu lay server khac phai khai bao cors control 
+            //"http://10.151.54.84:9235/garbage.php?" + 'r=' + Math.random() + '&ckSize=' + garbagePhp_chunkSize,
+            {
+                reportProgress: true,
+                responseType: 'arraybuffer'
+            }); // 'arraybuffer' | 'blob' | 'json' | 'text'
+            xhr[i] = http.request(req)
                 .subscribe(function (event) {
+                //lam sao khi goi unsubcriber thi no se kich cai nay???
                 switch (event.type) {
                     case __WEBPACK_IMPORTED_MODULE_0__angular_common_http__["c" /* HttpEventType */].Sent:
-                        console.log('1. Request sent!');
-                        //1. console.log(event); //tra ve {type:0}
+                        //console.log('1. Request sent!');
+                        //1. 
                         //this.getHttpEvent().next(event);
                         break;
                     case __WEBPACK_IMPORTED_MODULE_0__angular_common_http__["c" /* HttpEventType */].ResponseHeader:
-                        console.log('2. Response header received!');
+                        //console.log('2. Response header received!');
                         //console.log(event); // tra ve thong tin cua header
                         //this.getHttpEvent().next(event);
                         break;
                     case __WEBPACK_IMPORTED_MODULE_0__angular_common_http__["c" /* HttpEventType */].UploadProgress:
                         //truong hop download nen khong co cai nay
-                        console.log('HttpEventType.UploadProgress!');
-                        console.log(event);
+                        //console.log('HttpEventType.UploadProgress!')
+                        //console.log(event);
                         //this.getHttpEvent().next(event);
                         //const percentDone = Math.round(100 * event.loaded / event.total);
                         /* console.log(`Posting in progress! ${percentDone}% \n
@@ -465,11 +639,10 @@ var ApiSpeedTestService = /** @class */ (function () {
                         }
                         totLoaded += loadDiff;
                         prevLoaded = event.loaded;
-                        //console.log(totLoaded);
+                        //console.log('DownloadProgress: ' + totLoaded);
                         break;
                     case __WEBPACK_IMPORTED_MODULE_0__angular_common_http__["c" /* HttpEventType */].Response:
-                        console.log('4. HttpEventType.Response');
-                        //console.log(event); //HttpResponse co body, header ...
+                        //console.log('4. HttpEventType.Response ' + totLoaded)
                         //console.log('finish!', event.body); //toan du lieu nhan duoc
                         /* this.getHttpEvent().next(event);
                         /* tlog('dl stream finished ' + i)
@@ -477,85 +650,14 @@ var ApiSpeedTestService = /** @class */ (function () {
                         testStream(i, 0) */
                         resolve(totLoaded); //da xong mot step tren mot thread tra ve so luong dowload
                         break;
+                    default:
+                        console.log(event); //tra ve {type:0}
+                        break;
                 }
             }, function (err) {
                 console.log(err);
                 reject(err);
             });
-        });
-    };
-    ApiSpeedTestService.prototype.multiDownload = function () {
-        var _this = this;
-        totLoaded = 0.0;
-        var maxStep = 1; //moi luong chay qua 5 buoc thi dung lai
-        var maxTime = 100; //5s //qua thoi gian thi dung lai
-        var maxThread = 1; //so luong chay 10
-        var delayThread = 300;
-        var oneThreadFuntion = this.downloadOne;
-        var startT = new Date().getTime(); // timestamp when test was started
-        /* let graceTimeDone = false; //set to true after the grace time is past
-        let failed = false; // set to true if a stream fails
-        let dlMultistream = 10; //so luong lay du lieu
-        let multistreamDelay =  300; //delay lay du lieu theo luong */
-        this.postMessage({
-            command: 'report',
-            work: 'download',
-            status: false,
-            startTime: startT,
-            message: 'start'
-        });
-        return new Promise(function (resolve, reject) {
-            var startT = new Date().getTime(); // timestamp when test was started
-            var testStream = function (i, delay, step, doneThread) {
-                setTimeout(function () {
-                    var timeout = new Date().getTime() - startT;
-                    console.log("test thread: " + i + ", step: " + step + ', timeout: ' + timeout);
-                    oneThreadFuntion(i, step)
-                        .then(function (total) {
-                        console.log("A Step in a Thread: " + i + " finish Total loaded:");
-                        console.log(total);
-                        if (timeout < maxTime && step < maxStep) {
-                            console.log("progress " + step);
-                            //resolve('progress ' + i);
-                            testStream(i, 0, step + 1, doneThread); //goi tiep bien a
-                        }
-                        else {
-                            console.log("finish IN thread: " + i);
-                            //console.log(doneThread);
-                            if (doneThread)
-                                doneThread(i); //bao xong thread so i
-                            //resolve(total); //ket thuc thread voi n step mang tong so tra ve
-                        }
-                    }); //goi ham dowload thread i va step 
-                }.bind(this), 1 + delay);
-            }.bind(_this);
-            var countThreadDone = 0;
-            var callBackThread = function (threadId) {
-                console.log("finish thread CALLBACK: " + threadId);
-                countThreadDone++;
-                if (countThreadDone == maxThread) {
-                    console.log('XONG ROI NHE:' + countThreadDone);
-                    resolve('XONG!');
-                }
-            };
-            for (var j = 0; j < maxThread; j++) {
-                console.log("Thread " + j);
-                testStream(j, j * delayThread, 1, callBackThread); //chay tu step 1
-            }
-        })
-            .then(function (data) {
-            //Tra ve chu XONG!
-            //thong bao xu ly xong
-            _this.postMessage({
-                command: 'report',
-                work: 'download',
-                data: data,
-                status: true,
-                startTime: startT,
-                endTime: new Date().getTime(),
-                message: 'success'
-            });
-            return data; //tra ve phien sau 
         });
     };
     ApiSpeedTestService = __decorate([
@@ -696,11 +798,12 @@ var MyApp = /** @class */ (function () {
         });
     }
     MyApp = __decorate([
-        Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["m" /* Component */])({template:/*ion-inline-start:"/Users/cuongdq/IONIC/ionic-speedtest-client-css-js-chart/src/app/app.html"*/'<ion-nav [root]="rootPage"></ion-nav>\n'/*ion-inline-end:"/Users/cuongdq/IONIC/ionic-speedtest-client-css-js-chart/src/app/app.html"*/
+        Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["m" /* Component */])({template:/*ion-inline-start:"D:\IONIC\ionic-speedtest-client\src\app\app.html"*/'<ion-nav [root]="rootPage"></ion-nav>\n\n'/*ion-inline-end:"D:\IONIC\ionic-speedtest-client\src\app\app.html"*/
         }),
-        __metadata("design:paramtypes", [__WEBPACK_IMPORTED_MODULE_1_ionic_angular__["e" /* Platform */], __WEBPACK_IMPORTED_MODULE_2__ionic_native_status_bar__["a" /* StatusBar */], __WEBPACK_IMPORTED_MODULE_3__ionic_native_splash_screen__["a" /* SplashScreen */]])
+        __metadata("design:paramtypes", [typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["e" /* Platform */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["e" /* Platform */]) === "function" && _a || Object, typeof (_b = typeof __WEBPACK_IMPORTED_MODULE_2__ionic_native_status_bar__["a" /* StatusBar */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_2__ionic_native_status_bar__["a" /* StatusBar */]) === "function" && _b || Object, typeof (_c = typeof __WEBPACK_IMPORTED_MODULE_3__ionic_native_splash_screen__["a" /* SplashScreen */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_3__ionic_native_splash_screen__["a" /* SplashScreen */]) === "function" && _c || Object])
     ], MyApp);
     return MyApp;
+    var _a, _b, _c;
 }());
 
 //# sourceMappingURL=app.component.js.map
@@ -902,9 +1005,10 @@ var ApiAuthService = /** @class */ (function () {
     };
     ApiAuthService = __decorate([
         Object(__WEBPACK_IMPORTED_MODULE_1__angular_core__["A" /* Injectable */])(),
-        __metadata("design:paramtypes", [__WEBPACK_IMPORTED_MODULE_0__angular_common_http__["a" /* HttpClient */]])
+        __metadata("design:paramtypes", [typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_0__angular_common_http__["a" /* HttpClient */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_0__angular_common_http__["a" /* HttpClient */]) === "function" && _a || Object])
     ], ApiAuthService);
     return ApiAuthService;
+    var _a;
 }());
 
 //# sourceMappingURL=apiAuthService.js.map
@@ -1035,7 +1139,7 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 
 
 var STORAGE_KEY = 'Cng@3500888';
-var sessionStorageAvailable = Object(__WEBPACK_IMPORTED_MODULE_1_angular_webstorage_service__["b" /* isStorageAvailable */])(sessionStorage);
+var sessionStorageAvailable = Object(__WEBPACK_IMPORTED_MODULE_1_angular_webstorage_service__["c" /* isStorageAvailable */])(sessionStorage);
 var ApiStorageService = /** @class */ (function () {
     function ApiStorageService(storage) {
         this.storage = storage;
@@ -1069,9 +1173,10 @@ var ApiStorageService = /** @class */ (function () {
     ApiStorageService = __decorate([
         Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["A" /* Injectable */])(),
         __param(0, Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["z" /* Inject */])(__WEBPACK_IMPORTED_MODULE_1_angular_webstorage_service__["a" /* LOCAL_STORAGE */])),
-        __metadata("design:paramtypes", [Object])
+        __metadata("design:paramtypes", [typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_1_angular_webstorage_service__["StorageService"] !== "undefined" && __WEBPACK_IMPORTED_MODULE_1_angular_webstorage_service__["StorageService"]) === "function" && _a || Object])
     ], ApiStorageService);
     return ApiStorageService;
+    var _a;
 }());
 
 //# sourceMappingURL=apiStorageService.js.map

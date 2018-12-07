@@ -15,7 +15,7 @@ var progColor = "#EEEEEE";
 
 var worker = null;
 var data = null;
-var interval = null;
+//var interval = null;
 var isRuning:boolean = false;
 var idx = 0;
 
@@ -35,13 +35,13 @@ export class HomePage {
   }
   public objResult={
     id: 1,
-    time:'20181204 11:34:44',
-    ip:'10.141..2-ss',
-    server:'10.1.1.1 -- unkwow',
-    jitter:'0.09',
-    ping:'123',
-    download:'64.11',
-    upload:'76.3',
+    time:'...',
+    ip:'...',
+    server:'...',
+    jitter:'...',
+    ping:'...',
+    download:'...',
+    upload:'...',
   }
 
   public results=[];
@@ -59,7 +59,7 @@ export class HomePage {
   clearRuning(){
     isRuning = false;
     this.apiGraph.I("startStopBtn").className = "";
-    clearInterval(interval);
+    //clearInterval(interval);
     worker = null;
     data = null;
   }
@@ -94,8 +94,8 @@ export class HomePage {
           //neu server tim thay thi test nhe
           this.apiHttp.multiDownload()
           .then(result=>{
+            console.log('Thuc hien xong multiDownload: ');
             console.log(result);
-
           })
           .catch(err=>{
             console.log(err);
@@ -107,15 +107,6 @@ export class HomePage {
       });
 
       worker.onmessage = (e)=>{this.onMessageProcess(e)} 
-        
-      //cu 200ms gui kiem tra ket qua 1 lan
-      interval = setInterval(function () {
-        if (!isRuning){
-          //console.log('clear');
-          clearInterval(interval);
-        }
-        if (worker) worker.postMessage(JSON.stringify({command:'status'}));
-      }, 200);
 
     }
   }
@@ -136,16 +127,9 @@ export class HomePage {
       &&workerReplyData.command==='status'
       &&workerReplyData.results){
       data = workerReplyData.results;
-      /**
-       * {
-            testState: 1,
-            dlStatus: i * 1000 * Math.random(),
-            dlProgress: i++,
-          }
-       */
-      if (data.dlProgress >= 1 ){
+      /* if (data.dlProgress >= 1 ){
         this.clearRuning();
-      }
+      } */
       this.apiGraph.updateUI(data, meterBk, dlColor, progColor);
     }
 
@@ -156,7 +140,10 @@ export class HomePage {
       && workerReplyData.status //hoan thanh
       && workerReplyData.data //du lieu
       ){
-       this.updateUI(workerReplyData.work,workerReplyData.data);
+       //console.log(workerReplyData); //in ket qua cong viec hoan thanh
+       //this.clearRuning(); //xac dinh cong viec hoan thanh
+       //cap nhap thong tin len web
+       this.updateUI(workerReplyData.work, workerReplyData.data);
     }
 
   }
@@ -201,17 +188,36 @@ export class HomePage {
 
 
   updateUI(work,d){
-    //co cong viec va ket qua
+    //co cong viec va ket qua hoan thanh
     if (work==='get-ip'){
-      this.objResult.id = ++idx;
-      this.objResult.ip = d.processedString + ' - ' + d.rawIspInfo.org
-                          + d.rawIspInfo.city + d.rawIspInfo.region
-                          + d.rawIspInfo.country;
-      this.objResult.server = d.server.ip + ' - ' + d.server.org
-                          + d.server.city + d.server.region
-                          + d.server.country;
-                          
-      this.results.push(this.objResult);
+      //cong viec hoan thanh lay ip
+      let dt = new Date();
+      let timeString = dt.toISOString().replace(/T/, ' ').replace(/\..+/, '') 
+                      + " GMT"
+                      + dt.getTimezoneOffset()/60
+                      + " Local: "
+                      + dt.toLocaleTimeString();
+                      
+      //cap nhap ket qua ip
+      let result = {
+        id : ++idx,
+        time: timeString ,
+        ip : d.processedString + ' - ' + d.rawIspInfo.org
+                            + d.rawIspInfo.city + d.rawIspInfo.region
+                            + d.rawIspInfo.country,
+        server : d.server.ip + ' - ' + d.server.org
+                            + d.server.city + d.server.region
+                            + d.server.country
+      }
+      this.results.push(result);
+
+    }else if (work=='download'){
+      let result = this.results.pop();
+      result.download = d.dlStatus;
+      this.results.push(result);
+      this.clearRuning(); //da xong cac buoc
     }
+
   }
+
 }
