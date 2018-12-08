@@ -20,8 +20,8 @@ export class HomePage {
   public objISP: any;
 
   public objMeter = {
-    graphName: 'Download',
-    unit: 'Mbps',
+    graphName: 'Speedtest',
+    unit: 'Mbps/ms/km',
   }
 
   public results = [];
@@ -53,7 +53,7 @@ export class HomePage {
 
 
       //Thuc hien chu trinh speedTest: getIP, delay, ping, delay, dowload, delay, upload
-      this.runTestLoop('_U'); //Get IP, Ping, Download, Upload, Share server, 
+      this.runTestLoop('_I_P_D_U___'); //Get IP, Ping, Download, Upload, Share server, 
         
       worker.onmessage = (e) => { this.onMessageProcess(e) }
         
@@ -96,15 +96,13 @@ export class HomePage {
    * 
    * @param work 
    * @param d 
-   *            | {ip: string, server: string, duration: number} //for work ip 
-                | {ping: number, jitter: number} //for work ping
-                | {speed: number} //for work dowload|upload
+   *  
    */
   updateResults(work, d) {
     //kiem tra phien dau tien cua no
     if (!this.result){
       this.result={}; //khoi dau mot phien test moi
-      this.result.id = idx++; //id moi khoi tao
+      this.result.id = ++idx; //id moi khoi tao
     }else{
       //da chay phien truoc co roi thi lay tu trong ra
       this.result = this.results.pop();
@@ -137,17 +135,15 @@ export class HomePage {
 
 
   /**
-   * 
+   * '_I_U' | '_I_P_D_U'
    * @param test_order 
    */
-  runTestLoop(test_order: '_U' | '_I_P_D_U'){
+  runTestLoop(test_order: string){
     const delay = 1000;
     var nextIndex = 0;
     var runNextTest = function () {
       let command = test_order.charAt(nextIndex);
       
-      if (!command) this.clearRuning(); //khong co lenh nao nua thi thoat
-
       switch (command) {
         case '_': { nextIndex++; setTimeout(runNextTest, delay); } break;
         case 'I': { 
@@ -158,23 +154,10 @@ export class HomePage {
                     }
                     this.apiHttp.getISP()
                         .then(data => {
-                          this.objISP = data;
-                          // console.log('get IP data: ');
-                          // console.log(data);
-                          if (this.objISP
-                            && this.objISP.processedString
-                            && this.objISP.rawIspInfo
-                            && this.objISP.server.distance
-                            ) {
-                              //ghi ket qua len form   
-                              this.objISP.server.distance = '(' + this.objISP.server.distance + "km)"
-                              runNextTest();
-                            }
-
+                          this.objISP = data; //ghi ket qua duoi dong ho do
+                          runNextTest();
                           })
                           .catch(err => {
-                            // console.log('Get IP error: ');
-                            // console.log(err);
                             runNextTest();
                           });
                   } 
@@ -205,7 +188,7 @@ export class HomePage {
                         return; 
                     }
                     
-                    this.apiHttp.multiDownload()
+                    this.apiHttp.download()
                       .then(result => {
                         // console.log('Download Data: ');
                         // console.log(result);
@@ -224,7 +207,7 @@ export class HomePage {
                         runNextTest(); 
                         return; 
                     }
-                    this.apiHttp.multiUpload()
+                    this.apiHttp.upload()
                       .then(result => {
                         // console.log('Upload Data: ');
                         // console.log(result);
@@ -239,6 +222,9 @@ export class HomePage {
             break;
         default: nextIndex++;
       }
+
+      if (!command) this.clearRuning();
+
     }.bind(this) //thuc hien gan this nay vao moi goi lenh duoc
 
     runNextTest();

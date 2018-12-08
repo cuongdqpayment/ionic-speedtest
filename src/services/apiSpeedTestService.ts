@@ -111,172 +111,6 @@ export class ApiSpeedTestService {
         }
         clearInterval(interval); //xoa luong thoi gian de chay cua no
     }
-    ///////
-
-    //cac ham speedtest
-    //1. Lay dia chi IP
-    getISP() {
-
-        progress = 0;
-        contermet = '...';
-        var startT = new Date().getTime(); // timestamp when test was started
-        var durationGetIpInSecond = 10;
-
-        this.postCommand("init", "ip");
-
-        interval = setInterval(function () {
-            //console.log('gui thong bao tien trinh: ' + totLoaded);
-            var passTime = new Date().getTime() - startT;
-            progress = passTime / (durationGetIpInSecond * 1000);
-
-            this.postCommand("progress", "ip", { progress: progress, contermet: contermet });
-
-            //qua trinh = thoi gian troi qua chia cho thoi gian du dinh chay thu
-        }.bind(this), 200); //cu 200ms thi thong bao ket qua cho contermet
-
-        return this.httpClient.get(
-            speedtestServer.url + speedtestServer.getip + this.url_sep(speedtestServer.getip) + "r=" + Math.random()
-        )
-            .toPromise()
-            .then(data => {
-
-                clearInterval(interval);//reset interval
-
-                let d;
-                d = data;
-                d.dlProgress = 1;
-                d.dlStatus = progress * 100;
-
-                this.postCommand("finish", "ip", {
-                    ip: d.processedString + ' - ' + d.rawIspInfo.org
-                        + d.rawIspInfo.city + d.rawIspInfo.region
-                        + d.rawIspInfo.country
-                    , server: d.server.ip + ' - ' + d.server.org
-                        + d.server.city + d.server.region
-                        + d.server.country
-                    , duration: progress * durationGetIpInSecond
-                });
-
-                return data;
-            })
-    }
-
-    //2. Test dowload
-    /**
-     * 10 thread x 20 step
-     */
-    multiDownload() {
-        totLoaded = 0.0;
-        progress = 0;
-        contermet = '...';
-        xhr = []; //bat dau tao multithread
-        var maxThread = 10; //so luong chay 10 thread
-        var maxStep = 20; //moi luong chay qua 20 step
-        var durationTestInSecond = 15 //so giay chay test thu
-        var maxTime_ms = (durationTestInSecond / 2) * 1000; //thoi gian thu 10 s hoac 20 buoc
-
-        var delayThread = 300;
-        //var oneThreadFuntion = this.downloadOne; //gan ham de chay download
-
-        var overheadCompensationFactor = 1.06; //can be changed to compensatie for transport overhead. (see doc.md for some other values)
-        var useMebibits: false;
-
-        var graceTimeDone = false; //bo thoi gian parse TCP de tinh toc do cho chinh xac 
-        var time_dlGraceTime = 1.5 //time to wait in seconds before actually measuring dl speed (wait for TCP window to increase)
-        var startT = new Date().getTime(); // timestamp when test was started
-
-        this.postCommand("init", "download");
-
-        interval = setInterval(function () {
-
-            //console.log('gui thong bao tien trinh: ' + totLoaded);
-            var passTime = new Date().getTime() - startT;
-            if (graceTimeDone) progress = passTime / (durationTestInSecond * 1000);
-            //reset thoi gian bat dau tinh toan toc doc
-            if (!graceTimeDone) {
-                if (passTime > 1000 * time_dlGraceTime) {
-                    if (totLoaded > 0) { // if the connection is so slow that we didn't get a single chunk yet, do not reset
-                        startT = new Date().getTime(); //bat dau tinh thoi gian download
-                        totLoaded = 0.0;               //reset bien lai
-                    }
-                    graceTimeDone = true;
-                }
-            } else {
-                var speed = totLoaded / (passTime / 1000.0)
-                contermet = ((speed * 8 * overheadCompensationFactor) / (useMebibits ? 1048576 : 1000000)).toFixed(2) // speed is multiplied by 8 to go from bytes to bits, overhead compensation is applied, then everything is divided by 1048576 or 1000000 to go to megabits/mebibits
-
-                this.postCommand("progress", "download", { progress: progress, contermet: contermet });
-
-                if (progress >= 1) {
-                    console.log('SLOW NETWORK for Download!');
-                    this.clearRequests();
-                }
-            }
-
-            //qua trinh = thoi gian troi qua chia cho thoi gian du dinh chay thu
-        }.bind(this), 200); //cu 200ms thi thong bao ket qua cho contermet
-
-        return new Promise((resolve, reject) => {
-
-            startT = new Date().getTime(); // timestamp when test was started
-
-            var testStream = function (i, delay, step, doneThread) {
-                //chay 1 lan delay
-                setTimeout(function () {
-                    let timeout = new Date().getTime() - startT;
-
-                    //console.log("test thread: " + i + ", step: " + step + ', timeout: ' + timeout);
-
-                    this.downloadOne(i, step) //tien trinh nay chay rat cham neu mang cham
-                        .then(total => {
-                            /* console.log("A Step in a Thread: " + i + " finish Total loaded:");
-                            console.log(total); */
-                            if (timeout < maxTime_ms && step < maxStep) { //dieu kien nao den truoc 
-                                //console.log("progress " + step);
-                                //resolve('progress ' + i);
-                                try { xhr[i].unsubcriber() } catch (e) { } // reset the stream data to empty ram
-                                testStream(i, 0, step + 1, doneThread); //goi tiep bien a
-                            } else {
-                                //console.log("finish IN thread: " + i);
-                                //console.log(doneThread);
-                                if (doneThread) doneThread(i) //bao xong thread so i
-                                //resolve(total); //ket thuc thread voi n step mang tong so tra ve
-                            }
-                        })
-                        .catch(err => {
-                            //truong hop da reset ket qua gui ve sau thi
-                            //console.log(err);
-                            if (doneThread) doneThread(i)
-                        }); //goi ham dowload thread i va step 
-
-                }.bind(this), 1 + delay)
-            }.bind(this);
-
-            var countThreadDone = 0;
-            var callBackThread = function (threadId) {
-                countThreadDone++;
-                if (countThreadDone == maxThread) {
-                    resolve(totLoaded); //tra ve tong so luong bit nhan duoc
-                }
-            }
-
-            for (var j = 0; j < maxThread; j++) {
-                //console.log("Thread " + j);
-                testStream(j, j * delayThread, 1, callBackThread); //chay tu step 1
-            }
-        })
-            .then(data => {
-                //reset interval clear no di
-                clearInterval(interval);
-                //Tra ve chu XONG!
-                this.postCommand("progress", "download", { progress: 1, contermet: contermet });
-
-                this.postCommand("finish", "download", { speed: contermet });
-
-                return 'DOWNLOAD STOP!'; //tra ve cho phien goi no
-
-            });
-    }
 
     downloadOne(i, step) {
         return new Promise((resolve, reject) => {
@@ -394,9 +228,232 @@ export class ApiSpeedTestService {
 
         })
     }
+    /**
+     * 
+     * @param i mot tien trinh ping goi lenh
+     */
+    pingOne(i) {
+        return new Promise((resolve, reject) => {
+
+            var req = new HttpRequest('GET',
+                speedtestServer.url + speedtestServer.ping + this.url_sep(speedtestServer.ping) + 'r=' + Math.random(), 
+                //them chuoi random de khong bi cach
+                { reportProgress: true });
+
+            xhr[i] = this.httpClient.request(req)
+                .subscribe((event: HttpEvent<any>) => {
+                    switch (event.type) {
+                        case HttpEventType.Sent:
+                            break;
+                        case HttpEventType.ResponseHeader:
+                            break;
+                        case HttpEventType.UploadProgress:
+                            break;
+                        case HttpEventType.DownloadProgress:
+                            break;
+                        case HttpEventType.Response:
+                            resolve(event); //da xong mot step tra ve event.body nhe
+                            break;
+                        default:
+                            //console.log(event); //tra ve {type:0}
+                            break;
+                    }
+                }, err => {
+                    console.log(err);
+                    reject(err);
+                });
+
+            xhr[i].cancel = function () {
+                reject({ code: 403, message: 'Too Slow network!' })
+            }
+
+        })
+    }
+    //1. get-IP
+
+    //cac ham speedtest
+    //1. Lay dia chi IP
+    getISP() {
+
+        progress = 0;
+        contermet = '...';
+        var startT = new Date().getTime(); // timestamp when test was started
+        var durationGetIpInSecond = 10;
+
+        this.postCommand("init", "ip");
+
+        interval = setInterval(function () {
+            //console.log('gui thong bao tien trinh: ' + totLoaded);
+            var passTime = new Date().getTime() - startT;
+            progress = passTime / (durationGetIpInSecond * 1000);
+
+            this.postCommand("progress", "ip", { progress: progress, contermet: contermet });
+
+            //qua trinh = thoi gian troi qua chia cho thoi gian du dinh chay thu
+        }.bind(this), 200); //cu 200ms thi thong bao ket qua cho contermet
+
+        return this.httpClient.get(
+            speedtestServer.url + speedtestServer.getip + this.url_sep(speedtestServer.getip) + "r=" + Math.random()
+        )
+            .toPromise()
+            .then(data => {
+                
+                /**
+                 * 
+dlProgress: 1
+dlStatus: 12.030000000000001
+processedString: "14.167.2.166 - AS45899 VNPT Corp, VN (580 km)"
+rawIspInfo:
+            city: ""
+            country: "VN"
+            hostname: "static.vnpt.vn"
+            ip: "14.167.2.166"
+            loc: "16.0000,106.0000"
+            org: "AS45899 VNPT Corp"
+            region: ""
+                 */
+                //console.log(data);
+
+                clearInterval(interval);//reset interval
+
+                let d;
+                d = data;
+                d.dlProgress = 1;
+                d.dlStatus = progress * 100;
+
+                this.postCommand("finish", "ip", {
+                    ip: d.processedString + (d.rawIspInfo)?(' - ' + d.rawIspInfo.org
+                                            + d.rawIspInfo.city + d.rawIspInfo.region
+                                            + d.rawIspInfo.country):''
+                    , server: (d.server)?(d.server.ip + ' - ' + d.server.org
+                                            + d.server.city + d.server.region
+                                            + d.server.country):''
+                    , duration: progress * durationGetIpInSecond
+                });
+
+                return data;
+            })
+    }
+
+    //2. Test dowload
+    /**
+     * 10 thread x 20 step
+     */
+    download() {
+        totLoaded = 0.0;
+        progress = 0;
+        contermet = '...';
+        xhr = []; //bat dau tao multithread
+        var maxThread = 10; //so luong chay 10 thread
+        var maxStep = 20; //moi luong chay qua 20 step
+        var durationTestInSecond = 15 //so giay chay test thu
+        var maxTime_ms = (durationTestInSecond / 2) * 1000; //thoi gian thu 10 s hoac 20 buoc
+
+        var delayThread = 300;
+        //var oneThreadFuntion = this.downloadOne; //gan ham de chay download
+
+        var overheadCompensationFactor = 1.06; //can be changed to compensatie for transport overhead. (see doc.md for some other values)
+        var useMebibits: false;
+
+        var graceTimeDone = false; //bo thoi gian parse TCP de tinh toc do cho chinh xac 
+        var time_dlGraceTime = 1.5 //time to wait in seconds before actually measuring dl speed (wait for TCP window to increase)
+        var startT = new Date().getTime(); // timestamp when test was started
+
+        this.postCommand("init", "download");
+
+        interval = setInterval(function () {
+
+            //console.log('gui thong bao tien trinh: ' + totLoaded);
+            var passTime = new Date().getTime() - startT;
+            if (graceTimeDone) progress = passTime / (durationTestInSecond * 1000);
+            //reset thoi gian bat dau tinh toan toc doc
+            if (!graceTimeDone) {
+                if (passTime > 1000 * time_dlGraceTime) {
+                    if (totLoaded > 0) { // if the connection is so slow that we didn't get a single chunk yet, do not reset
+                        startT = new Date().getTime(); //bat dau tinh thoi gian download
+                        totLoaded = 0.0;               //reset bien lai
+                    }
+                    graceTimeDone = true;
+                }
+            } else {
+                var speed = totLoaded / (passTime / 1000.0)
+                contermet = ((speed * 8 * overheadCompensationFactor) / (useMebibits ? 1048576 : 1000000)).toFixed(2) // speed is multiplied by 8 to go from bytes to bits, overhead compensation is applied, then everything is divided by 1048576 or 1000000 to go to megabits/mebibits
+
+                this.postCommand("progress", "download", { progress: progress, contermet: contermet });
+
+                if (progress >= 1) {
+                    console.log('SLOW NETWORK for Download!');
+                    this.clearRequests();
+                }
+            }
+
+            //qua trinh = thoi gian troi qua chia cho thoi gian du dinh chay thu
+        }.bind(this), 200); //cu 200ms thi thong bao ket qua cho contermet
+
+        return new Promise((resolve, reject) => {
+
+            startT = new Date().getTime(); // timestamp when test was started
+
+            var testStream = function (i, delay, step, doneThread) {
+                //chay 1 lan delay
+                setTimeout(function () {
+                    let timeout = new Date().getTime() - startT;
+
+                    //console.log("test thread: " + i + ", step: " + step + ', timeout: ' + timeout);
+
+                    this.downloadOne(i, step) //tien trinh nay chay rat cham neu mang cham
+                        .then(total => {
+                            /* console.log("A Step in a Thread: " + i + " finish Total loaded:");
+                            console.log(total); */
+                            if (timeout < maxTime_ms && step < maxStep) { //dieu kien nao den truoc 
+                                //console.log("progress " + step);
+                                //resolve('progress ' + i);
+                                try { xhr[i].unsubcriber() } catch (e) { } // reset the stream data to empty ram
+                                testStream(i, 0, step + 1, doneThread); //goi tiep bien a
+                            } else {
+                                //console.log("finish IN thread: " + i);
+                                //console.log(doneThread);
+                                if (doneThread) doneThread(i) //bao xong thread so i
+                                //resolve(total); //ket thuc thread voi n step mang tong so tra ve
+                            }
+                        })
+                        .catch(err => {
+                            //truong hop da reset ket qua gui ve sau thi
+                            //console.log(err);
+                            if (doneThread) doneThread(i)
+                        }); //goi ham dowload thread i va step 
+
+                }.bind(this), 1 + delay)
+            }.bind(this);
+
+            var countThreadDone = 0;
+            var callBackThread = function (threadId) {
+                countThreadDone++;
+                if (countThreadDone == maxThread) {
+                    resolve(totLoaded); //tra ve tong so luong bit nhan duoc
+                }
+            }
+
+            for (var j = 0; j < maxThread; j++) {
+                //console.log("Thread " + j);
+                testStream(j, j * delayThread, 1, callBackThread); //chay tu step 1
+            }
+        })
+            .then(data => {
+                //reset interval clear no di
+                clearInterval(interval);
+                //Tra ve chu XONG!
+                this.postCommand("progress", "download", { progress: 1, contermet: contermet });
+
+                this.postCommand("finish", "download", { speed: contermet });
+
+                return 'DOWNLOAD STOP!'; //tra ve cho phien goi no
+
+            });
+    }
 
     //3. test upload
-    multiUpload() {
+    upload() {
         totLoaded = 0.0;
         progress = 0;
         contermet = '...';
@@ -454,10 +511,10 @@ export class ApiSpeedTestService {
                 //chay 1 lan delay
                 setTimeout(function () {
                     let timeout = new Date().getTime() - startT;
-                    console.log("test thread: " + i + ", step: " + step + ', timeout: ' + timeout);
+                    //console.log("test thread: " + i + ", step: " + step + ', timeout: ' + timeout);
                     this.uploadOne(i, step) //tien trinh nay chay rat cham neu mang cham
                         .then(total => {
-                            console.log("A Step in a Thread: " + i + " finish Total loaded:");
+                            //console.log("A Step in a Thread: " + i + " finish Total loaded:");
                             if (timeout < maxTime_ms && step < maxStep) { //dieu kien nao den truoc 
                                 try { xhr[i].unsubcriber() } catch (e) { } // reset the stream data to empty ram
                                 testStream(i, 0, step + 1, doneThread); //goi tiep bien a
@@ -491,48 +548,6 @@ export class ApiSpeedTestService {
                 this.postCommand("finish", "upload", { speed: contermet });
                 return 'UPLOAD STOP!'; //tra ve cho phien goi no
             });
-    }
-
-    /**
-     * 
-     * @param i mot tien trinh ping goi lenh
-     */
-    pingOne(i) {
-        return new Promise((resolve, reject) => {
-
-            var req = new HttpRequest('GET',
-                speedtestServer.url + speedtestServer.ping + this.url_sep(speedtestServer.ping) + 'r=' + Math.random(), 
-                //them chuoi random de khong bi cach
-                { reportProgress: true });
-
-            xhr[i] = this.httpClient.request(req)
-                .subscribe((event: HttpEvent<any>) => {
-                    switch (event.type) {
-                        case HttpEventType.Sent:
-                            break;
-                        case HttpEventType.ResponseHeader:
-                            break;
-                        case HttpEventType.UploadProgress:
-                            break;
-                        case HttpEventType.DownloadProgress:
-                            break;
-                        case HttpEventType.Response:
-                            resolve(event); //da xong mot step tra ve event.body nhe
-                            break;
-                        default:
-                            //console.log(event); //tra ve {type:0}
-                            break;
-                    }
-                }, err => {
-                    console.log(err);
-                    reject(err);
-                });
-
-            xhr[i].cancel = function () {
-                reject({ code: 403, message: 'Too Slow network!' })
-            }
-
-        })
     }
 
     //3. ping and jitter
