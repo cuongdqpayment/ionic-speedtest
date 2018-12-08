@@ -1,7 +1,7 @@
 <ion-header>
   <ion-navbar>
     <ion-title>
-      HOME
+      SPEED TEST
     </ion-title>
   </ion-navbar>
 </ion-header>
@@ -27,64 +27,66 @@
           <div id="startStopBtn" (click)="startStop()"></div>
         </ion-card>
       </ion-col>
+      <ion-col col-24 col-xl-18 col-lg-18 *ngIf="results.length > 0">
+        <ion-card class="card-meter" >
+          <div id="resultBtn"></div>
+          <ion-grid>
+            <ion-row>
+              <ion-col col-1>
+                Id
+              </ion-col>
+              <ion-col col-3>
+                Time
+              </ion-col>
+              <ion-col col-4>
+                YourIp
+              </ion-col>
+              <ion-col col-4>
+                ServerIP
+              </ion-col>
+              <ion-col col-3>
+                Jitter
+              </ion-col>
+              <ion-col col-3>
+                Ping
+              </ion-col>
+              <ion-col col-3>
+                Download
+              </ion-col>
+              <ion-col col-3>
+                Upload
+              </ion-col>
+            </ion-row>
+      
+            <ion-row *ngFor="let result of results">
+                <ion-col col-1>
+                  {{result?.id}}
+                </ion-col>
+                <ion-col col-3>
+                    {{result?.time}}
+                </ion-col>
+                <ion-col col-4>
+                    {{result?.ip}}
+                </ion-col>
+                <ion-col col-4>
+                    {{result?.server}}
+                </ion-col>
+                <ion-col col-3>
+                    {{result?.jitter}}
+                </ion-col>
+                <ion-col col-3>
+                    {{result?.ping}}
+                </ion-col>
+                <ion-col col-3>
+                    {{result?.download}}
+                </ion-col>
+                <ion-col col-3>
+                    {{result?.upload}}
+                </ion-col>
+              </ion-row>
+          </ion-grid>
+        </ion-card>
+      </ion-col>
     </ion-row>
   </ion-grid>
-  <ion-card class="card-meter">
-    <div id="resultBtn"></div>
-    <ion-grid>
-      <ion-row>
-        <ion-col col-1>
-          Id
-        </ion-col>
-        <ion-col col-3>
-          Time
-        </ion-col>
-        <ion-col col-4>
-          YourIp
-        </ion-col>
-        <ion-col col-4>
-          ServerIP
-        </ion-col>
-        <ion-col col-3>
-          Jitter
-        </ion-col>
-        <ion-col col-3>
-          Ping
-        </ion-col>
-        <ion-col col-3>
-          Download
-        </ion-col>
-        <ion-col col-3>
-          Upload
-        </ion-col>
-      </ion-row>
-
-      <ion-row *ngFor="let result of results">
-          <ion-col col-1>
-            {{result?.id}}
-          </ion-col>
-          <ion-col col-3>
-              {{result?.time}}
-          </ion-col>
-          <ion-col col-4>
-              {{result?.ip}}
-          </ion-col>
-          <ion-col col-4>
-              {{result?.server}}
-          </ion-col>
-          <ion-col col-3>
-              {{result?.jitter}}
-          </ion-col>
-          <ion-col col-3>
-              {{result?.ping}}
-          </ion-col>
-          <ion-col col-3>
-              {{result?.download}}
-          </ion-col>
-          <ion-col col-3>
-              {{result?.upload}}
-          </ion-col>
-        </ion-row>
-    </ion-grid>
-  </ion-card>
 </ion-content>

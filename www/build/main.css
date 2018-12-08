@@ -28505,7 +28505,7 @@ page-home #resultBtn.running {
 }
 
 page-home #resultBtn:before {
-  content: "Results";
+  content: "Share to ...";
 }
 
 page-home #resultBtn.running:before {
@@ -28520,6 +28520,7 @@ page-home .card-meter {
   color: #202020;
   text-align: center;
   font-family: "Roboto",sans-serif;
+  margin-bottom: 1em;
 }
 
 page-home div.graphArea {

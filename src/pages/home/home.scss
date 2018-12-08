@@ -65,13 +65,12 @@ page-home {
         color:#FFFFFF;
     }
     #resultBtn:before{
-        content:"Results";
+        content:"Share to ...";
     }
     #resultBtn.running:before{
         content:"Sharing";
     }
-
-
+    
     .card-meter{
         //html, body
         border:none; padding:0; margin:0;
@@ -82,7 +81,7 @@ page-home {
         font-family:"Roboto",sans-serif;
         //test
         //margin-top:2em; //cach le tren
-        //margin-bottom:12em; //cach le duoi
+        margin-bottom:1em; //cach le duoi
     }
 
     div.graphArea{

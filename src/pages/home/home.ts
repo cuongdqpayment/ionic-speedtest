@@ -1,22 +1,11 @@
-//vung import ts
 import { Component } from '@angular/core';
 import { NavController } from 'ionic-angular';
 
 import { ApiGraphService } from '../../services/apiMeterGraphService'
 import { ApiSpeedTestService } from '../../services/apiSpeedTestService'
 
-//khai bao bien toan cuc cua javascript
-var meterBk = "#E0E0E0";
-var dlColor = "#6060AA",
-  ulColor = "#309030",
-  pingColor = "#AA6060",
-  jitColor = "#AA6060";
-var progColor = "#EEEEEE";
-
 var worker = null;
-var data = null;
-//var interval = null;
-var isRuning:boolean = false;
+var isRuning: boolean = false;
 var idx = 0;
 
 //khai bao thanh phan cua trang nay
@@ -28,44 +17,29 @@ var idx = 0;
 //class dieu khien rieng cua no
 export class HomePage {
 
-  public objISP:any;
-  public objMeter={
-    graphName:'Download',
-    unit:'Mbps',
-  }
-  public objResult={
-    id: 1,
-    time:'...',
-    ip:'...',
-    server:'...',
-    jitter:'...',
-    ping:'...',
-    download:'...',
-    upload:'...',
+  public objISP: any;
+
+  public objMeter = {
+    graphName: 'Download',
+    unit: 'Mbps',
   }
 
-  public results=[];
+  public results = [];
 
   constructor(public navCtrl: NavController,
-              private apiGraph: ApiGraphService,
-              private apiHttp: ApiSpeedTestService) {
+    private apiGraph: ApiGraphService,
+    private apiHttp: ApiSpeedTestService) { }
 
-  }
+  ngOnInit() { this.apiGraph.initUI(); }
 
-  ngOnInit() {
-    this.apiGraph.initUI(meterBk, dlColor, progColor);
-  }
-
-  clearRuning(){
+  clearRuning() {
     isRuning = false;
     this.apiGraph.I("startStopBtn").className = "";
-    //clearInterval(interval);
     worker = null;
-    data = null;
   }
 
-  startStop(){
-    isRuning = !isRuning; 
+  startStop() {
+    isRuning = !isRuning;
     if (!isRuning) {
       this.apiGraph.I("startStopBtn").className = "";
       //dung test
@@ -74,150 +48,193 @@ export class HomePage {
       //bat dau chay
       worker = new Worker('worker-message.js');
       this.apiHttp.setWorker(worker);
-      //tao canvas đồng hồ html5
-      this.apiGraph.initUI(meterBk, dlColor, progColor);
-      //thuc thi goi lenh download nhe
-      this.apiHttp.getISP()
-      .then(data=>{
-        this.objISP = data;
-        //console.log(data);
-        if (this.objISP
-            &&this.objISP.processedString
-            &&this.objISP.rawIspInfo
-            &&this.objISP.server.distance
-            ){
-            //ghi ket qua len form   
-            this.objISP.server.distance = '('+ this.objISP.server.distance + "km)"
-            
-        }  
-        if (this.objISP&&this.objISP.server){
-          //neu server tim thay thi test nhe
-          this.apiHttp.multiDownload()
-          .then(result=>{
-            console.log('Thuc hien xong multiDownload: ');
-            console.log(result);
-          })
-          .catch(err=>{
-            console.log(err);
-          })
-        }
-      })
-      .catch(err=>{
-        console.log(err);
-      });
 
-      worker.onmessage = (e)=>{this.onMessageProcess(e)} 
-
+      //Thuc hien chu trinh speedTest: getIP, delay, ping, delay, dowload, delay, upload
+      this.runTestLoop("_I_P_D_U"); //Get IP, Ping, Download, Upload, Share server, 
+        
+      worker.onmessage = (e) => { this.onMessageProcess(e) }
+        
     }
   }
 
-  onMessageProcess(e){
-    let workerReplyData = JSON.parse(e.data);
-    
+  /**
+   *   
+   * @param e 
+   */
+  onMessageProcess(e) {
+    //doi tuong khong phai chuoi nen khong can phai parse
+    let objCommand = e.data;
     //cap nhap nhan
-    if ( workerReplyData
-      && workerReplyData.command==='report'
-      && !workerReplyData.status //trang thai
-      ){
-       this.initUI(workerReplyData.work);
-    }
-    
-    //cap nhap tien trinh 
-    if (workerReplyData
-      &&workerReplyData.command==='status'
-      &&workerReplyData.results){
-      data = workerReplyData.results;
-      /* if (data.dlProgress >= 1 ){
-        this.clearRuning();
-      } */
-      this.apiGraph.updateUI(data, meterBk, dlColor, progColor);
-    }
-
-    //cap nhap ket qua
-    if ( workerReplyData
-      && workerReplyData.command==='report'
-      && workerReplyData.work //co cong viec gi
-      && workerReplyData.status //hoan thanh
-      && workerReplyData.data //du lieu
-      ){
-       //console.log(workerReplyData); //in ket qua cong viec hoan thanh
-       //this.clearRuning(); //xac dinh cong viec hoan thanh
-       //cap nhap thong tin len web
-       this.updateUI(workerReplyData.work, workerReplyData.data);
-    }
-
-  }
-
-  initUI(work){
-    if (work==='get-ip'){
-      this.objMeter={
-        graphName:'Checking your IP',
-        unit:'ms',
-      }
-      this.apiGraph.initUI(progColor, pingColor,progColor);
-    }
-    else if (work==='download'){
-      this.objMeter={
-        graphName:'Download',
-        unit:'Mbps',
-      }
-      this.apiGraph.initUI(progColor, dlColor,progColor);
-    }
-    else if (work==='upload'){
-      this.objMeter={
-        graphName:'Upload',
-        unit:'Mbps',
-      }
-      this.apiGraph.initUI(progColor, ulColor,progColor);
-    }
-    else if (work==='Ping'){
-      this.objMeter={
-        graphName:'Ping',
-        unit:'ms',
-      }
-      this.apiGraph.initUI(progColor, pingColor,progColor);
-    }
-    else if (work==='jitter'){
-      this.objMeter={
-        graphName:'Jitter',
-        unit:'ms',
-      }
-      this.apiGraph.initUI(progColor, jitColor,progColor);
+    if (objCommand.command === 'init') {
+      this.initUI(objCommand.data);
+    } else if (objCommand.command === 'progress') {
+      this.apiGraph.updateUI({ state: 1, contermet: objCommand.data.contermet, progress: objCommand.data.progress });
+    } else if (objCommand.command === 'finish') {
+      this.updateResults(objCommand.work, objCommand.data);
     }
   }
 
+  initUI(formWork) {
+    //gan ten cho thang do
+    this.objMeter = {
+      graphName: formWork.graphName,
+      unit: formWork.unit,
+    }
+    //gan mau cho thang do
+    this.apiGraph.initUI({
+      statusColor: formWork.statusColor,
+      backgroundColor: formWork.backgroundColor,
+      progressColor: formWork.progressColor
+    });
+  }
 
-  updateUI(work,d){
+
+  /**
+   * 
+   * @param work 
+   * @param d 
+   *            | {ip: string, server: string, duration: number} //for work ip 
+                | {ping: number, jitter: number} //for work ping
+                | {speed: number} //for work dowload|upload
+   */
+  updateResults(work, d) {
     //co cong viec va ket qua hoan thanh
-    if (work==='get-ip'){
+    if (work === 'ip') {
+      let result;
+      result = {};
       //cong viec hoan thanh lay ip
       let dt = new Date();
-      let timeString = dt.toISOString().replace(/T/, ' ').replace(/\..+/, '') 
-                      + " GMT"
-                      + dt.getTimezoneOffset()/60
-                      + " Local: "
-                      + dt.toLocaleTimeString();
-                      
-      //cap nhap ket qua ip
-      let result = {
-        id : ++idx,
-        time: timeString ,
-        ip : d.processedString + ' - ' + d.rawIspInfo.org
-                            + d.rawIspInfo.city + d.rawIspInfo.region
-                            + d.rawIspInfo.country,
-        server : d.server.ip + ' - ' + d.server.org
-                            + d.server.city + d.server.region
-                            + d.server.country
-      }
+      result.id = ++idx;
+      result.time = dt.toISOString().replace(/T/, ' ').replace(/\..+/, '')
+        + " GMT"
+        + dt.getTimezoneOffset() / 60
+        + " Local: "
+        + dt.toLocaleTimeString();
+      result.ip = d.ip;
+      result.server = d.server;
       this.results.push(result);
-
-    }else if (work=='download'){
+    } else if (work == 'download') {
       let result = this.results.pop();
-      result.download = d.dlStatus;
+      result.download = d.speed;
       this.results.push(result);
-      this.clearRuning(); //da xong cac buoc
+    } else if (work == 'upload') {
+      let result = this.results.pop();
+      result.upload = d.speed;
+      this.results.push(result);
+    } else if (work == 'ping') {
+      let result = this.results.pop();
+      result.ping = d.ping;
+      result.jitter = d.jitter;
+      this.results.push(result);
     }
-
   }
 
+
+  /**
+   * 
+   * @param test_order 
+   */
+  runTestLoop(test_order:'_I_P_D_U'){
+    const delay = 1000;
+    var nextIndex = 0;
+    var runNextTest = function () {
+      let command = test_order.charAt(nextIndex);
+      
+      if (!command) this.clearRuning(); //khong co lenh nao nua thi thoat
+
+      switch (command) {
+        case '_': { nextIndex++; setTimeout(runNextTest, delay); } break;
+        case 'I': { 
+                    nextIndex++; 
+                    if (!isRuning) { 
+                        runNextTest(); 
+                        return; 
+                    }
+                    this.apiHttp.getISP()
+                        .then(data => {
+                          this.objISP = data;
+                          // console.log('get IP data: ');
+                          // console.log(data);
+                          if (this.objISP
+                            && this.objISP.processedString
+                            && this.objISP.rawIspInfo
+                            && this.objISP.server.distance
+                            ) {
+                              //ghi ket qua len form   
+                              this.objISP.server.distance = '(' + this.objISP.server.distance + "km)"
+                              runNextTest();
+                            }
+
+                          })
+                          .catch(err => {
+                            // console.log('Get IP error: ');
+                            // console.log(err);
+                            runNextTest();
+                          });
+                  } 
+            break;
+        case 'P': { 
+                    nextIndex++; 
+                    if (!isRuning) { 
+                        runNextTest(); 
+                        return; 
+                    }
+                    this.apiHttp.ping()//.multiDownload()
+                      .then(result => {
+                        // console.log('Ping Data: ');
+                        // console.log(result);
+                        runNextTest();
+                      })
+                      .catch(err => {
+                        // console.log('Ping Error: ');
+                        // console.log(err);
+                        runNextTest();
+                      });
+                  } 
+            break;
+        case 'D': { 
+                    nextIndex++; 
+                    if (!isRuning) { 
+                        runNextTest(); 
+                        return; 
+                    }
+                    
+                    this.apiHttp.multiDownload()
+                      .then(result => {
+                        // console.log('Download Data: ');
+                        // console.log(result);
+                        runNextTest();
+                      })
+                      .catch(err => {
+                        // console.log('Download Error: ');
+                        // console.log(err);
+                        runNextTest();
+                      });
+                  } 
+            break;
+        case 'U': { 
+                    nextIndex++; 
+                    if (!isRuning) { 
+                        runNextTest(); 
+                        return; 
+                    }
+                    this.apiHttp.multiUpload()
+                      .then(result => {
+                        // console.log('Upload Data: ');
+                        // console.log(result);
+                        runNextTest();
+                      })
+                      .catch(err => {
+                        // console.log('Upload Error: ');
+                        // console.log(err);
+                        runNextTest();
+                      });
+                  } 
+            break;
+        default: nextIndex++;
+      }
+    }.bind(this) //thuc hien gan this nay vao moi goi lenh duoc
+
+    runNextTest();
+  }
 }
