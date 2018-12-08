@@ -2,22 +2,23 @@
 import { HttpClient, HttpRequest, HttpEvent, HttpEventType, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 
-/* var speedtestServer = {
+//ung dung cuongdq-upload post any
+var speedtestServer = {
     url: 'https://cuongdq-speedtest.herokuapp.com',
     getip : '/speedtest/get-ip',
     ping: '/speedtest/empty',
     download: '/speedtest/download',
     upload: '/speedtest/empty',
-} */
-//http://10.151.54.84:9235
-//http://210.245.119.136:9235
-var speedtestServer = {
-    url: 'http://210.245.119.136:9235',
+}
+
+/* var speedtestServer = {
+    //url: 'http://10.151.54.84:9235', //trong mang noi bo
+    url: 'http://210.245.119.136:9235', //ngoai internet
     getip : '/getIP.php?isp=true&distance=km',
     ping: '/empty.php',
     download: '/garbage.php?ckSize=20',
     upload: '/empty.php',
-}
+} */
 var contermet;
 var xhr = null; //tao da luong de truy cap server
 var interval = null;
@@ -312,7 +313,7 @@ rawIspInfo:
             org: "AS45899 VNPT Corp"
             region: ""
                  */
-                //console.log(data);
+                console.log(data);
 
                 clearInterval(interval);//reset interval
 
@@ -321,13 +322,12 @@ rawIspInfo:
                 d.dlProgress = 1;
                 d.dlStatus = progress * 100;
 
-                this.postCommand("finish", "ip", {
-                    ip: d.processedString + (d.rawIspInfo)?(' - ' + d.rawIspInfo.org
-                                            + d.rawIspInfo.city + d.rawIspInfo.region
-                                            + d.rawIspInfo.country):''
-                    , server: (d.server)?(d.server.ip + ' - ' + d.server.org
+                this.postCommand("finish", "ip", 
+                    {
+                    ip: d.processedString
+                    , server: d.server?d.server.ip + ' - ' + d.server.org
                                             + d.server.city + d.server.region
-                                            + d.server.country):''
+                                            + d.server.country:''
                     , duration: progress * durationGetIpInSecond
                 });
 

@@ -276,10 +276,11 @@ var HomePage = /** @class */ (function () {
         })
         //class dieu khien rieng cua no
         ,
-        __metadata("design:paramtypes", [typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["d" /* NavController */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["d" /* NavController */]) === "function" && _a || Object, typeof (_b = typeof __WEBPACK_IMPORTED_MODULE_2__services_apiMeterGraphService__["a" /* ApiGraphService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_2__services_apiMeterGraphService__["a" /* ApiGraphService */]) === "function" && _b || Object, typeof (_c = typeof __WEBPACK_IMPORTED_MODULE_3__services_apiSpeedTestService__["a" /* ApiSpeedTestService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_3__services_apiSpeedTestService__["a" /* ApiSpeedTestService */]) === "function" && _c || Object])
+        __metadata("design:paramtypes", [__WEBPACK_IMPORTED_MODULE_1_ionic_angular__["d" /* NavController */],
+            __WEBPACK_IMPORTED_MODULE_2__services_apiMeterGraphService__["a" /* ApiGraphService */],
+            __WEBPACK_IMPORTED_MODULE_3__services_apiSpeedTestService__["a" /* ApiSpeedTestService */]])
     ], HomePage);
     return HomePage;
-    var _a, _b, _c;
 }());
 
 //# sourceMappingURL=home.js.map
@@ -387,22 +388,22 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 };
 
 
-/* var speedtestServer = {
+//ung dung cuongdq-upload post any
+var speedtestServer = {
     url: 'https://cuongdq-speedtest.herokuapp.com',
-    getip : '/speedtest/get-ip',
+    getip: '/speedtest/get-ip',
     ping: '/speedtest/empty',
     download: '/speedtest/download',
     upload: '/speedtest/empty',
-} */
-//http://10.151.54.84:9235
-//http://210.245.119.136:9235
-var speedtestServer = {
-    url: 'http://210.245.119.136:9235',
-    getip: '/getIP.php?isp=true&distance=km',
+};
+/* var speedtestServer = {
+    //url: 'http://10.151.54.84:9235', //trong mang noi bo
+    url: 'http://210.245.119.136:9235', //ngoai internet
+    getip : '/getIP.php?isp=true&distance=km',
     ping: '/empty.php',
     download: '/garbage.php?ckSize=20',
     upload: '/empty.php',
-};
+} */
 var contermet;
 var xhr = null; //tao da luong de truy cap server
 var interval = null;
@@ -692,19 +693,17 @@ rawIspInfo:
         org: "AS45899 VNPT Corp"
         region: ""
              */
-            //console.log(data);
+            console.log(data);
             clearInterval(interval); //reset interval
             var d;
             d = data;
             d.dlProgress = 1;
             d.dlStatus = progress * 100;
             _this.postCommand("finish", "ip", {
-                ip: d.processedString + (d.rawIspInfo) ? (' - ' + d.rawIspInfo.org
-                    + d.rawIspInfo.city + d.rawIspInfo.region
-                    + d.rawIspInfo.country) : '',
-                server: (d.server) ? (d.server.ip + ' - ' + d.server.org
+                ip: d.processedString,
+                server: d.server ? d.server.ip + ' - ' + d.server.org
                     + d.server.city + d.server.region
-                    + d.server.country) : '',
+                    + d.server.country : '',
                 duration: progress * durationGetIpInSecond
             });
             return data;
@@ -1010,10 +1009,9 @@ rawIspInfo:
     };
     ApiSpeedTestService = __decorate([
         Object(__WEBPACK_IMPORTED_MODULE_1__angular_core__["A" /* Injectable */])(),
-        __metadata("design:paramtypes", [typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_0__angular_common_http__["a" /* HttpClient */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_0__angular_common_http__["a" /* HttpClient */]) === "function" && _a || Object])
+        __metadata("design:paramtypes", [__WEBPACK_IMPORTED_MODULE_0__angular_common_http__["a" /* HttpClient */]])
     ], ApiSpeedTestService);
     return ApiSpeedTestService;
-    var _a;
 }());
 
 //# sourceMappingURL=apiSpeedTestService.js.map
