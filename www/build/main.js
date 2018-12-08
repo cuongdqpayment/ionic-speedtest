@@ -76,6 +76,7 @@ var HomePage = /** @class */ (function () {
         isRuning = false;
         this.apiGraph.I("startStopBtn").className = "";
         worker = null;
+        this.result = null;
     };
     HomePage.prototype.startStop = function () {
         var _this = this;
@@ -90,7 +91,7 @@ var HomePage = /** @class */ (function () {
             worker = new Worker('worker-message.js');
             this.apiHttp.setWorker(worker);
             //Thuc hien chu trinh speedTest: getIP, delay, ping, delay, dowload, delay, upload
-            this.runTestLoop("_I_P_D_U"); //Get IP, Ping, Download, Upload, Share server, 
+            this.runTestLoop('_U'); //Get IP, Ping, Download, Upload, Share server, 
             worker.onmessage = function (e) { _this.onMessageProcess(e); };
         }
     };
@@ -134,37 +135,40 @@ var HomePage = /** @class */ (function () {
                   | {speed: number} //for work dowload|upload
      */
     HomePage.prototype.updateResults = function (work, d) {
+        //kiem tra phien dau tien cua no
+        if (!this.result) {
+            this.result = {}; //khoi dau mot phien test moi
+            this.result.id = idx++; //id moi khoi tao
+        }
+        else {
+            //da chay phien truoc co roi thi lay tu trong ra
+            this.result = this.results.pop();
+        }
         //co cong viec va ket qua hoan thanh
         if (work === 'ip') {
-            var result = void 0;
-            result = {};
             //cong viec hoan thanh lay ip
             var dt = new Date();
-            result.id = ++idx;
-            result.time = dt.toISOString().replace(/T/, ' ').replace(/\..+/, '')
+            this.result.time = dt.toISOString().replace(/T/, ' ').replace(/\..+/, '')
                 + " GMT"
                 + dt.getTimezoneOffset() / 60
                 + " Local: "
                 + dt.toLocaleTimeString();
-            result.ip = d.ip;
-            result.server = d.server;
-            this.results.push(result);
+            this.result.ip = d.ip;
+            this.result.server = d.server;
+            this.results.push(this.result);
         }
         else if (work == 'download') {
-            var result = this.results.pop();
-            result.download = d.speed;
-            this.results.push(result);
+            this.result.download = d.speed;
+            this.results.push(this.result);
         }
         else if (work == 'upload') {
-            var result = this.results.pop();
-            result.upload = d.speed;
-            this.results.push(result);
+            this.result.upload = d.speed;
+            this.results.push(this.result);
         }
         else if (work == 'ping') {
-            var result = this.results.pop();
-            result.ping = d.ping;
-            result.jitter = d.jitter;
-            this.results.push(result);
+            this.result.ping = d.ping;
+            this.result.jitter = d.jitter;
+            this.results.push(this.result);
         }
     };
     /**
@@ -285,11 +289,10 @@ var HomePage = /** @class */ (function () {
         })
         //class dieu khien rieng cua no
         ,
-        __metadata("design:paramtypes", [__WEBPACK_IMPORTED_MODULE_1_ionic_angular__["d" /* NavController */],
-            __WEBPACK_IMPORTED_MODULE_2__services_apiMeterGraphService__["a" /* ApiGraphService */],
-            __WEBPACK_IMPORTED_MODULE_3__services_apiSpeedTestService__["a" /* ApiSpeedTestService */]])
+        __metadata("design:paramtypes", [typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["d" /* NavController */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["d" /* NavController */]) === "function" && _a || Object, typeof (_b = typeof __WEBPACK_IMPORTED_MODULE_2__services_apiMeterGraphService__["a" /* ApiGraphService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_2__services_apiMeterGraphService__["a" /* ApiGraphService */]) === "function" && _b || Object, typeof (_c = typeof __WEBPACK_IMPORTED_MODULE_3__services_apiSpeedTestService__["a" /* ApiSpeedTestService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_3__services_apiSpeedTestService__["a" /* ApiSpeedTestService */]) === "function" && _c || Object])
     ], HomePage);
     return HomePage;
+    var _a, _b, _c;
 }());
 
 //# sourceMappingURL=home.js.map
@@ -810,10 +813,10 @@ var ApiSpeedTestService = /** @class */ (function () {
                 //chay 1 lan delay
                 setTimeout(function () {
                     var timeout = new Date().getTime() - startT;
-                    //console.log("test thread: " + i + ", step: " + step + ', timeout: ' + timeout);
+                    console.log("test thread: " + i + ", step: " + step + ', timeout: ' + timeout);
                     this.uploadOne(i, step) //tien trinh nay chay rat cham neu mang cham
                         .then(function (total) {
-                        //console.log("A Step in a Thread: " + i + " finish Total loaded:");
+                        console.log("A Step in a Thread: " + i + " finish Total loaded:");
                         if (timeout < maxTime_ms && step < maxStep) {
                             try {
                                 xhr[i].unsubcriber();

@@ -2,14 +2,27 @@
 import { HttpClient, HttpRequest, HttpEvent, HttpEventType, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 
-
-var speedtestServer = 'https://cuongdq-speedtest.herokuapp.com';
+/* var speedtestServer = {
+    url: 'https://cuongdq-speedtest.herokuapp.com',
+    getip : '/speedtest/get-ip',
+    ping: '/speedtest/empty',
+    download: '/speedtest/download',
+    upload: '/speedtest/empty',
+} */
+//http://10.151.54.84:9235
+//http://210.245.119.136:9235
+var speedtestServer = {
+    url: 'http://210.245.119.136:9235',
+    getip : '/getIP.php?isp=true&distance=km',
+    ping: '/empty.php',
+    download: '/garbage.php?ckSize=20',
+    upload: '/empty.php',
+}
 var contermet;
 var xhr = null; //tao da luong de truy cap server
 var interval = null;
 var totLoaded = 0.0;
 var progress = 0.0;
-var http;
 
 @Injectable()
 export class ApiSpeedTestService {
@@ -17,9 +30,7 @@ export class ApiSpeedTestService {
     private worker;
 
 
-    constructor(private httpClient: HttpClient) {
-        http = httpClient;
-    }
+    constructor(private httpClient: HttpClient) { }
 
     //bien worker de truyen message giua cac thread voi nhau
     setWorker(worker) {
@@ -124,7 +135,7 @@ export class ApiSpeedTestService {
         }.bind(this), 200); //cu 200ms thi thong bao ket qua cho contermet
 
         return this.httpClient.get(
-            speedtestServer + "/speedtest/get-ip"
+            speedtestServer.url + speedtestServer.getip + this.url_sep(speedtestServer.getip) + "r=" + Math.random()
         )
             .toPromise()
             .then(data => {
@@ -272,16 +283,13 @@ export class ApiSpeedTestService {
             var prevLoaded = 0 // number of bytes loaded last time onprogress was called
             //var garbagePhp_chunkSize = 20;
             var req = new HttpRequest('GET',
-                speedtestServer + "/speedtest/download?" + 'r=' + Math.random(), //them chuoi random de khong bi cach
-                //neu lay server khac phai khai bao cors control 
-                //"http://10.151.54.84:9235/garbage.php?" + 'r=' + Math.random() + '&ckSize=' + garbagePhp_chunkSize,
+            speedtestServer.url + speedtestServer.download + this.url_sep(speedtestServer.download) + "r=" + Math.random(), 
+            //them chuoi random de khong bi cach
                 {
                     reportProgress: true,
                     responseType: 'arraybuffer'
-                }); // 'arraybuffer' | 'blob' | 'json' | 'text'
-
-
-            xhr[i] = http.request(req)
+                }); 
+            xhr[i] = this.httpClient.request(req)
                 .subscribe((event: HttpEvent<any>) => {
                     switch (event.type) {
                         case HttpEventType.Sent:
@@ -343,10 +351,10 @@ export class ApiSpeedTestService {
             var file = new File([reqsmallUL], 'data.dat')
 
             var req = new HttpRequest('POST',
-                speedtestServer + "/speedtest/empty?" + 'r=' + Math.random(),
+            speedtestServer.url + speedtestServer.upload + this.url_sep(speedtestServer.upload) + "r=" + Math.random(),
                 file,
                 { reportProgress: true });
-            xhr[i] = http.request(req)
+            xhr[i] = this.httpClient.request(req)
                 .subscribe((event: HttpEvent<any>) => {
                     switch (event.type) {
                         case HttpEventType.Sent:
@@ -446,10 +454,10 @@ export class ApiSpeedTestService {
                 //chay 1 lan delay
                 setTimeout(function () {
                     let timeout = new Date().getTime() - startT;
-                    //console.log("test thread: " + i + ", step: " + step + ', timeout: ' + timeout);
+                    console.log("test thread: " + i + ", step: " + step + ', timeout: ' + timeout);
                     this.uploadOne(i, step) //tien trinh nay chay rat cham neu mang cham
                         .then(total => {
-                            //console.log("A Step in a Thread: " + i + " finish Total loaded:");
+                            console.log("A Step in a Thread: " + i + " finish Total loaded:");
                             if (timeout < maxTime_ms && step < maxStep) { //dieu kien nao den truoc 
                                 try { xhr[i].unsubcriber() } catch (e) { } // reset the stream data to empty ram
                                 testStream(i, 0, step + 1, doneThread); //goi tiep bien a
@@ -493,10 +501,11 @@ export class ApiSpeedTestService {
         return new Promise((resolve, reject) => {
 
             var req = new HttpRequest('GET',
-                speedtestServer + "/speedtest/empty?" + 'r=' + Math.random(), //them chuoi random de khong bi cach
+                speedtestServer.url + speedtestServer.ping + this.url_sep(speedtestServer.ping) + 'r=' + Math.random(), 
+                //them chuoi random de khong bi cach
                 { reportProgress: true });
 
-            xhr[i] = http.request(req)
+            xhr[i] = this.httpClient.request(req)
                 .subscribe((event: HttpEvent<any>) => {
                     switch (event.type) {
                         case HttpEventType.Sent:

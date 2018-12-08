@@ -25,6 +25,7 @@ export class HomePage {
   }
 
   public results = [];
+  public result;
 
   constructor(public navCtrl: NavController,
     private apiGraph: ApiGraphService,
@@ -36,6 +37,7 @@ export class HomePage {
     isRuning = false;
     this.apiGraph.I("startStopBtn").className = "";
     worker = null;
+    this.result = null;
   }
 
   startStop() {
@@ -49,8 +51,9 @@ export class HomePage {
       worker = new Worker('worker-message.js');
       this.apiHttp.setWorker(worker);
 
+
       //Thuc hien chu trinh speedTest: getIP, delay, ping, delay, dowload, delay, upload
-      this.runTestLoop("_I_P_D_U"); //Get IP, Ping, Download, Upload, Share server, 
+      this.runTestLoop('_U'); //Get IP, Ping, Download, Upload, Share server, 
         
       worker.onmessage = (e) => { this.onMessageProcess(e) }
         
@@ -98,34 +101,37 @@ export class HomePage {
                 | {speed: number} //for work dowload|upload
    */
   updateResults(work, d) {
+    //kiem tra phien dau tien cua no
+    if (!this.result){
+      this.result={}; //khoi dau mot phien test moi
+      this.result.id = idx++; //id moi khoi tao
+    }else{
+      //da chay phien truoc co roi thi lay tu trong ra
+      this.result = this.results.pop();
+    }
+
     //co cong viec va ket qua hoan thanh
     if (work === 'ip') {
-      let result;
-      result = {};
       //cong viec hoan thanh lay ip
       let dt = new Date();
-      result.id = ++idx;
-      result.time = dt.toISOString().replace(/T/, ' ').replace(/\..+/, '')
+      this.result.time = dt.toISOString().replace(/T/, ' ').replace(/\..+/, '')
         + " GMT"
         + dt.getTimezoneOffset() / 60
         + " Local: "
         + dt.toLocaleTimeString();
-      result.ip = d.ip;
-      result.server = d.server;
-      this.results.push(result);
+      this.result.ip = d.ip;
+      this.result.server = d.server;
+      this.results.push(this.result);
     } else if (work == 'download') {
-      let result = this.results.pop();
-      result.download = d.speed;
-      this.results.push(result);
+      this.result.download = d.speed;
+      this.results.push(this.result);
     } else if (work == 'upload') {
-      let result = this.results.pop();
-      result.upload = d.speed;
-      this.results.push(result);
+      this.result.upload = d.speed;
+      this.results.push(this.result);
     } else if (work == 'ping') {
-      let result = this.results.pop();
-      result.ping = d.ping;
-      result.jitter = d.jitter;
-      this.results.push(result);
+      this.result.ping = d.ping;
+      this.result.jitter = d.jitter;
+      this.results.push(this.result);
     }
   }
 
@@ -134,7 +140,7 @@ export class HomePage {
    * 
    * @param test_order 
    */
-  runTestLoop(test_order:'_I_P_D_U'){
+  runTestLoop(test_order: '_U' | '_I_P_D_U'){
     const delay = 1000;
     var nextIndex = 0;
     var runNextTest = function () {
