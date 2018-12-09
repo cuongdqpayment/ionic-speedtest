@@ -4,6 +4,7 @@ import { ErrorHandler, NgModule } from '@angular/core';
 import { IonicApp, IonicErrorHandler, IonicModule } from 'ionic-angular';
 import { SplashScreen } from '@ionic-native/splash-screen';
 import { StatusBar } from '@ionic-native/status-bar';
+import { Geolocation } from '@ionic-native/geolocation';
 
 import { MyApp } from './app.component';
 import { HomePage } from '../pages/home/home';
@@ -13,6 +14,7 @@ import { ApiAuthService } from '../services/apiAuthService';
 import { ApiImageService } from '../services/apiImageService';
 import { ApiGraphService } from '../services/apiMeterGraphService';
 import { ApiStorageService } from '../services/apiStorageService';
+import { ApiLocationService } from '../services/apiLocationService'
 
 @NgModule({
   declarations: [
@@ -32,11 +34,13 @@ import { ApiStorageService } from '../services/apiStorageService';
   providers: [
     StatusBar,
     SplashScreen,
+    Geolocation,
     ApiGraphService,
     ApiImageService,
     ApiAuthService,
     ApiStorageService,
     ApiSpeedTestService,
+    ApiLocationService,
     {provide: ErrorHandler, useClass: IonicErrorHandler}
   ]
 })

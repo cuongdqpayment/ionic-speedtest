@@ -4,6 +4,7 @@ import { NavController, AlertController } from 'ionic-angular';
 import { ApiGraphService } from '../../services/apiMeterGraphService'
 import { ApiSpeedTestService } from '../../services/apiSpeedTestService'
 import { ApiAuthService } from '../../services/apiAuthService'
+import { ApiLocationService } from '../../services/apiLocationService'
 
 var worker = null;
 var isRuning: boolean = false;
@@ -46,12 +47,14 @@ export class HomePage {
   };
 
   constructor(public navCtrl: NavController,
+    private apiLocation: ApiLocationService,
     private apiGraph: ApiGraphService,
     private apiAuth: ApiAuthService,
     private alertCtrl: AlertController,
     private apiHttp: ApiSpeedTestService) { }
 
   ngOnInit() { 
+
     this.resetContermet(); 
     this.server = this.serverList[0];
     this.apiAuth.getSpeedtestServerList()
@@ -98,6 +101,7 @@ export class HomePage {
       this.apiGraph.I("startStopBtn").className = "";
       //dung test
     } else {
+      //lay vi tri de ghi ket qua
       this.apiGraph.I("startStopBtn").className = "running";
       //bat dau chay
       worker = new Worker('worker-message.js');
@@ -105,7 +109,7 @@ export class HomePage {
       this.apiHttp.setServer(this.server);
 
       //Thuc hien chu trinh speedTest: getIP, delay, ping, delay, dowload, delay, upload
-      this.runTestLoop('_I_P_D_U___'); //Get IP, Ping, Download, Upload, Share server, 
+      this.runTestLoop('_I_P_D_U_S_'); //Get IP, Ping, Download, Upload, Share server, 
         
       worker.onmessage = (e) => { this.onMessageProcess(e) }
         
@@ -161,15 +165,16 @@ export class HomePage {
     }
 
     //co cong viec va ket qua hoan thanh
-    if (work === 'ip') {
+    if (work == 'ip') {
       //cong viec hoan thanh lay ip
       let dt = new Date();
-      this.result.time = dt.toISOString().replace(/T/, ' ').replace(/\..+/, '')
-        + " GMT"
-        + dt.getTimezoneOffset() / 60
-        + " Local: "
-        + dt.toLocaleTimeString();
+      let time = dt.toISOString().replace(/T/, ' ').replace(/\..+/, '')
+                + " GMT"
+                + dt.getTimezoneOffset() / 60
+                + " Local: "
+                + dt.toLocaleTimeString();
       this.result.ip = d.ip;
+      this.result.time = time;
       this.result.server = (d.server?d.server:this.server.SERVER_URL);
       this.results.push(this.result);
     } else if (work == 'download') {
@@ -193,11 +198,25 @@ export class HomePage {
   runTestLoop(test_order: string){
     const delay = 1000;
     var nextIndex = 0;
+
+    this.apiLocation.getCurrentLocation()
+    .then(pos=>{
+      if (!this.result){
+        this.result={}; //khoi dau mot phien test moi
+        this.result.id = ++idx; //id moi khoi tao
+        this.result.start_location = pos;
+        this.result.start_time = new Date().getTime();
+        this.results.push(this.result);
+      }
+    })
+    .catch(err=>{ });
+
     var runNextTest = function () {
       let command = test_order.charAt(nextIndex);
       
       switch (command) {
         case '_': { nextIndex++; setTimeout(runNextTest, delay); } break;
+        case 'S': { nextIndex++; this.shareResult(); setTimeout(runNextTest, delay); } break;
         case 'I': { 
                     nextIndex++; 
                     if (!isRuning) { 
@@ -284,6 +303,22 @@ export class HomePage {
 
   //gui ket qua cho may chu
   shareResult(){
+    //lay vi tri ket thuc chu trinh de ghi lai vi tri ket thuc test
+    this.apiLocation.getCurrentLocation()
+    .then(pos=>{
+      if (this.result){
+        this.result = this.results.pop();
+        this.result.end_location = pos;
+        this.result.end_time = new Date().getTime();
+        this.results.push(this.result);
+      }
+      //xem kq --send
+      console.log(this.result);
+
+    })
+    .catch(err=>{
+      //console.log(err);
+    });
 
   }
 
