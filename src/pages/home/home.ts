@@ -1,8 +1,9 @@
 import { Component } from '@angular/core';
-import { NavController } from 'ionic-angular';
+import { NavController, AlertController } from 'ionic-angular';
 
 import { ApiGraphService } from '../../services/apiMeterGraphService'
 import { ApiSpeedTestService } from '../../services/apiSpeedTestService'
+import { ApiAuthService } from '../../services/apiAuthService'
 
 var worker = null;
 var isRuning: boolean = false;
@@ -26,14 +27,65 @@ export class HomePage {
 
   public results = [];
   public result;
+  public server = {
+    NAME: "amazone-heroku-usa"
+    ,SERVER_URL: "https://cuongdq-speedtest.herokuapp.com"
+    ,DOWNLOAD: "/speedtest/download"
+    ,GET_IP: "/speedtest/get-ip"
+    ,PING: "/speedtest/empty"
+    ,UPLOAD: "/speedtest/empty"
+    ,LOCATION: "30.0866,-94.1274"
+    ,DESCRITPTION: " Máy chủ test internet Tại Mỹ, herokuapp.com"
+  };
+  public serverList = [this.server];
+
+  public selectOptions = {
+    title: 'SERVER LIST',
+    subTitle: 'Select a server',
+    mode: 'md'
+  };
 
   constructor(public navCtrl: NavController,
     private apiGraph: ApiGraphService,
+    private apiAuth: ApiAuthService,
+    private alertCtrl: AlertController,
     private apiHttp: ApiSpeedTestService) { }
 
-  ngOnInit() { this.apiGraph.initUI(); }
+  ngOnInit() { 
+    this.resetContermet(); 
+    this.server = this.serverList[0];
+    this.apiAuth.getSpeedtestServerList()
+    .then(data=>{
+      let list;
+        list = data;
+        try{
+          if (list) this.serverList = list;
+          this.server = this.serverList[0];
+        }catch(e){}
+    })
+    .catch(err=>{
+      console.log(err); //loi khong lay duoc danh sach server
+    })
+  }
 
+  resetContermet(){
+    this.apiGraph.initUI();
+    this.objMeter = {
+      graphName: 'Speedtest',
+      unit: 'Mbps/ms/km',
+    }
+    this.apiGraph.updateUI({ state: 0, contermet: '...', progress: 0 });
+  }
   clearRuning() {
+    //speedtest xong
+    this.alertCtrl.create({
+      title: 'Speedtest finish',
+      subTitle: 'Thank you for your test with us! See the result and share...',
+      buttons: ['OK']
+    }).present();
+
+    this.resetContermet();
+
     isRuning = false;
     this.apiGraph.I("startStopBtn").className = "";
     worker = null;
@@ -50,7 +102,7 @@ export class HomePage {
       //bat dau chay
       worker = new Worker('worker-message.js');
       this.apiHttp.setWorker(worker);
-
+      this.apiHttp.setServer(this.server);
 
       //Thuc hien chu trinh speedTest: getIP, delay, ping, delay, dowload, delay, upload
       this.runTestLoop('_I_P_D_U___'); //Get IP, Ping, Download, Upload, Share server, 
@@ -118,7 +170,7 @@ export class HomePage {
         + " Local: "
         + dt.toLocaleTimeString();
       this.result.ip = d.ip;
-      this.result.server = d.server;
+      this.result.server = (d.server?d.server:this.server.SERVER_URL);
       this.results.push(this.result);
     } else if (work == 'download') {
       this.result.download = d.speed;
@@ -228,5 +280,15 @@ export class HomePage {
     }.bind(this) //thuc hien gan this nay vao moi goi lenh duoc
 
     runNextTest();
+  }
+
+  //gui ket qua cho may chu
+  shareResult(){
+
+  }
+
+  //gui ket qua cho nguoi dung
+  shareResults(){
+    
   }
 }

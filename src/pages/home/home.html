@@ -17,18 +17,19 @@
             <div class="meterText" id="dlText"></div>
             <div class="unit">{{objMeter?.unit}}</div>
           </div>
+          <ion-item>
+            <ion-label>Server: </ion-label>
+            <ion-select [(ngModel)]="server" okText="OK" cancelText="Cancel" [selectOptions]="selectOptions">
+              <ion-option *ngFor="let server of serverList" [value]="server">{{server?.NAME}}</ion-option>
+            </ion-select>
+          </ion-item>
           <p>Your IP: {{objISP?.processedString}}</p>
-          <p>
-            Server IP: {{objISP?.server?.ip}} - {{objISP?.server?.org}} {{objISP?.server?.city}}
-            {{objISP?.server?.region}}
-            {{objISP?.server?.country}} {{objISP?.server?.distance}}
-          </p>
           <div id="startStopBtn" (click)="startStop()"></div>
         </ion-card>
       </ion-col>
       <ion-col col-24 col-xl-18 col-lg-18 *ngIf="results.length > 0">
         <ion-card class="card-meter" >
-          <div id="resultBtn"></div>
+          <div id="resultBtn" (click) = "shareResults()"></div>
           <ion-grid>
             <ion-row>
               <ion-col col-1>
@@ -38,10 +39,10 @@
                 Time
               </ion-col>
               <ion-col col-4>
-                YourIp
+                IP
               </ion-col>
               <ion-col col-4>
-                ServerIP
+                Server
               </ion-col>
               <ion-col col-3>
                 Jitter
@@ -50,10 +51,10 @@
                 Ping
               </ion-col>
               <ion-col col-3>
-                Download
+                DL
               </ion-col>
               <ion-col col-3>
-                Upload
+                UL
               </ion-col>
             </ion-row>
       

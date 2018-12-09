@@ -23,6 +23,15 @@ export class ApiAuthService {
         this.midleKey.importKey(this.clientKey.exportKey('public'));
     }
 
+    getSpeedtestServerList() {
+        return this.httpClient.get(this.authenticationServer + '/speedtest-server')
+            .toPromise()
+            .then(jsonData => {
+                //console.log(jsonData); //tien xu ly truoc khi tra ve main
+                return jsonData;
+            });
+    }
+
     getServerPublicRSAKey() {
         if (this.publicKey && this.publicKey.PUBLIC_KEY) {
             return (new Promise((resolve, reject) => {

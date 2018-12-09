@@ -43,6 +43,7 @@ webpackEmptyAsyncContext.id = 200;
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_ionic_angular__ = __webpack_require__(88);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__services_apiMeterGraphService__ = __webpack_require__(245);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__services_apiSpeedTestService__ = __webpack_require__(246);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__services_apiAuthService__ = __webpack_require__(247);
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -56,23 +57,75 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 
 
 
+
 var worker = null;
 var isRuning = false;
 var idx = 0;
 //khai bao thanh phan cua trang nay
 var HomePage = /** @class */ (function () {
-    function HomePage(navCtrl, apiGraph, apiHttp) {
+    function HomePage(navCtrl, apiGraph, apiAuth, alertCtrl, apiHttp) {
         this.navCtrl = navCtrl;
         this.apiGraph = apiGraph;
+        this.apiAuth = apiAuth;
+        this.alertCtrl = alertCtrl;
         this.apiHttp = apiHttp;
         this.objMeter = {
             graphName: 'Speedtest',
             unit: 'Mbps/ms/km',
         };
         this.results = [];
+        this.server = {
+            NAME: "amazone-heroku-usa",
+            SERVER_URL: "https://cuongdq-speedtest.herokuapp.com",
+            DOWNLOAD: "/speedtest/download",
+            GET_IP: "/speedtest/get-ip",
+            PING: "/speedtest/empty",
+            UPLOAD: "/speedtest/empty",
+            LOCATION: "30.0866,-94.1274",
+            DESCRITPTION: " Máy chủ test internet Tại Mỹ, herokuapp.com"
+        };
+        this.serverList = [this.server];
+        this.selectOptions = {
+            title: 'SERVER LIST',
+            subTitle: 'Select a server',
+            mode: 'md'
+        };
     }
-    HomePage.prototype.ngOnInit = function () { this.apiGraph.initUI(); };
+    HomePage.prototype.ngOnInit = function () {
+        var _this = this;
+        this.resetContermet();
+        this.server = this.serverList[0];
+        this.apiAuth.getSpeedtestServerList()
+            .then(function (data) {
+            var list;
+            list = data;
+            try {
+                if (list)
+                    _this.serverList = list;
+                _this.server = _this.serverList[0];
+            }
+            catch (e) { }
+        })
+            .catch(function (err) {
+            console.log(err); //loi khong lay duoc danh sach server
+        });
+    };
+    HomePage.prototype.resetContermet = function () {
+        this.apiGraph.initUI();
+        this.objMeter = {
+            graphName: 'Speedtest',
+            unit: 'Mbps/ms/km',
+        };
+        this.apiGraph.updateUI({ state: 0, contermet: '...', progress: 0 });
+    };
     HomePage.prototype.clearRuning = function () {
+        //speedtest xong
+        this.alertCtrl.create({
+            title: 'Speedtest finish',
+            subTitle: 'Thank you for your test with us! See the result and share...',
+            buttons: ['OK']
+        }).present();
+        this.resetContermet();
         isRuning = false;
         this.apiGraph.I("startStopBtn").className = "";
         worker = null;
@@ -90,6 +143,7 @@ var HomePage = /** @class */ (function () {
             //bat dau chay
             worker = new Worker('worker-message.js');
             this.apiHttp.setWorker(worker);
+            this.apiHttp.setServer(this.server);
             //Thuc hien chu trinh speedTest: getIP, delay, ping, delay, dowload, delay, upload
             this.runTestLoop('_I_P_D_U___'); //Get IP, Ping, Download, Upload, Share server, 
             worker.onmessage = function (e) { _this.onMessageProcess(e); };
@@ -152,7 +206,7 @@ var HomePage = /** @class */ (function () {
                 + " Local: "
                 + dt.toLocaleTimeString();
             this.result.ip = d.ip;
-            this.result.server = d.server;
+            this.result.server = (d.server ? d.server : this.server.SERVER_URL);
             this.results.push(this.result);
         }
         else if (work == 'download') {
@@ -270,17 +324,22 @@ var HomePage = /** @class */ (function () {
         }.bind(this); //thuc hien gan this nay vao moi goi lenh duoc
         runNextTest();
     };
+    //gui ket qua cho may chu
+    HomePage.prototype.shareResult = function () {
+    };
+    //gui ket qua cho nguoi dung
+    HomePage.prototype.shareResults = function () {
+    };
     HomePage = __decorate([
         Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["m" /* Component */])({
-            selector: 'page-home',template:/*ion-inline-start:"/Users/cuongdq/IONIC/ionic-speedtest-client-css-js-chart/src/pages/home/home.html"*/'<ion-header>\n  <ion-navbar>\n    <ion-title>\n      SPEED TEST\n    </ion-title>\n  </ion-navbar>\n</ion-header>\n\n<ion-content padding>\n  <ion-grid>\n    <ion-row>\n      <ion-col col-24 col-xl-6 col-lg-6 col-md-12 col-sm-12>\n        <ion-card class="card-meter">\n          <div class="graphArea">\n            <div class="graphName">{{objMeter?.graphName}}</div>\n            <canvas class="meter" id="dlMeter"></canvas>\n            <div class="meterText" id="dlText"></div>\n            <div class="unit">{{objMeter?.unit}}</div>\n          </div>\n          <p>Your IP: {{objISP?.processedString}}</p>\n          <p>\n            Server IP: {{objISP?.server?.ip}} - {{objISP?.server?.org}} {{objISP?.server?.city}}\n            {{objISP?.server?.region}}\n            {{objISP?.server?.country}} {{objISP?.server?.distance}}\n          </p>\n          <div id="startStopBtn" (click)="startStop()"></div>\n        </ion-card>\n      </ion-col>\n      <ion-col col-24 col-xl-18 col-lg-18 *ngIf="results.length > 0">\n        <ion-card class="card-meter" >\n          <div id="resultBtn"></div>\n          <ion-grid>\n            <ion-row>\n              <ion-col col-1>\n                Id\n              </ion-col>\n              <ion-col col-3>\n                Time\n              </ion-col>\n              <ion-col col-4>\n                YourIp\n              </ion-col>\n              <ion-col col-4>\n                ServerIP\n              </ion-col>\n              <ion-col col-3>\n                Jitter\n              </ion-col>\n              <ion-col col-3>\n                Ping\n              </ion-col>\n              <ion-col col-3>\n                Download\n              </ion-col>\n              <ion-col col-3>\n                Upload\n              </ion-col>\n            </ion-row>\n      \n            <ion-row *ngFor="let result of results">\n                <ion-col col-1>\n                  {{result?.id}}\n                </ion-col>\n                <ion-col col-3>\n                    {{result?.time}}\n                </ion-col>\n                <ion-col col-4>\n                    {{result?.ip}}\n                </ion-col>\n                <ion-col col-4>\n                    {{result?.server}}\n                </ion-col>\n                <ion-col col-3>\n                    {{result?.jitter}}\n                </ion-col>\n                <ion-col col-3>\n                    {{result?.ping}}\n                </ion-col>\n                <ion-col col-3>\n                    {{result?.download}}\n                </ion-col>\n                <ion-col col-3>\n                    {{result?.upload}}\n                </ion-col>\n              </ion-row>\n          </ion-grid>\n        </ion-card>\n      </ion-col>\n    </ion-row>\n  </ion-grid>\n</ion-content>'/*ion-inline-end:"/Users/cuongdq/IONIC/ionic-speedtest-client-css-js-chart/src/pages/home/home.html"*/
+            selector: 'page-home',template:/*ion-inline-start:"/Users/cuongdq/IONIC/ionic-speedtest-client-css-js-chart/src/pages/home/home.html"*/'<ion-header>\n  <ion-navbar>\n    <ion-title>\n      SPEED TEST\n    </ion-title>\n  </ion-navbar>\n</ion-header>\n\n<ion-content padding>\n  <ion-grid>\n    <ion-row>\n      <ion-col col-24 col-xl-6 col-lg-6 col-md-12 col-sm-12>\n        <ion-card class="card-meter">\n          <div class="graphArea">\n            <div class="graphName">{{objMeter?.graphName}}</div>\n            <canvas class="meter" id="dlMeter"></canvas>\n            <div class="meterText" id="dlText"></div>\n            <div class="unit">{{objMeter?.unit}}</div>\n          </div>\n          <ion-item>\n            <ion-label>Server: </ion-label>\n            <ion-select [(ngModel)]="server" okText="OK" cancelText="Cancel" [selectOptions]="selectOptions">\n              <ion-option *ngFor="let server of serverList" [value]="server">{{server?.NAME}}</ion-option>\n            </ion-select>\n          </ion-item>\n          <p>Your IP: {{objISP?.processedString}}</p>\n          <div id="startStopBtn" (click)="startStop()"></div>\n        </ion-card>\n      </ion-col>\n      <ion-col col-24 col-xl-18 col-lg-18 *ngIf="results.length > 0">\n        <ion-card class="card-meter" >\n          <div id="resultBtn" (click) = "shareResults()"></div>\n          <ion-grid>\n            <ion-row>\n              <ion-col col-1>\n                Id\n              </ion-col>\n              <ion-col col-3>\n                Time\n              </ion-col>\n              <ion-col col-4>\n                IP\n              </ion-col>\n              <ion-col col-4>\n                Server\n              </ion-col>\n              <ion-col col-3>\n                Jitter\n              </ion-col>\n              <ion-col col-3>\n                Ping\n              </ion-col>\n              <ion-col col-3>\n                DL\n              </ion-col>\n              <ion-col col-3>\n                UL\n              </ion-col>\n            </ion-row>\n      \n            <ion-row *ngFor="let result of results">\n                <ion-col col-1>\n                  {{result?.id}}\n                </ion-col>\n                <ion-col col-3>\n                    {{result?.time}}\n                </ion-col>\n                <ion-col col-4>\n                    {{result?.ip}}\n                </ion-col>\n                <ion-col col-4>\n                    {{result?.server}}\n                </ion-col>\n                <ion-col col-3>\n                    {{result?.jitter}}\n                </ion-col>\n                <ion-col col-3>\n                    {{result?.ping}}\n                </ion-col>\n                <ion-col col-3>\n                    {{result?.download}}\n                </ion-col>\n                <ion-col col-3>\n                    {{result?.upload}}\n                </ion-col>\n              </ion-row>\n          </ion-grid>\n        </ion-card>\n      </ion-col>\n    </ion-row>\n  </ion-grid>\n</ion-content>'/*ion-inline-end:"/Users/cuongdq/IONIC/ionic-speedtest-client-css-js-chart/src/pages/home/home.html"*/
         })
         //class dieu khien rieng cua no
         ,
-        __metadata("design:paramtypes", [__WEBPACK_IMPORTED_MODULE_1_ionic_angular__["d" /* NavController */],
-            __WEBPACK_IMPORTED_MODULE_2__services_apiMeterGraphService__["a" /* ApiGraphService */],
-            __WEBPACK_IMPORTED_MODULE_3__services_apiSpeedTestService__["a" /* ApiSpeedTestService */]])
+        __metadata("design:paramtypes", [typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["e" /* NavController */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["e" /* NavController */]) === "function" && _a || Object, typeof (_b = typeof __WEBPACK_IMPORTED_MODULE_2__services_apiMeterGraphService__["a" /* ApiGraphService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_2__services_apiMeterGraphService__["a" /* ApiGraphService */]) === "function" && _b || Object, typeof (_c = typeof __WEBPACK_IMPORTED_MODULE_4__services_apiAuthService__["a" /* ApiAuthService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_4__services_apiAuthService__["a" /* ApiAuthService */]) === "function" && _c || Object, typeof (_d = typeof __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["a" /* AlertController */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["a" /* AlertController */]) === "function" && _d || Object, typeof (_e = typeof __WEBPACK_IMPORTED_MODULE_3__services_apiSpeedTestService__["a" /* ApiSpeedTestService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_3__services_apiSpeedTestService__["a" /* ApiSpeedTestService */]) === "function" && _e || Object])
     ], HomePage);
     return HomePage;
+    var _a, _b, _c, _d, _e;
 }());
 
 //# sourceMappingURL=home.js.map
@@ -390,20 +449,15 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 
 //ung dung cuongdq-upload post any
 var speedtestServer = {
-    url: 'https://cuongdq-speedtest.herokuapp.com',
-    getip: '/speedtest/get-ip',
-    ping: '/speedtest/empty',
-    download: '/speedtest/download',
-    upload: '/speedtest/empty',
+    NAME: "amazone-heroku-usa",
+    SERVER_URL: "https://cuongdq-speedtest.herokuapp.com",
+    DOWNLOAD: "/speedtest/download",
+    GET_IP: "/speedtest/get-ip",
+    PING: "/speedtest/empty",
+    UPLOAD: "/speedtest/empty",
+    LOCATION: "30.0866,-94.1274",
+    DESCRITPTION: " Máy chủ test internet Tại Mỹ, herokuapp.com"
 };
-/* var speedtestServer = {
-    //url: 'http://10.151.54.84:9235', //trong mang noi bo
-    url: 'http://210.245.119.136:9235', //ngoai internet
-    getip : '/getIP.php?isp=true&distance=km',
-    ping: '/empty.php',
-    download: '/garbage.php?ckSize=20',
-    upload: '/empty.php',
-} */
 var contermet;
 var xhr = null; //tao da luong de truy cap server
 var interval = null;
@@ -416,6 +470,10 @@ var ApiSpeedTestService = /** @class */ (function () {
     //bien worker de truyen message giua cac thread voi nhau
     ApiSpeedTestService.prototype.setWorker = function (worker) {
         this.worker = worker;
+    };
+    ApiSpeedTestService.prototype.setServer = function (server) {
+        //console.log(server);
+        speedtestServer = server;
     };
     //tham tham so cho url ? hoac & theo bien
     ApiSpeedTestService.prototype.url_sep = function (url) { return url.match(/\?/) ? '&' : '?'; };
@@ -512,7 +570,7 @@ var ApiSpeedTestService = /** @class */ (function () {
         return new Promise(function (resolve, reject) {
             var prevLoaded = 0; // number of bytes loaded last time onprogress was called
             //var garbagePhp_chunkSize = 20;
-            var req = new __WEBPACK_IMPORTED_MODULE_0__angular_common_http__["d" /* HttpRequest */]('GET', speedtestServer.url + speedtestServer.download + _this.url_sep(speedtestServer.download) + "r=" + Math.random(), 
+            var req = new __WEBPACK_IMPORTED_MODULE_0__angular_common_http__["d" /* HttpRequest */]('GET', speedtestServer.SERVER_URL + speedtestServer.DOWNLOAD + _this.url_sep(speedtestServer.DOWNLOAD) + "r=" + Math.random(), 
             //them chuoi random de khong bi cach
             {
                 reportProgress: true,
@@ -583,7 +641,7 @@ var ApiSpeedTestService = /** @class */ (function () {
             reqsmall.push(r);
             var reqsmallUL = new Blob(reqsmall);
             var file = new File([reqsmallUL], 'data.dat');
-            var req = new __WEBPACK_IMPORTED_MODULE_0__angular_common_http__["d" /* HttpRequest */]('POST', speedtestServer.url + speedtestServer.upload + _this.url_sep(speedtestServer.upload) + "r=" + Math.random(), file, { reportProgress: true });
+            var req = new __WEBPACK_IMPORTED_MODULE_0__angular_common_http__["d" /* HttpRequest */]('POST', speedtestServer.SERVER_URL + speedtestServer.UPLOAD + _this.url_sep(speedtestServer.UPLOAD) + "r=" + Math.random(), file, { reportProgress: true });
             xhr[i] = _this.httpClient.request(req)
                 .subscribe(function (event) {
                 switch (event.type) {
@@ -629,7 +687,7 @@ var ApiSpeedTestService = /** @class */ (function () {
     ApiSpeedTestService.prototype.pingOne = function (i) {
         var _this = this;
         return new Promise(function (resolve, reject) {
-            var req = new __WEBPACK_IMPORTED_MODULE_0__angular_common_http__["d" /* HttpRequest */]('GET', speedtestServer.url + speedtestServer.ping + _this.url_sep(speedtestServer.ping) + 'r=' + Math.random(), 
+            var req = new __WEBPACK_IMPORTED_MODULE_0__angular_common_http__["d" /* HttpRequest */]('GET', speedtestServer.SERVER_URL + speedtestServer.PING + _this.url_sep(speedtestServer.PING) + 'r=' + Math.random(), 
             //them chuoi random de khong bi cach
             { reportProgress: true });
             xhr[i] = _this.httpClient.request(req)
@@ -676,24 +734,10 @@ var ApiSpeedTestService = /** @class */ (function () {
             this.postCommand("progress", "ip", { progress: progress, contermet: contermet });
             //qua trinh = thoi gian troi qua chia cho thoi gian du dinh chay thu
         }.bind(this), 200); //cu 200ms thi thong bao ket qua cho contermet
-        return this.httpClient.get(speedtestServer.url + speedtestServer.getip + this.url_sep(speedtestServer.getip) + "r=" + Math.random())
+        return this.httpClient.get(speedtestServer.SERVER_URL + speedtestServer.GET_IP + this.url_sep(speedtestServer.GET_IP) + "r=" + Math.random())
             .toPromise()
             .then(function (data) {
-            /**
-             *
-dlProgress: 1
-dlStatus: 12.030000000000001
-processedString: "14.167.2.166 - AS45899 VNPT Corp, VN (580 km)"
-rawIspInfo:
-        city: ""
-        country: "VN"
-        hostname: "static.vnpt.vn"
-        ip: "14.167.2.166"
-        loc: "16.0000,106.0000"
-        org: "AS45899 VNPT Corp"
-        region: ""
-             */
-            console.log(data);
+            //console.log(data);
             clearInterval(interval); //reset interval
             var d;
             d = data;
@@ -1009,153 +1053,17 @@ rawIspInfo:
     };
     ApiSpeedTestService = __decorate([
         Object(__WEBPACK_IMPORTED_MODULE_1__angular_core__["A" /* Injectable */])(),
-        __metadata("design:paramtypes", [__WEBPACK_IMPORTED_MODULE_0__angular_common_http__["a" /* HttpClient */]])
+        __metadata("design:paramtypes", [typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_0__angular_common_http__["a" /* HttpClient */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_0__angular_common_http__["a" /* HttpClient */]) === "function" && _a || Object])
     ], ApiSpeedTestService);
     return ApiSpeedTestService;
+    var _a;
 }());
 
 //# sourceMappingURL=apiSpeedTestService.js.map
 
 /***/ }),
 
-/***/ 292:
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_platform_browser_dynamic__ = __webpack_require__(293);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__app_module__ = __webpack_require__(313);
-
-
-Object(__WEBPACK_IMPORTED_MODULE_0__angular_platform_browser_dynamic__["a" /* platformBrowserDynamic */])().bootstrapModule(__WEBPACK_IMPORTED_MODULE_1__app_module__["a" /* AppModule */]);
-//# sourceMappingURL=main.js.map
-
-/***/ }),
-
-/***/ 313:
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return AppModule; });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_platform_browser__ = __webpack_require__(43);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__angular_common_http__ = __webpack_require__(86);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__angular_core__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_ionic_angular__ = __webpack_require__(88);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__ionic_native_splash_screen__ = __webpack_require__(240);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__ionic_native_status_bar__ = __webpack_require__(243);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__app_component__ = __webpack_require__(367);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__pages_home_home__ = __webpack_require__(244);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__services_apiSpeedTestService__ = __webpack_require__(246);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__services_apiAuthService__ = __webpack_require__(368);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__services_apiImageService__ = __webpack_require__(488);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_11__services_apiMeterGraphService__ = __webpack_require__(245);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_12__services_apiStorageService__ = __webpack_require__(489);
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-
-
-
-
-
-
-
-
-
-
-
-
-
-var AppModule = /** @class */ (function () {
-    function AppModule() {
-    }
-    AppModule = __decorate([
-        Object(__WEBPACK_IMPORTED_MODULE_2__angular_core__["I" /* NgModule */])({
-            declarations: [
-                __WEBPACK_IMPORTED_MODULE_6__app_component__["a" /* MyApp */],
-                __WEBPACK_IMPORTED_MODULE_7__pages_home_home__["a" /* HomePage */]
-            ],
-            imports: [
-                __WEBPACK_IMPORTED_MODULE_0__angular_platform_browser__["a" /* BrowserModule */],
-                __WEBPACK_IMPORTED_MODULE_1__angular_common_http__["b" /* HttpClientModule */],
-                __WEBPACK_IMPORTED_MODULE_3_ionic_angular__["c" /* IonicModule */].forRoot(__WEBPACK_IMPORTED_MODULE_6__app_component__["a" /* MyApp */], {}, {
-                    links: []
-                })
-            ],
-            bootstrap: [__WEBPACK_IMPORTED_MODULE_3_ionic_angular__["a" /* IonicApp */]],
-            entryComponents: [
-                __WEBPACK_IMPORTED_MODULE_6__app_component__["a" /* MyApp */],
-                __WEBPACK_IMPORTED_MODULE_7__pages_home_home__["a" /* HomePage */]
-            ],
-            providers: [
-                __WEBPACK_IMPORTED_MODULE_5__ionic_native_status_bar__["a" /* StatusBar */],
-                __WEBPACK_IMPORTED_MODULE_4__ionic_native_splash_screen__["a" /* SplashScreen */],
-                __WEBPACK_IMPORTED_MODULE_11__services_apiMeterGraphService__["a" /* ApiGraphService */],
-                __WEBPACK_IMPORTED_MODULE_10__services_apiImageService__["a" /* ApiImageService */],
-                __WEBPACK_IMPORTED_MODULE_9__services_apiAuthService__["a" /* ApiAuthService */],
-                __WEBPACK_IMPORTED_MODULE_12__services_apiStorageService__["a" /* ApiStorageService */],
-                __WEBPACK_IMPORTED_MODULE_8__services_apiSpeedTestService__["a" /* ApiSpeedTestService */],
-                { provide: __WEBPACK_IMPORTED_MODULE_2__angular_core__["u" /* ErrorHandler */], useClass: __WEBPACK_IMPORTED_MODULE_3_ionic_angular__["b" /* IonicErrorHandler */] }
-            ]
-        })
-    ], AppModule);
-    return AppModule;
-}());
-
-//# sourceMappingURL=app.module.js.map
-
-/***/ }),
-
-/***/ 367:
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return MyApp; });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_ionic_angular__ = __webpack_require__(88);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__ionic_native_status_bar__ = __webpack_require__(243);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__ionic_native_splash_screen__ = __webpack_require__(240);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__pages_home_home__ = __webpack_require__(244);
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-
-
-
-
-
-var MyApp = /** @class */ (function () {
-    function MyApp(platform, statusBar, splashScreen) {
-        this.rootPage = __WEBPACK_IMPORTED_MODULE_4__pages_home_home__["a" /* HomePage */];
-        platform.ready().then(function () {
-            // Okay, so the platform is ready and our plugins are available.
-            // Here you can do any higher level native things you might need.
-            statusBar.styleDefault();
-            splashScreen.hide();
-        });
-    }
-    MyApp = __decorate([
-        Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["m" /* Component */])({template:/*ion-inline-start:"/Users/cuongdq/IONIC/ionic-speedtest-client-css-js-chart/src/app/app.html"*/'<ion-nav [root]="rootPage"></ion-nav>\n'/*ion-inline-end:"/Users/cuongdq/IONIC/ionic-speedtest-client-css-js-chart/src/app/app.html"*/
-        }),
-        __metadata("design:paramtypes", [__WEBPACK_IMPORTED_MODULE_1_ionic_angular__["e" /* Platform */], __WEBPACK_IMPORTED_MODULE_2__ionic_native_status_bar__["a" /* StatusBar */], __WEBPACK_IMPORTED_MODULE_3__ionic_native_splash_screen__["a" /* SplashScreen */]])
-    ], MyApp);
-    return MyApp;
-}());
-
-//# sourceMappingURL=app.component.js.map
-
-/***/ }),
-
-/***/ 368:
+/***/ 247:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -1192,6 +1100,14 @@ var ApiAuthService = /** @class */ (function () {
         //key nay de test thu noi bo
         this.midleKey.importKey(this.clientKey.exportKey('public'));
     }
+    ApiAuthService.prototype.getSpeedtestServerList = function () {
+        return this.httpClient.get(this.authenticationServer + '/speedtest-server')
+            .toPromise()
+            .then(function (jsonData) {
+            //console.log(jsonData); //tien xu ly truoc khi tra ve main
+            return jsonData;
+        });
+    };
     ApiAuthService.prototype.getServerPublicRSAKey = function () {
         var _this = this;
         if (this.publicKey && this.publicKey.PUBLIC_KEY) {
@@ -1350,12 +1266,150 @@ var ApiAuthService = /** @class */ (function () {
     };
     ApiAuthService = __decorate([
         Object(__WEBPACK_IMPORTED_MODULE_1__angular_core__["A" /* Injectable */])(),
-        __metadata("design:paramtypes", [__WEBPACK_IMPORTED_MODULE_0__angular_common_http__["a" /* HttpClient */]])
+        __metadata("design:paramtypes", [typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_0__angular_common_http__["a" /* HttpClient */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_0__angular_common_http__["a" /* HttpClient */]) === "function" && _a || Object])
     ], ApiAuthService);
     return ApiAuthService;
+    var _a;
 }());
 
 //# sourceMappingURL=apiAuthService.js.map
+
+/***/ }),
+
+/***/ 293:
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_platform_browser_dynamic__ = __webpack_require__(294);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__app_module__ = __webpack_require__(314);
+
+
+Object(__WEBPACK_IMPORTED_MODULE_0__angular_platform_browser_dynamic__["a" /* platformBrowserDynamic */])().bootstrapModule(__WEBPACK_IMPORTED_MODULE_1__app_module__["a" /* AppModule */]);
+//# sourceMappingURL=main.js.map
+
+/***/ }),
+
+/***/ 314:
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return AppModule; });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_platform_browser__ = __webpack_require__(43);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__angular_common_http__ = __webpack_require__(86);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__angular_core__ = __webpack_require__(0);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_ionic_angular__ = __webpack_require__(88);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__ionic_native_splash_screen__ = __webpack_require__(240);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__ionic_native_status_bar__ = __webpack_require__(243);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__app_component__ = __webpack_require__(368);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__pages_home_home__ = __webpack_require__(244);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__services_apiSpeedTestService__ = __webpack_require__(246);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__services_apiAuthService__ = __webpack_require__(247);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__services_apiImageService__ = __webpack_require__(488);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_11__services_apiMeterGraphService__ = __webpack_require__(245);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_12__services_apiStorageService__ = __webpack_require__(489);
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+var AppModule = /** @class */ (function () {
+    function AppModule() {
+    }
+    AppModule = __decorate([
+        Object(__WEBPACK_IMPORTED_MODULE_2__angular_core__["I" /* NgModule */])({
+            declarations: [
+                __WEBPACK_IMPORTED_MODULE_6__app_component__["a" /* MyApp */],
+                __WEBPACK_IMPORTED_MODULE_7__pages_home_home__["a" /* HomePage */]
+            ],
+            imports: [
+                __WEBPACK_IMPORTED_MODULE_0__angular_platform_browser__["a" /* BrowserModule */],
+                __WEBPACK_IMPORTED_MODULE_1__angular_common_http__["b" /* HttpClientModule */],
+                __WEBPACK_IMPORTED_MODULE_3_ionic_angular__["d" /* IonicModule */].forRoot(__WEBPACK_IMPORTED_MODULE_6__app_component__["a" /* MyApp */], {}, {
+                    links: []
+                })
+            ],
+            bootstrap: [__WEBPACK_IMPORTED_MODULE_3_ionic_angular__["b" /* IonicApp */]],
+            entryComponents: [
+                __WEBPACK_IMPORTED_MODULE_6__app_component__["a" /* MyApp */],
+                __WEBPACK_IMPORTED_MODULE_7__pages_home_home__["a" /* HomePage */]
+            ],
+            providers: [
+                __WEBPACK_IMPORTED_MODULE_5__ionic_native_status_bar__["a" /* StatusBar */],
+                __WEBPACK_IMPORTED_MODULE_4__ionic_native_splash_screen__["a" /* SplashScreen */],
+                __WEBPACK_IMPORTED_MODULE_11__services_apiMeterGraphService__["a" /* ApiGraphService */],
+                __WEBPACK_IMPORTED_MODULE_10__services_apiImageService__["a" /* ApiImageService */],
+                __WEBPACK_IMPORTED_MODULE_9__services_apiAuthService__["a" /* ApiAuthService */],
+                __WEBPACK_IMPORTED_MODULE_12__services_apiStorageService__["a" /* ApiStorageService */],
+                __WEBPACK_IMPORTED_MODULE_8__services_apiSpeedTestService__["a" /* ApiSpeedTestService */],
+                { provide: __WEBPACK_IMPORTED_MODULE_2__angular_core__["u" /* ErrorHandler */], useClass: __WEBPACK_IMPORTED_MODULE_3_ionic_angular__["c" /* IonicErrorHandler */] }
+            ]
+        })
+    ], AppModule);
+    return AppModule;
+}());
+
+//# sourceMappingURL=app.module.js.map
+
+/***/ }),
+
+/***/ 368:
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return MyApp; });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__(0);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_ionic_angular__ = __webpack_require__(88);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__ionic_native_status_bar__ = __webpack_require__(243);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__ionic_native_splash_screen__ = __webpack_require__(240);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__pages_home_home__ = __webpack_require__(244);
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+
+
+
+
+
+var MyApp = /** @class */ (function () {
+    function MyApp(platform, statusBar, splashScreen) {
+        this.rootPage = __WEBPACK_IMPORTED_MODULE_4__pages_home_home__["a" /* HomePage */];
+        platform.ready().then(function () {
+            // Okay, so the platform is ready and our plugins are available.
+            // Here you can do any higher level native things you might need.
+            statusBar.styleDefault();
+            splashScreen.hide();
+        });
+    }
+    MyApp = __decorate([
+        Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["m" /* Component */])({template:/*ion-inline-start:"/Users/cuongdq/IONIC/ionic-speedtest-client-css-js-chart/src/app/app.html"*/'<ion-nav [root]="rootPage"></ion-nav>\n'/*ion-inline-end:"/Users/cuongdq/IONIC/ionic-speedtest-client-css-js-chart/src/app/app.html"*/
+        }),
+        __metadata("design:paramtypes", [__WEBPACK_IMPORTED_MODULE_1_ionic_angular__["f" /* Platform */], __WEBPACK_IMPORTED_MODULE_2__ionic_native_status_bar__["a" /* StatusBar */], __WEBPACK_IMPORTED_MODULE_3__ionic_native_splash_screen__["a" /* SplashScreen */]])
+    ], MyApp);
+    return MyApp;
+}());
+
+//# sourceMappingURL=app.component.js.map
 
 /***/ }),
 
@@ -1526,5 +1580,5 @@ var ApiStorageService = /** @class */ (function () {
 
 /***/ })
 
-},[292]);
+},[293]);
 //# sourceMappingURL=main.js.map

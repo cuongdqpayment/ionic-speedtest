@@ -4,21 +4,16 @@ import { Injectable } from '@angular/core';
 
 //ung dung cuongdq-upload post any
 var speedtestServer = {
-    url: 'https://cuongdq-speedtest.herokuapp.com',
-    getip : '/speedtest/get-ip',
-    ping: '/speedtest/empty',
-    download: '/speedtest/download',
-    upload: '/speedtest/empty',
+       NAME: "amazone-heroku-usa"
+      ,SERVER_URL: "https://cuongdq-speedtest.herokuapp.com"
+      ,DOWNLOAD: "/speedtest/download"
+      ,GET_IP: "/speedtest/get-ip"
+      ,PING: "/speedtest/empty"
+      ,UPLOAD: "/speedtest/empty"
+      ,LOCATION: "30.0866,-94.1274"
+      ,DESCRITPTION: " Máy chủ test internet Tại Mỹ, herokuapp.com"
 }
 
-/* var speedtestServer = {
-    //url: 'http://10.151.54.84:9235', //trong mang noi bo
-    url: 'http://210.245.119.136:9235', //ngoai internet
-    getip : '/getIP.php?isp=true&distance=km',
-    ping: '/empty.php',
-    download: '/garbage.php?ckSize=20',
-    upload: '/empty.php',
-} */
 var contermet;
 var xhr = null; //tao da luong de truy cap server
 var interval = null;
@@ -30,12 +25,16 @@ export class ApiSpeedTestService {
 
     private worker;
 
-
     constructor(private httpClient: HttpClient) { }
 
     //bien worker de truyen message giua cac thread voi nhau
     setWorker(worker) {
         this.worker = worker;
+    }
+
+    setServer(server) {
+        //console.log(server);
+        speedtestServer = server;
     }
 
     //tham tham so cho url ? hoac & theo bien
@@ -118,7 +117,7 @@ export class ApiSpeedTestService {
             var prevLoaded = 0 // number of bytes loaded last time onprogress was called
             //var garbagePhp_chunkSize = 20;
             var req = new HttpRequest('GET',
-            speedtestServer.url + speedtestServer.download + this.url_sep(speedtestServer.download) + "r=" + Math.random(), 
+            speedtestServer.SERVER_URL + speedtestServer.DOWNLOAD + this.url_sep(speedtestServer.DOWNLOAD) + "r=" + Math.random(), 
             //them chuoi random de khong bi cach
                 {
                     reportProgress: true,
@@ -186,7 +185,7 @@ export class ApiSpeedTestService {
             var file = new File([reqsmallUL], 'data.dat')
 
             var req = new HttpRequest('POST',
-            speedtestServer.url + speedtestServer.upload + this.url_sep(speedtestServer.upload) + "r=" + Math.random(),
+            speedtestServer.SERVER_URL + speedtestServer.UPLOAD + this.url_sep(speedtestServer.UPLOAD) + "r=" + Math.random(),
                 file,
                 { reportProgress: true });
             xhr[i] = this.httpClient.request(req)
@@ -237,7 +236,7 @@ export class ApiSpeedTestService {
         return new Promise((resolve, reject) => {
 
             var req = new HttpRequest('GET',
-                speedtestServer.url + speedtestServer.ping + this.url_sep(speedtestServer.ping) + 'r=' + Math.random(), 
+                speedtestServer.SERVER_URL + speedtestServer.PING + this.url_sep(speedtestServer.PING) + 'r=' + Math.random(), 
                 //them chuoi random de khong bi cach
                 { reportProgress: true });
 
@@ -294,26 +293,12 @@ export class ApiSpeedTestService {
         }.bind(this), 200); //cu 200ms thi thong bao ket qua cho contermet
 
         return this.httpClient.get(
-            speedtestServer.url + speedtestServer.getip + this.url_sep(speedtestServer.getip) + "r=" + Math.random()
+            speedtestServer.SERVER_URL + speedtestServer.GET_IP + this.url_sep(speedtestServer.GET_IP) + "r=" + Math.random()
         )
             .toPromise()
             .then(data => {
-                
-                /**
-                 * 
-dlProgress: 1
-dlStatus: 12.030000000000001
-processedString: "14.167.2.166 - AS45899 VNPT Corp, VN (580 km)"
-rawIspInfo:
-            city: ""
-            country: "VN"
-            hostname: "static.vnpt.vn"
-            ip: "14.167.2.166"
-            loc: "16.0000,106.0000"
-            org: "AS45899 VNPT Corp"
-            region: ""
-                 */
-                console.log(data);
+
+                //console.log(data);
 
                 clearInterval(interval);//reset interval
 
