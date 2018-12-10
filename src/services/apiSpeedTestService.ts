@@ -3,8 +3,17 @@ import { HttpClient, HttpRequest, HttpEvent, HttpEventType } from '@angular/comm
 import { Injectable } from '@angular/core';
 
 //ung dung cuongdq-upload post any
-/* var speedtestServer = {
-       NAME: "amazone-heroku-usa"
+var speedtestServer =
+    { SERVER_URL: "https://c3.mobifone.vn", 
+    NAME: "Cmc Danang (100Mbps)", 
+    GET_IP: "/speedtest/get-ip.jsp", 
+    PING: "/speedtest/latency.txt", 
+    UPLOAD: "/speedtest/upload.jsp", 
+    DOWNLOAD: "/speedtest/random1000x1000.jpg", 
+    DESCRITPTION: "Máy chủ test demo speedtest của kola tại Cty3", 
+    LOCATION: "16.00,108.00" }
+/* {
+       NAME: "Amazone Heroku (USA)"
       ,SERVER_URL: "https://cuongdq-speedtest.herokuapp.com"
       ,DOWNLOAD: "/speedtest/download"
       ,GET_IP: "/speedtest/get-ip"
@@ -14,17 +23,6 @@ import { Injectable } from '@angular/core';
       ,DESCRITPTION: " Máy chủ test internet Tại Mỹ, herokuapp.com"
 }
  */
-//test theo server cua speedtest demo
-var speedtestServer = {
-    NAME: "speedtest c3"
-   ,SERVER_URL: "https://c3.mobifone.vn"
-   ,GET_IP: "/speedtest/get-ip.jsp"
-   ,PING: "/speedtest/random350x350.jpg"
-   ,DOWNLOAD: "/speedtest/random1000x1000.jpg"
-   ,UPLOAD: "/speedtest/upload.jsp"
-   ,LOCATION: "30.0866,-94.1274"
-   ,DESCRITPTION: " Máy chủ test demo speedtest của kola tại Cty3"
-}
 
 var contermet;
 var xhr = null; //tao da luong de truy cap server
@@ -33,7 +31,6 @@ var totLoaded = 0.0;
 var progress = 0.0;
 var BACKGROUD_COLOR = "#e0e0e0";
 var PROGRESS_COLOR = "#d44e49";
-// var PROGRESS_COLOR = "#EEEEEE";
 @Injectable()
 export class ApiSpeedTestService {
 
@@ -48,7 +45,7 @@ export class ApiSpeedTestService {
 
     setServer(server) {
         //console.log(server);
-        //speedtestServer = server;
+        speedtestServer = server;
     }
 
     //tham tham so cho url ? hoac & theo bien
@@ -131,12 +128,12 @@ export class ApiSpeedTestService {
             var prevLoaded = 0 // number of bytes loaded last time onprogress was called
             //var garbagePhp_chunkSize = 20;
             var req = new HttpRequest('GET',
-            speedtestServer.SERVER_URL + speedtestServer.DOWNLOAD + this.url_sep(speedtestServer.DOWNLOAD) + "r=" + Math.random(), 
-            //them chuoi random de khong bi cach
+                speedtestServer.SERVER_URL + speedtestServer.DOWNLOAD + this.url_sep(speedtestServer.DOWNLOAD) + "r=" + Math.random(),
+                //them chuoi random de khong bi cach
                 {
                     reportProgress: true,
                     responseType: 'arraybuffer'
-                }); 
+                });
             xhr[i] = this.httpClient.request(req)
                 .subscribe((event: HttpEvent<any>) => {
                     switch (event.type) {
@@ -199,14 +196,16 @@ export class ApiSpeedTestService {
             var reqsmallUL = new Blob(reqsmall)
 
             //neu muon 
-            var file:File;
-            if (isSmallUpload){file = new File([reqsmallUL], 'data.dat')}else{file = new File([reqUL], 'data.dat')}
+            var file: File;
+            if (isSmallUpload) { file = new File([reqsmallUL], 'data.dat') } else { file = new File([reqUL], 'data.dat') }
 
             var req = new HttpRequest('POST',
-            speedtestServer.SERVER_URL + speedtestServer.UPLOAD + this.url_sep(speedtestServer.UPLOAD) + "r=" + Math.random(),
+                speedtestServer.SERVER_URL + speedtestServer.UPLOAD + this.url_sep(speedtestServer.UPLOAD) + "r=" + Math.random(),
                 file,
-                { reportProgress: true
-                 ,responseType: 'text' });
+                {
+                    reportProgress: true
+                    , responseType: 'text'
+                });
             xhr[i] = this.httpClient.request(req)
                 .subscribe((event: HttpEvent<any>) => {
                     switch (event.type) {
@@ -255,10 +254,11 @@ export class ApiSpeedTestService {
         return new Promise((resolve, reject) => {
 
             var req = new HttpRequest('GET',
-                speedtestServer.SERVER_URL + speedtestServer.PING + this.url_sep(speedtestServer.PING) + 'r=' + Math.random(), 
+                speedtestServer.SERVER_URL + speedtestServer.PING + this.url_sep(speedtestServer.PING) + 'r=' + Math.random(),
                 //them chuoi random de khong bi cach
-                { reportProgress: true
-                  ,responseType: 'text' 
+                {
+                    reportProgress: true
+                    , responseType: 'text'
                 });
 
             xhr[i] = this.httpClient.request(req)
@@ -318,26 +318,49 @@ export class ApiSpeedTestService {
         )
             .toPromise()
             .then(data => {
-
-                //console.log(data);
-
                 clearInterval(interval);//reset interval
-
                 let d;
                 d = data;
                 d.dlProgress = 1;
                 d.dlStatus = progress * 100;
 
-                this.postCommand("finish", "ip", 
+                this.postCommand("finish", "ip",
                     {
-                    ip: (d.rawIspInfo&&d.rawIspInfo.ip)?d.rawIspInfo.ip:d.processedString
-                    , server: d.server?d.server.ip /* + ' - ' + d.server.org
+                        ip: (d.rawIspInfo && d.rawIspInfo.ip) ? d.rawIspInfo.ip : d.processedString
+                        , server: d.server ? d.server.ip /* + ' - ' + d.server.org
                                             + d.server.city + d.server.region
-                                            + d.server.country */:''
-                    , duration: progress * durationGetIpInSecond
-                });
+                                            + d.server.country */: ''
+                        , duration: progress * durationGetIpInSecond
+                    });
 
                 return data;
+            })
+            .catch(err => {
+                //neu loi thi lay ip truc tiep??
+                clearInterval(interval);//reset interval
+                return this.httpClient.get('https://ipinfo.io/json?'+ "r=" + Math.random())
+                .toPromise()
+                .then(data=>{
+                    
+                    //console.log(data);
+
+                    let d;
+                    d = data;
+                    d.dlProgress = 1;
+                    d.dlStatus = progress * 100;
+
+                    this.postCommand("finish", "ip",
+                        {
+                            ip: d.ip
+                            , server: d.server ? d.server.ip : ''
+                            , duration: progress * durationGetIpInSecond
+                        });
+
+                return {
+                    processedString: d.ip + ' - ' + (d.org?d.org + ', ' + d.country:'Unknow ISP')
+                    ,
+                    rawIspInfo: data};
+                })
             })
     }
 

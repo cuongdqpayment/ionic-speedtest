@@ -168,17 +168,7 @@ export class HomePage {
     //co cong viec va ket qua hoan thanh
     if (work == 'ip') {
       //cong viec hoan thanh lay ip
-      let dt = new Date();
-      let time = dt.toISOString().replace(/T/, ' ').replace(/\..+/, '')
-                + " GMT"
-                + dt.getTimezoneOffset() / 60
-                + " Local: "
-                + dt.toLocaleTimeString();
       this.result.ip = d.ip;
-      this.result.date = dt.toLocaleDateString();
-      this.result.time = dt.toLocaleTimeString();
-      this.result.time_iso = dt.toISOString().replace(/T/, ' ').replace(/\..+/, '');
-      this.result.time_zone_offset = dt.getTimezoneOffset() / 60;
       this.result.server = (d.server?d.server:this.server.SERVER_URL);
       this.results.unshift(this.result);
     } else if (work == 'download') {
@@ -210,6 +200,11 @@ export class HomePage {
         this.result.id = ++idx; //id moi khoi tao
         this.result.start_location = pos;
         this.result.start_time = new Date().getTime();
+        let dt = new Date();
+        this.result.date = dt.toLocaleDateString();
+        this.result.time = dt.toLocaleTimeString();
+        this.result.time_iso = dt.toISOString().replace(/T/, ' ').replace(/\..+/, '');
+        this.result.time_zone_offset = dt.getTimezoneOffset() / 60;
         this.results.unshift(this.result);
       }
     })
