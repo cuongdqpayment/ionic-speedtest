@@ -169,7 +169,7 @@ export class HomePage {
     if (work == 'ip') {
       //cong viec hoan thanh lay ip
       this.result.ip = d.ip;
-      this.result.server = (d.server?d.server:this.server.SERVER_URL);
+      this.result.server = (d.server?d.server:this.server.SERVER_URL?this.server.SERVER_URL.substring(this.server.SERVER_URL.indexOf('//')+2):'Unk');
       this.results.unshift(this.result);
     } else if (work == 'download') {
       this.result.download = d.speed;
@@ -193,22 +193,23 @@ export class HomePage {
     const delay = 1000;
     var nextIndex = 0;
 
+    var pos;
+
     this.apiLocation.getCurrentLocation()
-    .then(pos=>{
-      if (!this.result){
-        this.result={}; //khoi dau mot phien test moi
-        this.result.id = ++idx; //id moi khoi tao
-        this.result.start_location = pos;
-        this.result.start_time = new Date().getTime();
-        let dt = new Date();
-        this.result.date = dt.toLocaleDateString();
-        this.result.time = dt.toLocaleTimeString();
-        this.result.time_iso = dt.toISOString().replace(/T/, ' ').replace(/\..+/, '');
-        this.result.time_zone_offset = dt.getTimezoneOffset() / 60;
-        this.results.unshift(this.result);
-      }
-    })
-    .catch(err=>{ });
+    .then(pos=> pos = pos)
+    .catch(err=> console.log(err))
+    .then(data=>{
+      if (!this.result) this.result={}; else this.result = this.results.shift();     
+      let dt = new Date();
+      this.result.id = ++idx; //id moi khoi tao
+      if (data) this.result.start_location = data;
+      this.result.start_time = dt.getTime();
+      this.result.date = dt.toLocaleDateString();
+      this.result.time = dt.toLocaleTimeString();
+      this.result.time_iso = dt.toISOString().replace(/T/, ' ').replace(/\..+/, '');
+      this.result.time_zone_offset = dt.getTimezoneOffset() / 60;
+      this.results.unshift(this.result);
+    });
 
     var runNextTest = function () {
       let command = test_order.charAt(nextIndex);
