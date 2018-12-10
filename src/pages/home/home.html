@@ -31,59 +31,66 @@
         <ion-card class="card-meter" >
           <div id="resultBtn" (click) = "shareResults()"></div>
           <ion-grid>
-            <ion-row>
-              <ion-col col-1>
-                Id
-              </ion-col>
-              <ion-col col-3>
-                Time
-              </ion-col>
-              <ion-col col-4>
-                IP
-              </ion-col>
-              <ion-col col-4>
-                Server
-              </ion-col>
-              <ion-col col-3>
-                Jitter
-              </ion-col>
-              <ion-col col-3>
-                Ping
-              </ion-col>
-              <ion-col col-3>
-                DL
-              </ion-col>
-              <ion-col col-3>
-                UL
-              </ion-col>
+            <!------------------- HEADER ----------------------->
+            <!-- <ion-scroll scrollX="true" scrollY="true" zoom="false" no-padding> -->
+              <ion-item color="primary">
+                <ion-row class="table-header">
+                  <ion-col col-2>
+                    Id
+                  </ion-col>
+                  <ion-col col-3>
+                    Time
+                  </ion-col>
+                  <ion-col col-4>
+                    IP
+                  </ion-col>
+                  <ion-col col-3>
+                    Ser
+                  </ion-col>
+                  <ion-col col-3>
+                    Jitter
+                  </ion-col>
+                  <ion-col col-3>
+                    Ping
+                  </ion-col>
+                  <ion-col col-3>
+                    DL
+                  </ion-col>
+                  <ion-col col-3>
+                    UL
+                  </ion-col>
             </ion-row>
-      
-            <ion-row *ngFor="let result of results">
-                <ion-col col-1>
-                  {{result?.id}}
-                </ion-col>
-                <ion-col col-3>
-                    {{result?.time}}
-                </ion-col>
-                <ion-col col-4>
-                    {{result?.ip}}
-                </ion-col>
-                <ion-col col-4>
-                    {{result?.server}}
-                </ion-col>
-                <ion-col col-3>
-                    {{result?.jitter}}
-                </ion-col>
-                <ion-col col-3>
-                    {{result?.ping}}
-                </ion-col>
-                <ion-col col-3>
-                    {{result?.download}}
-                </ion-col>
-                <ion-col col-3>
-                    {{result?.upload}}
-                </ion-col>
-              </ion-row>
+          </ion-item>
+          <!------------------- table ----------------------->
+          <!-- <ion-item > -->
+              <ion-row *ngFor="let result of results">
+                  <ion-col col-2>
+                    {{result?.id}}
+                  </ion-col>
+                  <ion-col col-3>
+                      {{result?.date}} {{result?.time}}
+                  </ion-col>
+                  <ion-col col-4>
+                      {{result?.ip}}
+                  </ion-col>
+                  <ion-col col-3>
+                      {{result?.server}}
+                  </ion-col>
+                  <ion-col col-3>
+                      {{result?.jitter}}
+                  </ion-col>
+                  <ion-col col-3>
+                      {{result?.ping}}
+                  </ion-col>
+                  <ion-col col-3>
+                      {{result?.download}}
+                  </ion-col>
+                  <ion-col col-3>
+                      {{result?.upload}}
+                  </ion-col>
+                </ion-row>
+              <!-- </ion-item> -->
+            <!-- </ion-scroll> -->
           </ion-grid>
         </ion-card>
       </ion-col>

@@ -92,5 +92,5 @@
         <variable name="GEOLOCATION_USAGE_DESCRIPTION" value="Cần biết vị trí của bạn để xác định nơi kiểm tra tốc độ!" />
     </plugin>
     <engine name="android" spec="7.0.0" />
-    <engine name="ios" spec="~4.5.5" />
+    <engine name="ios" spec="4.5.5" />
 </widget>

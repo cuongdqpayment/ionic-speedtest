@@ -16,6 +16,7 @@ var idx = 0;
   templateUrl: 'home.html'
 })
 
+
 //class dieu khien rieng cua no
 export class HomePage {
 
@@ -161,7 +162,7 @@ export class HomePage {
       this.result.id = ++idx; //id moi khoi tao
     }else{
       //da chay phien truoc co roi thi lay tu trong ra
-      this.result = this.results.pop();
+      this.result = this.results.shift();
     }
 
     //co cong viec va ket qua hoan thanh
@@ -174,19 +175,22 @@ export class HomePage {
                 + " Local: "
                 + dt.toLocaleTimeString();
       this.result.ip = d.ip;
-      this.result.time = time;
+      this.result.date = dt.toLocaleDateString();
+      this.result.time = dt.toLocaleTimeString();
+      this.result.time_iso = dt.toISOString().replace(/T/, ' ').replace(/\..+/, '');
+      this.result.time_zone_offset = dt.getTimezoneOffset() / 60;
       this.result.server = (d.server?d.server:this.server.SERVER_URL);
-      this.results.push(this.result);
+      this.results.unshift(this.result);
     } else if (work == 'download') {
       this.result.download = d.speed;
-      this.results.push(this.result);
+      this.results.unshift(this.result);
     } else if (work == 'upload') {
       this.result.upload = d.speed;
-      this.results.push(this.result);
+      this.results.unshift(this.result);
     } else if (work == 'ping') {
       this.result.ping = d.ping;
       this.result.jitter = d.jitter;
-      this.results.push(this.result);
+      this.results.unshift(this.result);
     }
   }
 
@@ -206,7 +210,7 @@ export class HomePage {
         this.result.id = ++idx; //id moi khoi tao
         this.result.start_location = pos;
         this.result.start_time = new Date().getTime();
-        this.results.push(this.result);
+        this.results.unshift(this.result);
       }
     })
     .catch(err=>{ });
@@ -307,10 +311,10 @@ export class HomePage {
     this.apiLocation.getCurrentLocation()
     .then(pos=>{
       if (this.result){
-        this.result = this.results.pop();
+        this.result = this.results.shift();
         this.result.end_location = pos;
         this.result.end_time = new Date().getTime();
-        this.results.push(this.result);
+        this.results.unshift(this.result);
       }
       //xem kq --send
       console.log(this.result);

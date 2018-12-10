@@ -2,6 +2,19 @@ page-home {
     h1{
         color:#404040;
     }
+   
+    ion-row:nth-of-type(even) {
+        ion-col:nth-of-type(even) {
+            background: #c2e1e6;
+        }
+    }
+
+    .table-header{
+        text-align:center;
+        white-space: nowrap;
+        //background: #d44e49;
+    }
+
 
     .card-command{
         //html, body
@@ -85,6 +98,11 @@ page-home {
     }
 
     div.graphArea{
+        border-radius: 25px;
+        background: #e1e9ec;
+        /* background: url(paper.gif);
+        background-position: left top;
+        background-repeat: repeat; */
         display:inline-block;
         width:16em;
         height:12.5em;

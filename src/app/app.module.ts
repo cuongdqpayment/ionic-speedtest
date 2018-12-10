@@ -9,6 +9,8 @@ import { Geolocation } from '@ionic-native/geolocation';
 import { MyApp } from './app.component';
 import { HomePage } from '../pages/home/home';
 
+import { ArraySortPipe } from '../pipes/arrayOrder'
+
 import { ApiSpeedTestService } from '../services/apiSpeedTestService';
 import { ApiAuthService } from '../services/apiAuthService';
 import { ApiImageService } from '../services/apiImageService';
@@ -19,7 +21,8 @@ import { ApiLocationService } from '../services/apiLocationService'
 @NgModule({
   declarations: [
     MyApp,
-    HomePage
+    HomePage,
+    ArraySortPipe
   ],
   imports: [
     BrowserModule,

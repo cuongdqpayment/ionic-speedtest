@@ -1,9 +1,9 @@
 
-import { HttpClient, HttpRequest, HttpEvent, HttpEventType, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpRequest, HttpEvent, HttpEventType } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 
 //ung dung cuongdq-upload post any
-var speedtestServer = {
+/* var speedtestServer = {
        NAME: "amazone-heroku-usa"
       ,SERVER_URL: "https://cuongdq-speedtest.herokuapp.com"
       ,DOWNLOAD: "/speedtest/download"
@@ -13,13 +13,27 @@ var speedtestServer = {
       ,LOCATION: "30.0866,-94.1274"
       ,DESCRITPTION: " Máy chủ test internet Tại Mỹ, herokuapp.com"
 }
+ */
+//test theo server cua speedtest demo
+var speedtestServer = {
+    NAME: "speedtest c3"
+   ,SERVER_URL: "https://c3.mobifone.vn"
+   ,GET_IP: "/speedtest/get-ip.jsp"
+   ,PING: "/speedtest/random350x350.jpg"
+   ,DOWNLOAD: "/speedtest/random1000x1000.jpg"
+   ,UPLOAD: "/speedtest/upload.jsp"
+   ,LOCATION: "30.0866,-94.1274"
+   ,DESCRITPTION: " Máy chủ test demo speedtest của kola tại Cty3"
+}
 
 var contermet;
 var xhr = null; //tao da luong de truy cap server
 var interval = null;
 var totLoaded = 0.0;
 var progress = 0.0;
-
+var BACKGROUD_COLOR = "#e0e0e0";
+var PROGRESS_COLOR = "#d44e49";
+// var PROGRESS_COLOR = "#EEEEEE";
 @Injectable()
 export class ApiSpeedTestService {
 
@@ -34,7 +48,7 @@ export class ApiSpeedTestService {
 
     setServer(server) {
         //console.log(server);
-        speedtestServer = server;
+        //speedtestServer = server;
     }
 
     //tham tham so cho url ? hoac & theo bien
@@ -62,26 +76,26 @@ export class ApiSpeedTestService {
                 objData.graphName = "Check your IP";
                 objData.unit = "ms";
                 objData.statusColor = "#AA6060";
-                objData.backgroundColor = "#E0E0E0";
-                objData.progressColor = "#EEEEEE"
+                objData.backgroundColor = BACKGROUD_COLOR;
+                objData.progressColor = PROGRESS_COLOR
             } else if (work === 'ping') {
                 objData.graphName = "Ping";
                 objData.unit = "ms";
                 objData.statusColor = "#AA6060";
-                objData.backgroundColor = "#E0E0E0";
-                objData.progressColor = "#EEEEEE"
+                objData.backgroundColor = BACKGROUD_COLOR;
+                objData.progressColor = PROGRESS_COLOR
             } else if (work === 'download') {
                 objData.graphName = "Download";
                 objData.unit = "Mbps";
                 objData.statusColor = "#6060AA";
-                objData.backgroundColor = "#E0E0E0";
-                objData.progressColor = "#EEEEEE"
+                objData.backgroundColor = BACKGROUD_COLOR;
+                objData.progressColor = PROGRESS_COLOR
             } else if (work === 'upload') {
                 objData.graphName = "Upload";
                 objData.unit = "Mbps";
                 objData.statusColor = "#309030";
-                objData.backgroundColor = "#E0E0E0";
-                objData.progressColor = "#EEEEEE"
+                objData.backgroundColor = BACKGROUD_COLOR;
+                objData.progressColor = PROGRESS_COLOR
             }
         }
         let objCommand = {
@@ -167,6 +181,7 @@ export class ApiSpeedTestService {
         var xhr_ul_blob_megabytes = 20;
         return new Promise((resolve, reject) => {
             var prevLoaded = 0 // number of bytes loaded last time onprogress was called
+            var isSmallUpload = true; //upload small data
 
             var r;
             r = new ArrayBuffer(1048576)
@@ -175,19 +190,23 @@ export class ApiSpeedTestService {
             var reqData = []
             var reqsmall = []
             for (let j = 0; j < xhr_ul_blob_megabytes; j++) reqData.push(r)
+            //su dung upload du lieu bigger???
             var reqUL = new Blob(reqData)
+
             r = new ArrayBuffer(262144)
             try { r = new Uint32Array(r); for (let j = 0; j < r.length; j++)r[i] = Math.random() * maxInt } catch (e) { }
             reqsmall.push(r)
             var reqsmallUL = new Blob(reqsmall)
 
-
-            var file = new File([reqsmallUL], 'data.dat')
+            //neu muon 
+            var file:File;
+            if (isSmallUpload){file = new File([reqsmallUL], 'data.dat')}else{file = new File([reqUL], 'data.dat')}
 
             var req = new HttpRequest('POST',
             speedtestServer.SERVER_URL + speedtestServer.UPLOAD + this.url_sep(speedtestServer.UPLOAD) + "r=" + Math.random(),
                 file,
-                { reportProgress: true });
+                { reportProgress: true
+                 ,responseType: 'text' });
             xhr[i] = this.httpClient.request(req)
                 .subscribe((event: HttpEvent<any>) => {
                     switch (event.type) {
@@ -196,7 +215,7 @@ export class ApiSpeedTestService {
                         case HttpEventType.ResponseHeader:
                             break;
                         case HttpEventType.UploadProgress:
-                            const percentDone = Math.round(100 * event.loaded / event.total);
+                            //const percentDone = Math.round(100 * event.loaded / event.total);
                             //console.log(`FileUploading... is ${percentDone}% uploaded`);
                             var loadDiff = event.loaded <= 0 ? 0 : (event.loaded - prevLoaded);
                             if (isNaN(loadDiff) || !isFinite(loadDiff) || loadDiff < 0) {
@@ -238,7 +257,9 @@ export class ApiSpeedTestService {
             var req = new HttpRequest('GET',
                 speedtestServer.SERVER_URL + speedtestServer.PING + this.url_sep(speedtestServer.PING) + 'r=' + Math.random(), 
                 //them chuoi random de khong bi cach
-                { reportProgress: true });
+                { reportProgress: true
+                  ,responseType: 'text' 
+                });
 
             xhr[i] = this.httpClient.request(req)
                 .subscribe((event: HttpEvent<any>) => {
@@ -309,10 +330,10 @@ export class ApiSpeedTestService {
 
                 this.postCommand("finish", "ip", 
                     {
-                    ip: d.processedString
-                    , server: d.server?d.server.ip + ' - ' + d.server.org
+                    ip: (d.rawIspInfo&&d.rawIspInfo.ip)?d.rawIspInfo.ip:d.processedString
+                    , server: d.server?d.server.ip /* + ' - ' + d.server.org
                                             + d.server.city + d.server.region
-                                            + d.server.country:''
+                                            + d.server.country */:''
                     , duration: progress * durationGetIpInSecond
                 });
 
@@ -362,7 +383,7 @@ export class ApiSpeedTestService {
                 }
             } else {
                 var speed = totLoaded / (passTime / 1000.0)
-                contermet = ((speed * 8 * overheadCompensationFactor) / (useMebibits ? 1048576 : 1000000)).toFixed(2) // speed is multiplied by 8 to go from bytes to bits, overhead compensation is applied, then everything is divided by 1048576 or 1000000 to go to megabits/mebibits
+                contermet = ((speed * 8 * overheadCompensationFactor) / (useMebibits ? 1048576 : 1000000)).toFixed(1) // speed is multiplied by 8 to go from bytes to bits, overhead compensation is applied, then everything is divided by 1048576 or 1000000 to go to megabits/mebibits
 
                 this.postCommand("progress", "download", { progress: progress, contermet: contermet });
 
@@ -476,7 +497,7 @@ export class ApiSpeedTestService {
                 }
             } else {
                 var speed = totLoaded / (passTime / 1000.0)
-                contermet = ((speed * 8 * overheadCompensationFactor) / (useMebibits ? 1048576 : 1000000)).toFixed(2) // speed is multiplied by 8 to go from bytes to bits, overhead compensation is applied, then everything is divided by 1048576 or 1000000 to go to megabits/mebibits
+                contermet = ((speed * 8 * overheadCompensationFactor) / (useMebibits ? 1048576 : 1000000)).toFixed(1) // speed is multiplied by 8 to go from bytes to bits, overhead compensation is applied, then everything is divided by 1048576 or 1000000 to go to megabits/mebibits
                 //dua ve qua trinh
 
                 this.postCommand("progress", "upload", { progress: progress, contermet: contermet });
@@ -589,8 +610,8 @@ export class ApiSpeedTestService {
                             }
                             prevInstspd = instspd
                         }
-                        pingStatus = ping.toFixed(2);
-                        jitterStatus = jitter.toFixed(2);
+                        pingStatus = ping.toFixed(0);
+                        jitterStatus = jitter.toFixed(0);
                         i++
 
 
