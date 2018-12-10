@@ -26,7 +26,7 @@ tmp/
 #/db/*.db
 temp/
 #phai day www len server cho ionic hoat dong
-#www/
+www/
 #khong truyen file upload len hoac xuong
 upload_files/
 #khong truyen file screen_shot_images len
