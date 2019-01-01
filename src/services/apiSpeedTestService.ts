@@ -24,6 +24,7 @@ var speedtestServer =
 }
  */
 
+
 var contermet;
 var xhr = null; //tao da luong de truy cap server
 var interval = null;

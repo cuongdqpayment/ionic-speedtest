@@ -29,7 +29,22 @@ export class HomePage {
 
   public results = [];
   public result;
-  public server = {
+  public server = 
+ //may speedtest server cua cac nha mang
+ //nay vao web speedtest vao phan debug network, ws 
+ //lay cac link vi du cua mobifone la:
+ // neu go duong dan + http://st1.mobifone.vn.prod.hosts.ooklaserver.net:8080/latency.txt
+ // ma no tra ve test=test thi server da co
+  { SERVER_URL: "http://st1.mobifone.vn.prod.hosts.ooklaserver.net:8080", 
+  NAME: "Mobifone Ha noi", 
+  GET_IP: "/get-ip.jsp", 
+  PING: "", 
+  UPLOAD: "/upload.php", //jsp, asp, aspx, php
+  DOWNLOAD: "/random1000x1000.jpg", 
+  DESCRITPTION: "Máy chủ speedtest của kola tại Mobifone Ha noi", 
+  LOCATION: "16.00,108.00" }
+
+    /* {
     NAME: "amazone-heroku-usa"
     ,SERVER_URL: "https://cuongdq-speedtest.herokuapp.com"
     ,DOWNLOAD: "/speedtest/download"
@@ -38,7 +53,8 @@ export class HomePage {
     ,UPLOAD: "/speedtest/empty"
     ,LOCATION: "30.0866,-94.1274"
     ,DESCRITPTION: " Máy chủ test internet Tại Mỹ, herokuapp.com"
-  };
+  }; */
+
   public serverList = [this.server];
 
   public selectOptions = {
@@ -63,7 +79,7 @@ export class HomePage {
       let list;
         list = data;
         try{
-          if (list) this.serverList = list;
+          if (list) this.serverList = this.serverList.concat(list);
           this.server = this.serverList[0];
         }catch(e){}
     })
