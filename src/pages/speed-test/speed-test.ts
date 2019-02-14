@@ -1,66 +1,47 @@
 import { Component } from '@angular/core';
-import { NavController, AlertController } from 'ionic-angular';
+import { AlertController, reorderArray } from 'ionic-angular';
 
 import { ApiGraphService } from '../../services/apiMeterGraphService'
 import { ApiSpeedTestService } from '../../services/apiSpeedTestService'
-import { ApiAuthService } from '../../services/apiAuthService'
 import { ApiLocationService } from '../../services/apiLocationService'
 
 var worker = null;
-var isRuning: boolean = false;
-var idx = 0;
 
 //khai bao thanh phan cua trang nay
 @Component({
-  selector: 'page-home',
-  templateUrl: 'home.html'
+  selector: 'page-speed-test',
+  templateUrl: 'speed-test.html'
 })
 
 
 //class dieu khien rieng cua no
-export class HomePage {
+export class SpeedTestPage {
 
-  public objISP: any;
+  objISP: any;
 
-  public objMeter = {
+  objMeter = {
     graphName: 'Speedtest',
     unit: 'Mbps/ms/km',
   }
 
-  public results = [];
-  public result;
-  public server = 
- //may speedtest server cua cac nha mang
- //nay vao web speedtest vao phan debug network, ws 
- //lay cac link vi du cua mobifone la:
- // neu go duong dan + http://st1.mobifone.vn.prod.hosts.ooklaserver.net:8080/latency.txt
- // ma no tra ve test=test thi server da co
-  { url: "http://st1.mobifone.vn.prod.hosts.ooklaserver.net:8080", 
-  name: "Mobifone Ha noi", 
-  getip: "/get-ip.jsp", 
-  ping: "", 
-  upload: "/upload.php", //jsp, asp, aspx, php
-  download: "/random1000x1000.jpg", 
-  description: "Máy chủ speedtest của kola tại Mobifone Ha noi", 
-  location: "16.00,108.00" }
+  results = [];
+  result:any;
+  server:any;
 
-    /* {
-    name: "amazone-heroku-usa"
-    ,url: "https://cuongdq-speedtest.herokuapp.com"
-    ,download: "/speedtest/download"
-    ,getip: "/speedtest/get-ip"
-    ,ping: "/speedtest/empty"
-    ,upload: "/speedtest/empty"
-    ,location: "30.0866,-94.1274"
-    ,description: " Máy chủ test internet Tại Mỹ, herokuapp.com"
-  }; */
+  isRuning: boolean = false;
+  idx = 0; 
+  serverList = [];
 
-  public serverList = [this.server];
-
-  public selectOptions = {
-    title: 'SERVER LIST',
-    subTitle: 'Select a server',
-    mode: 'md'
+  dynamicList: any = {
+    is_table: true
+    ,header: {
+      title:"Thời gian"
+      ,strong:"Máy chủ"
+      ,p:"Dowload"
+      ,span:"Upload"
+      ,label:"Ping"
+      ,note:"Jitter"
+      }
   };
 
   constructor(private apiLocation: ApiLocationService,
@@ -69,18 +50,15 @@ export class HomePage {
               private apiSpeedtest: ApiSpeedTestService) { }
 
   ngOnInit() { 
-
+    this.dynamicList.items = this.results;
     this.resetContermet(); 
-    this.server = this.serverList[0];
     this.apiSpeedtest.getSpeedtestServerList()
     .then(list=>{
-        try{
-          if (list) this.serverList = this.serverList.concat(list);
-          this.server = this.serverList[0];
-        }catch(e){}
+        this.serverList = list;
+        this.server = this.serverList[0];
     })
     .catch(err=>{
-      console.log(err); //loi khong lay duoc danh sach server
+      console.log(err);
     })
   }
 
@@ -94,29 +72,31 @@ export class HomePage {
   }
   clearRuning() {
     //speedtest xong
-    this.alertCtrl.create({
+    /* this.alertCtrl.create({
       title: 'Speedtest finish',
       subTitle: 'Thank you for your test with us! See the result and share...',
       buttons: ['OK']
-    }).present();
+    }).present(); */
 
     this.resetContermet();
 
-    isRuning = false;
-    this.apiGraph.I("startStopBtn").className = "";
+    this.isRuning = false;
+    //this.apiGraph.I("startStopBtn").className = "";
     worker = null;
     this.result = null;
   }
 
   startStop() {
-    isRuning = !isRuning;
-    if (!isRuning) {
-      this.apiGraph.I("startStopBtn").className = "";
+
+    this.isRuning = !this.isRuning;
+    if (!this.isRuning) {
+      //this.apiGraph.I("startStopBtn").className = "";
       //dung test
     } else {
       //lay vi tri de ghi ket qua
-      this.apiGraph.I("startStopBtn").className = "running";
+      //this.apiGraph.I("startStopBtn").className = "running";
       //bat dau chay
+
       worker = new Worker('worker-message.js');
       this.apiSpeedtest.setWorker(worker);
       this.apiSpeedtest.setServer(this.server);
@@ -171,7 +151,7 @@ export class HomePage {
     //kiem tra phien dau tien cua no
     if (!this.result){
       this.result={}; //khoi dau mot phien test moi
-      this.result.id = ++idx; //id moi khoi tao
+      this.result.id = ++this.idx; //id moi khoi tao
     }else{
       //da chay phien truoc co roi thi lay tu trong ra
       this.result = this.results.shift();
@@ -213,7 +193,7 @@ export class HomePage {
     .then(data=>{
       if (!this.result) this.result={}; else this.result = this.results.shift();     
       let dt = new Date();
-      this.result.id = ++idx; //id moi khoi tao
+      this.result.id = ++this.idx; //id moi khoi tao
       if (data) this.result.start_location = data;
       this.result.start_time = dt.getTime();
       this.result.date = dt.toLocaleDateString();
@@ -231,13 +211,14 @@ export class HomePage {
         case 'S': { nextIndex++; this.shareResult(); setTimeout(runNextTest, delay); } break;
         case 'I': { 
                     nextIndex++; 
-                    if (!isRuning) { 
+                    if (!this.isRuning) { 
                         runNextTest(); 
                         return; 
                     }
                     this.apiSpeedtest.getISP()
                         .then(data => {
-                          this.objISP = data; //ghi ket qua duoi dong ho do
+                          this.objISP 
+                          = data; //ghi ket qua duoi dong ho do
                           runNextTest();
                           })
                           .catch(err => {
@@ -247,13 +228,14 @@ export class HomePage {
             break;
         case 'P': { 
                     nextIndex++; 
-                    if (!isRuning) { 
+                    if (!this.isRuning) { 
                         runNextTest(); 
                         return; 
                     }
                     this.apiSpeedtest.ping()//.multiDownload()
                       .then(result => {
-                        // console.log('Ping Data: ');
+                        // console.log
+                        ('Ping Data: ');
                         // console.log(result);
                         runNextTest();
                       })
@@ -266,13 +248,14 @@ export class HomePage {
             break;
         case 'D': { 
                     nextIndex++; 
-                    if (!isRuning) { 
+                    if (!this.isRuning) { 
                         runNextTest(); 
                         return; 
                     }
                     
                     this.apiSpeedtest.download()
-                      .then(result => {
+                      .then(result => 
+                        {
                         // console.log('Download Data: ');
                         // console.log(result);
                         runNextTest();
@@ -286,13 +269,14 @@ export class HomePage {
             break;
         case 'U': { 
                     nextIndex++; 
-                    if (!isRuning) { 
+                    if (!this.isRuning) { 
                         runNextTest(); 
                         return; 
                     }
                     this.apiSpeedtest.upload()
                       .then(result => {
-                        // console.log('Upload Data: ');
+                        // console.log
+                        ('Upload Data: ');
                         // console.log(result);
                         runNextTest();
                       })
@@ -334,8 +318,23 @@ export class HomePage {
 
   }
 
-  //gui ket qua cho nguoi dung
-  shareResults(){
+  toggleSwitch(){
+  }
+
+  toggleEdit(){
     
+  }
+
+  reorderData(indexes: any) {
+    this.dynamicList.items = reorderArray(this.dynamicList.items, indexes);
+  }
+
+  onClickHeader(btn){
+    console.log(btn);
+  }
+
+
+  onClickItem(it,idx){
+    console.log(idx,it);
   }
 }

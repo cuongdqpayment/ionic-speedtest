@@ -3,26 +3,111 @@ import { HttpClient, HttpRequest, HttpEvent, HttpEventType } from '@angular/comm
 import { Injectable } from '@angular/core';
 
 //ung dung cuongdq-upload post any
-var speedtestServer =
-    { SERVER_URL: "https://c3.mobifone.vn", 
-    NAME: "Cmc Danang (100Mbps)", 
-    GET_IP: "/speedtest/get-ip.jsp", 
-    PING: "/speedtest/latency.txt", 
-    UPLOAD: "/speedtest/upload.jsp", 
-    DOWNLOAD: "/speedtest/random1000x1000.jpg", 
-    DESCRITPTION: "Máy chủ test demo speedtest của kola tại Cty3", 
-    LOCATION: "16.00,108.00" }
-/* {
-       NAME: "Amazone Heroku (USA)"
-      ,SERVER_URL: "https://cuongdq-speedtest.herokuapp.com"
-      ,DOWNLOAD: "/speedtest/download"
-      ,GET_IP: "/speedtest/get-ip"
-      ,PING: "/speedtest/empty"
-      ,UPLOAD: "/speedtest/empty"
-      ,LOCATION: "30.0866,-94.1274"
-      ,DESCRITPTION: " Máy chủ test internet Tại Mỹ, herokuapp.com"
-}
- */
+var speedtestServer:any;
+
+/*  =
+    { url: "https://c3.mobifone.vn", 
+    name: "Cmc Danang (100Mbps)", 
+    getip: "/speedtest/get-ip.jsp", 
+    ping: "/speedtest/latency.txt", 
+    upload: "/speedtest/upload.jsp", 
+    download: "/speedtest/random1000x1000.jpg", 
+    description: "Máy chủ test demo speedtest của kola tại Cty3", 
+    location: "16.00,108.00" } */
+
+
+var speedTestServers = [
+    { 
+        name: 'Mobifone Hanoi (Speedtest)',
+        url: 'http://st1.mobifone.vn.prod.hosts.ooklaserver.net:8080', 
+        getip : '/get-ip.php',
+        ping: '/latency.txt',
+        download: '/random350x350.jpg',
+        upload: '/upload.php',
+        description:'May chủ speedtest của Mobifone tại Hà nội',
+        location:'16.00,108.00'
+    },
+    { 
+        name: 'Viettel kv2a (Speedtest)',
+        url: 'http://speedtestkv2a.viettel.vn.prod.hosts.ooklaserver.net:8080', 
+        getip : '/get-ip.php',
+        ping: '/latency.txt',
+        download: '/random350x350.jpg',
+        upload: '/upload.php',
+        description:'May chủ speedtest của Mobifone tại Hà nội',
+        location:'16.00,108.00'
+    },
+    { 
+        name: 'VietnamMobile Da nang (Speedtest)',
+        url: 'http://vnmdngspt1.vietnamobile.com.vn.prod.hosts.ooklaserver.net:8080', 
+        getip : '/get-ip.php',
+        ping: '/latency.txt',
+        download: '/random350x350.jpg',
+        upload: '/upload.php',
+        description:'May chủ speedtest của Mobifone tại Hà nội',
+        location:'16.00,108.00'
+    },
+    { 
+        name: 'VTN 5 (VNPT) (Speedtest)',
+        url: 'http://speedtest5.vtn.com.vn.prod.hosts.ooklaserver.net:8080', 
+        getip : '/get-ip.php',
+        ping: '/latency.txt',
+        download: '/random350x350.jpg',
+        upload: '/upload.php',
+        description:'May chủ speedtest của Mobifone tại Hà nội',
+        location:'16.00,108.00'
+    },
+    { 
+        name: 'HTC-ITC (Speedtest)',
+        url: 'http://speedtest.htc-itc.vn.prod.hosts.ooklaserver.net:8080', 
+        getip : '/get-ip.php',
+        ping: '/latency.txt',
+        download: '/random350x350.jpg',
+        upload: '/upload.php',
+        description:'May chủ speedtest của Mobifone tại Hà nội',
+        location:'16.00,108.00'
+    },
+    { 
+        name: 'ChinaMobile (Speedtest)',
+        url: 'http://speedtest1.hi.chinamobile.com.prod.hosts.ooklaserver.net:8080', 
+        getip : '/get-ip.php',
+        ping: '/latency.txt',
+        download: '/random350x350.jpg',
+        upload: '/upload.php',
+        description:'May chủ speedtest của Mobifone tại Hà nội',
+        location:'16.00,108.00'
+    },
+    { 
+        name: 'Amazone Heroku (USA)',
+        url: 'https://cuongdq-speedtest.herokuapp.com', //ngoai internet
+        getip : '/speedtest/get-ip',
+        ping: '/speedtest/empty',
+        download: '/speedtest/download',
+        upload: '/speedtest/empty',
+        description:' Máy chủ test internet Tại Mỹ, herokuapp.com',
+        location:'30.0866,-94.1274' 
+    },
+    {
+        name: 'Fpt Danang (100Mbps)',
+        url: 'http://210.245.119.136:9235', //ngoai internet
+        getip : '/getIP.php?isp=true&distance=km',
+        ping: '/empty.php',
+        download: '/garbage.php?ckSize=20',
+        upload: '/empty.php',
+        description:'',
+        location:'16.00,108.00'
+    },
+    {
+        name: 'Cmc Danang (100Mbps)',
+        url: 'http://c3.mobifone.vn', //ngoai internet
+        getip : '/speedtest/get-ip.jsp',
+        ping: '/speedtest/latency.txt',
+        download: '/speedtest/random1000x1000.jpg',
+        upload: '/speedtest/upload.jsp',
+        description:'Máy chủ test demo speedtest của kola tại Cty3',
+        location:'16.00,108.00'
+    }
+    ]
 
 
 var contermet;
@@ -130,7 +215,7 @@ export class ApiSpeedTestService {
             var prevLoaded = 0 // number of bytes loaded last time onprogress was called
             //var garbagePhp_chunkSize = 20;
             var req = new HttpRequest('GET',
-                speedtestServer.SERVER_URL + speedtestServer.DOWNLOAD + this.url_sep(speedtestServer.DOWNLOAD) + "r=" + Math.random(),
+                speedtestServer.url + speedtestServer.download + this.url_sep(speedtestServer.download) + "r=" + Math.random(),
                 //them chuoi random de khong bi cach
                 {
                     reportProgress: true,
@@ -202,7 +287,7 @@ export class ApiSpeedTestService {
             if (isSmallUpload) { file = new File([reqsmallUL], 'data.dat') } else { file = new File([reqUL], 'data.dat') }
 
             var req = new HttpRequest('POST',
-                speedtestServer.SERVER_URL + speedtestServer.UPLOAD + this.url_sep(speedtestServer.UPLOAD) + "r=" + Math.random(),
+                speedtestServer.url + speedtestServer.upload + this.url_sep(speedtestServer.upload) + "r=" + Math.random(),
                 file,
                 {
                     reportProgress: true
@@ -256,7 +341,7 @@ export class ApiSpeedTestService {
         return new Promise((resolve, reject) => {
 
             var req = new HttpRequest('GET',
-                speedtestServer.SERVER_URL + speedtestServer.PING + this.url_sep(speedtestServer.PING) + 'r=' + Math.random(),
+                speedtestServer.url + speedtestServer.ping + this.url_sep(speedtestServer.ping) + 'r=' + Math.random(),
                 //them chuoi random de khong bi cach
                 {
                     reportProgress: true
@@ -316,7 +401,7 @@ export class ApiSpeedTestService {
         }.bind(this), 200); //cu 200ms thi thong bao ket qua cho contermet
 
         return this.httpClient.get(
-            speedtestServer.SERVER_URL + speedtestServer.GET_IP + this.url_sep(speedtestServer.GET_IP) + "r=" + Math.random()
+            speedtestServer.url + speedtestServer.getip + this.url_sep(speedtestServer.getip) + "r=" + Math.random()
         )
             .toPromise()
             .then(data => {
@@ -478,7 +563,7 @@ export class ApiSpeedTestService {
 
                 this.postCommand("finish", "download", { speed: contermet });
 
-                return 'DOWNLOAD STOP!'; //tra ve cho phien goi no
+                return 'download STOP!'; //tra ve cho phien goi no
 
             });
     }
@@ -577,7 +662,7 @@ export class ApiSpeedTestService {
                 clearInterval(interval);
                 this.postCommand("progress", "upload", { progress: 1, contermet: contermet });
                 this.postCommand("finish", "upload", { speed: contermet });
-                return 'UPLOAD STOP!'; //tra ve cho phien goi no
+                return 'upload STOP!'; //tra ve cho phien goi no
             });
     }
 
@@ -689,11 +774,8 @@ export class ApiSpeedTestService {
     }
 
     getSpeedtestServerList(){
-        return this.httpClient.get('https://cuongdq-oauth.herokuapp.com/speedtest-server')
-            .toPromise()
-            .then(jsonData => {
-                let rtn; rtn = jsonData;
-                return rtn;
-            });
+        return new Promise<any>((resolve,reject)=>{
+            resolve(speedTestServers)
+        })
     }
 }

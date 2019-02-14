@@ -20,7 +20,7 @@
           <ion-item>
             <ion-label>Server: </ion-label>
             <ion-select [(ngModel)]="server" okText="OK" cancelText="Cancel" [selectOptions]="selectOptions">
-              <ion-option *ngFor="let server of serverList" [value]="server">{{server?.NAME}}</ion-option>
+              <ion-option *ngFor="let server of serverList" [value]="server">{{server?.name}}</ion-option>
             </ion-select>
           </ion-item>
           <p>Your IP: {{objISP?.processedString}}</p>

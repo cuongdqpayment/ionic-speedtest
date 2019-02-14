@@ -1,10 +1,11 @@
 import { BrowserModule } from '@angular/platform-browser';
-import { HttpClientModule } from '@angular/common/http';
+import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { ErrorHandler, NgModule } from '@angular/core';
 import { IonicApp, IonicErrorHandler, IonicModule } from 'ionic-angular';
 import { SplashScreen } from '@ionic-native/splash-screen';
 import { StatusBar } from '@ionic-native/status-bar';
 import { Geolocation } from '@ionic-native/geolocation';
+import { StorageServiceModule } from 'angular-webstorage-service';
 
 import { MyApp } from './app.component';
 import { HomePage } from '../pages/home/home';
@@ -26,6 +27,11 @@ import { DynamicCardSocialPage } from '../pages/dynamic-card-social/dynamic-card
 import { DynamicMediasPage } from '../pages/dynamic-medias/dynamic-medias';
 import { DynamicListOrderPage } from '../pages/dynamic-list-order/dynamic-list-order';
 import { SignaturePage } from '../pages/signature/signature';
+import { ApiHttpPublicService } from '../services/apiHttpPublicServices';
+import { ApiResourceService } from '../services/apiResourceServices';
+import { RequestInterceptor } from '../interceptors/requestInterceptor';
+import { ResponseInterceptor } from '../interceptors/responseInterceptor';
+import { SpeedTestPage } from '../pages/speed-test/speed-test';
 
 @NgModule({
   declarations: [
@@ -33,6 +39,7 @@ import { SignaturePage } from '../pages/signature/signature';
     LoginPage,
     HomePage,
     TabsPage,
+    SpeedTestPage,
     DynamicFormWebPage,
     DynamicListPage,
     DynamicFormMobilePage,
@@ -45,6 +52,7 @@ import { SignaturePage } from '../pages/signature/signature';
   imports: [
     BrowserModule,
     HttpClientModule,
+    StorageServiceModule,
     IonicModule.forRoot(MyApp)
   ],
   bootstrap: [IonicApp],
@@ -53,6 +61,7 @@ import { SignaturePage } from '../pages/signature/signature';
     LoginPage,
     HomePage,
     TabsPage,
+    SpeedTestPage,
     DynamicFormWebPage,
     DynamicListPage,
     DynamicFormMobilePage,
@@ -70,8 +79,22 @@ import { SignaturePage } from '../pages/signature/signature';
     ApiAuthService,
     ApiStorageService,
     ApiSpeedTestService,
+    ApiHttpPublicService,
+    ApiResourceService,
     ApiLocationService,
-    {provide: ErrorHandler, useClass: IonicErrorHandler}
+    RequestInterceptor,
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: RequestInterceptor,
+      multi: true
+    },
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: ResponseInterceptor,
+      multi: true
+    },
+    {provide: ErrorHandler,
+       useClass: IonicErrorHandler}
   ]
 })
 export class AppModule {}
