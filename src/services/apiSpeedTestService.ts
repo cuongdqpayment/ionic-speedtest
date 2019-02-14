@@ -32,6 +32,7 @@ var totLoaded = 0.0;
 var progress = 0.0;
 var BACKGROUD_COLOR = "#e0e0e0";
 var PROGRESS_COLOR = "#d44e49";
+
 @Injectable()
 export class ApiSpeedTestService {
 
@@ -685,5 +686,14 @@ export class ApiSpeedTestService {
                 throw err; //tra ve xu ly o phien toi
             });
 
+    }
+
+    getSpeedtestServerList(){
+        return this.httpClient.get('https://cuongdq-oauth.herokuapp.com/speedtest-server')
+            .toPromise()
+            .then(jsonData => {
+                let rtn; rtn = jsonData;
+                return rtn;
+            });
     }
 }

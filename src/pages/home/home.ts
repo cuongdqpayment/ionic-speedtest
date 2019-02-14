@@ -63,21 +63,17 @@ export class HomePage {
     mode: 'md'
   };
 
-  constructor(public navCtrl: NavController,
-    private apiLocation: ApiLocationService,
-    private apiGraph: ApiGraphService,
-    private apiAuth: ApiAuthService,
-    private alertCtrl: AlertController,
-    private apiHttp: ApiSpeedTestService) { }
+  constructor(private apiLocation: ApiLocationService,
+              private apiGraph: ApiGraphService,
+              private alertCtrl: AlertController,
+              private apiSpeedtest: ApiSpeedTestService) { }
 
   ngOnInit() { 
 
     this.resetContermet(); 
     this.server = this.serverList[0];
-    this.apiAuth.getSpeedtestServerList()
-    .then(data=>{
-      let list;
-        list = data;
+    this.apiSpeedtest.getSpeedtestServerList()
+    .then(list=>{
         try{
           if (list) this.serverList = this.serverList.concat(list);
           this.server = this.serverList[0];
@@ -122,8 +118,8 @@ export class HomePage {
       this.apiGraph.I("startStopBtn").className = "running";
       //bat dau chay
       worker = new Worker('worker-message.js');
-      this.apiHttp.setWorker(worker);
-      this.apiHttp.setServer(this.server);
+      this.apiSpeedtest.setWorker(worker);
+      this.apiSpeedtest.setServer(this.server);
 
       //Thuc hien chu trinh speedTest: getIP, delay, ping, delay, dowload, delay, upload
       this.runTestLoop('_I_P_D_U_S_'); //Get IP, Ping, Download, Upload, Share server, 
@@ -239,7 +235,7 @@ export class HomePage {
                         runNextTest(); 
                         return; 
                     }
-                    this.apiHttp.getISP()
+                    this.apiSpeedtest.getISP()
                         .then(data => {
                           this.objISP = data; //ghi ket qua duoi dong ho do
                           runNextTest();
@@ -255,7 +251,7 @@ export class HomePage {
                         runNextTest(); 
                         return; 
                     }
-                    this.apiHttp.ping()//.multiDownload()
+                    this.apiSpeedtest.ping()//.multiDownload()
                       .then(result => {
                         // console.log('Ping Data: ');
                         // console.log(result);
@@ -275,7 +271,7 @@ export class HomePage {
                         return; 
                     }
                     
-                    this.apiHttp.download()
+                    this.apiSpeedtest.download()
                       .then(result => {
                         // console.log('Download Data: ');
                         // console.log(result);
@@ -294,7 +290,7 @@ export class HomePage {
                         runNextTest(); 
                         return; 
                     }
-                    this.apiHttp.upload()
+                    this.apiSpeedtest.upload()
                       .then(result => {
                         // console.log('Upload Data: ');
                         // console.log(result);
