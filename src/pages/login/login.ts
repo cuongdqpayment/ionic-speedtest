@@ -28,45 +28,32 @@ export class LoginPage {
 
   ngOnInit() {
     //console.log('2. ngOnInit Home');
+    this.checkTokenLogin();
+  }
+
+
+  checkTokenLogin(){
 
     if (this.apiStorageService.getToken()) {
 
       let loading = this.loadingCtrl.create({
-        content: 'Đang kiểm tra xác thực máy chủ....'
+        content: 'Đang kiểm tra từ máy chủ xác thực ...'
       });
       loading.present();
 
       this.auth.authorize
         (this.apiStorageService.getToken())
         .then(status => {
-
           loading.dismiss();
-
           this.auth.getServerPublicRSAKey()
             .then(pk => {
-
               let userInfo = this.auth.getUserInfo();
-
-              //console.log('Save token user', userInfo);
-
-              //kiem tra token chua khai nickname, va image thi phai nhay vao slide khai thong tin
-              if (
-                userInfo
-                // &&userInfo.image
-                // &&userInfo.nickname
-              )
-                //cho phep truy cap thi gui token kem theo
-                this.auth.injectToken(); //Tiêm token cho các phiên làm việc lấy số liệu cần xác thực
-
-              //this.navCtrl.setRoot(TabsPage);
-              //Thông tin login sẽ được ghi ở trang login thành công
+              if (userInfo) this.auth.injectToken(); //Tiêm token cho các phiên làm việc lấy số liệu cần xác thực
               this.callLoginOk(userInfo);
             })
             .catch(err => {
-              //console.log('Public key err', err);
               throw err;
             });
-
         })
         .catch(err => {
           loading.dismiss();
@@ -78,7 +65,6 @@ export class LoginPage {
     } else {
       this.ionViewDidLoad_Login();
     }
-
   }
 
 
@@ -212,15 +198,15 @@ export class LoginPage {
 
     return new Promise((resolve, reject) => {
 
-      console.log('parent:', that);
-      console.log('this:', this);
+      // console.log('parent:', that);
+      // console.log('this:', this);
 
       if (res && res.error && res.error.error) {
         //console.log('callback error:', res.error.error);
         that.presentAlert('Lỗi:<br>' + JSON.stringify(res.error.error.error));
         resolve();
       } else if (res && res.step === 'form-phone' && res.data) {
-        console.log('forward data:', res.data.database_out);
+        // console.log('forward data:', res.data.database_out);
         if (res.data.database_out && res.data.database_out.status === 0) {
           that.presentAlert('Chú ý:<br>' + JSON.stringify(res.data.database_out.message));
         }
@@ -247,22 +233,25 @@ export class LoginPage {
       } else if (res && res.step === 'form-key' && res.data.token) {
         //lay duoc token
         //ktra token co user, image thi pass new ko thi gui ...
-        console.log('token verified:', res.data.token);
+        //console.log('token verified:', res.data.token);
         // neu nhu gai quyet xong
         let loading = that.loadingCtrl.create({
-          content: 'Đang xử lý dữ liệu từ máy chủ ....'
+          content: 'Đang xử kiểm tra từ máy chủ Tài nguyên....'
         });
         loading.present();
 
         that.resources.authorizeFromResource(res.data.token)
           .then(login => {
-            console.log('data', login);
+            //console.log('data', login);
             if (login.status
               && login.user_info
               && login.token
             ) {
               that.apiStorageService.saveToken(res.data.token);
-              that.navCtrl.setRoot(TabsPage);
+              //da login thanh cong, kiem tra token 
+              that.callLoginOk(login.user_info);
+              //that.checkTokenLogin();
+
             } else {
               that.presentAlert('Dữ liệu xác thực không đúng <br>' + JSON.stringify(login))
             }
