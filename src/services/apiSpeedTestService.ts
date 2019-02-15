@@ -14,9 +14,19 @@ var speedtestServer:any;
     download: "/speedtest/random1000x1000.jpg", 
     description: "Máy chủ test demo speedtest của kola tại Cty3", 
     location: "16.00,108.00" } */
-
-
-var speedTestServers = [
+    
+    
+    var speedTestServers = [
+    { 
+        name: 'VTN 5 (VNPT) (Speedtest)',
+        url: 'http://speedtest5.vtn.com.vn.prod.hosts.ooklaserver.net:8080', 
+        getip : '/get-ip.php',
+        ping: '/latency.txt',
+        download: '/random350x350.jpg',
+        upload: '/upload.php',
+        description:'May chủ speedtest của Mobifone tại Hà nội',
+        location:'16.00,108.00'
+    },
     { 
         name: 'Mobifone Hanoi (Speedtest)',
         url: 'http://st1.mobifone.vn.prod.hosts.ooklaserver.net:8080', 
@@ -40,16 +50,6 @@ var speedTestServers = [
     { 
         name: 'VietnamMobile Da nang (Speedtest)',
         url: 'http://vnmdngspt1.vietnamobile.com.vn.prod.hosts.ooklaserver.net:8080', 
-        getip : '/get-ip.php',
-        ping: '/latency.txt',
-        download: '/random350x350.jpg',
-        upload: '/upload.php',
-        description:'May chủ speedtest của Mobifone tại Hà nội',
-        location:'16.00,108.00'
-    },
-    { 
-        name: 'VTN 5 (VNPT) (Speedtest)',
-        url: 'http://speedtest5.vtn.com.vn.prod.hosts.ooklaserver.net:8080', 
         getip : '/get-ip.php',
         ping: '/latency.txt',
         download: '/random350x350.jpg',
