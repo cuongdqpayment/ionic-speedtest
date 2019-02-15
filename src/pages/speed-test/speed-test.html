@@ -1,8 +1,12 @@
 <ion-header>
   <ion-navbar>
-    <ion-title>
-      SPEED TEST
-    </ion-title>
+    <ion-title start>{{server?.name}}</ion-title>
+    <ion-buttons end>
+        <button ion-button icon-only color="primary" class="badge-background" (click)="onClickSetting()">
+            <ion-icon name="cog"></ion-icon>
+            <ion-badge class="badge-alert" color="danger" *ngIf="alerts">{{ (alerts?.length>99?'99+':alerts?.length) }}</ion-badge>
+        </button>
+    </ion-buttons>
   </ion-navbar>
 </ion-header>
 
@@ -46,17 +50,14 @@
                     <ion-avatar item-start *ngIf="!isMobile&&it.image">
                         <img [src]="it.image">
                     </ion-avatar>
-                    <ion-title *ngIf="it.title">{{it.title}}</ion-title>
-                    <strong *ngIf="it.strong">{{it.strong}}</strong>
-                    <h1 *ngIf="it.h1">{{it.h1}}</h1>
-                    <h2 *ngIf="it.h2">{{it.h2}}</h2>
-                    <h3 *ngIf="it.h3">{{it.h3}}</h3>
 
-                    <p text-wrap style="text-align: justify;" *ngIf="it.p">{{it.p}}</p>
-                    <span text-wrap style="text-align: justify;" *ngIf="it.span">{{it.span}}•</span>
-
-                    <ion-label text-wrap style="text-align: justify;" *ngIf="it.label">{{it.label}}</ion-label>
-                    <ion-note item-end *ngIf="it.note">{{it.note}}</ion-note>
+                    <ion-title *ngIf="it.server">{{it.server?.name}}</ion-title>
+                    <strong *ngIf="it.ip">IP: {{it.ip}}</strong>
+                    <h1 *ngIf="it.download">DL: {{it.download}} Mbps</h1>
+                    <h2 *ngIf="it.upload">UL: {{it.upload}} Mbps</h2>
+                    <h3 *ngIf="it.ping">Ping: {{it.ping}} ms</h3>
+                    <p *ngIf="it.jitter">Jitter: {{it.jitter}}</p>
+                    <ion-note item-end *ngIf="it.start_local_time">{{it.time}}<br>{{it.date}}</ion-note>
 
                 </ion-item>
             </ion-item-group>
@@ -94,11 +95,11 @@
                     <ion-row class="background-item row-content" *ngFor="let it of dynamicList.items; let idx = index" (click)="onClickItem(it,idx)">
                         <ion-col text-center>
                             {{idx+1}} •
-                            <div *ngIf="it.time">{{it.date}} {{it.time}}</div>
+                            <div *ngIf="it.start_local_time">{{it.start_local_time}}</div>
                         </ion-col>
                         <ion-col>
                             <strong *ngIf="it.ip">{{it.ip}}</strong>
-                            <div *ngIf="it.server">{{it.server}}</div>
+                            <div *ngIf="it.server">{{it.server?.name}}</div>
                         </ion-col>
                         <ion-col text-center>
                             <div *ngIf="it.download">{{it.download}}</div>

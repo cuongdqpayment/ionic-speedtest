@@ -370,6 +370,16 @@ export class ApiHttpPublicService {
                 });
     }
 
+    getMyDevice(){
+        return this.httpClient.get('https://c3.mobifone.vn/api/ext-public/your-device')
+                .toPromise()
+                .then(data => {
+                let rtn:any;
+                rtn = data;
+                return rtn;
+                });
+    }
+
 
     getDataForm(form:string){
         return this.httpClient.get('assets/data/'+ form)

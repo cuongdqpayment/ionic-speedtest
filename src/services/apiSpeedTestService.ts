@@ -20,7 +20,7 @@ var speedtestServer:any;
     { 
         name: 'VTN 5 (VNPT) (Speedtest)',
         url: 'http://speedtest5.vtn.com.vn.prod.hosts.ooklaserver.net:8080', 
-        getip : '/get-ip.php',
+        getip : 'https://c3.mobifone.vn/api/ext-public/your-device',
         ping: '/latency.txt',
         download: '/random350x350.jpg',
         upload: '/upload.php',
@@ -30,7 +30,7 @@ var speedtestServer:any;
     { 
         name: 'Mobifone Hanoi (Speedtest)',
         url: 'http://st1.mobifone.vn.prod.hosts.ooklaserver.net:8080', 
-        getip : '/get-ip.php',
+        getip : 'https://c3.mobifone.vn/api/ext-public/your-device',
         ping: '/latency.txt',
         download: '/random350x350.jpg',
         upload: '/upload.php',
@@ -40,7 +40,7 @@ var speedtestServer:any;
     { 
         name: 'Viettel kv2a (Speedtest)',
         url: 'http://speedtestkv2a.viettel.vn.prod.hosts.ooklaserver.net:8080', 
-        getip : '/get-ip.php',
+        getip : 'https://c3.mobifone.vn/api/ext-public/your-device',
         ping: '/latency.txt',
         download: '/random350x350.jpg',
         upload: '/upload.php',
@@ -50,7 +50,7 @@ var speedtestServer:any;
     { 
         name: 'VietnamMobile Da nang (Speedtest)',
         url: 'http://vnmdngspt1.vietnamobile.com.vn.prod.hosts.ooklaserver.net:8080', 
-        getip : '/get-ip.php',
+        getip : 'https://c3.mobifone.vn/api/ext-public/your-device',
         ping: '/latency.txt',
         download: '/random350x350.jpg',
         upload: '/upload.php',
@@ -60,7 +60,7 @@ var speedtestServer:any;
     { 
         name: 'HTC-ITC (Speedtest)',
         url: 'http://speedtest.htc-itc.vn.prod.hosts.ooklaserver.net:8080', 
-        getip : '/get-ip.php',
+        getip : 'https://c3.mobifone.vn/api/ext-public/your-device',
         ping: '/latency.txt',
         download: '/random350x350.jpg',
         upload: '/upload.php',
@@ -70,7 +70,7 @@ var speedtestServer:any;
     { 
         name: 'ChinaMobile (Speedtest)',
         url: 'http://speedtest1.hi.chinamobile.com.prod.hosts.ooklaserver.net:8080', 
-        getip : '/get-ip.php',
+        getip : 'https://c3.mobifone.vn/api/ext-public/your-device',
         ping: '/latency.txt',
         download: '/random350x350.jpg',
         upload: '/upload.php',
@@ -80,7 +80,7 @@ var speedtestServer:any;
     { 
         name: 'Amazone Heroku (USA)',
         url: 'https://cuongdq-speedtest.herokuapp.com', //ngoai internet
-        getip : '/speedtest/get-ip',
+        getip : 'https://cuongdq-auth.herokuapp.com/api/ext-public/your-device',
         ping: '/speedtest/empty',
         download: '/speedtest/download',
         upload: '/speedtest/empty',
@@ -90,7 +90,7 @@ var speedtestServer:any;
     {
         name: 'Fpt Danang (100Mbps)',
         url: 'http://210.245.119.136:9235', //ngoai internet
-        getip : '/getIP.php?isp=true&distance=km',
+        getip : 'https://cuongdq-auth.herokuapp.com/api/ext-public/your-device',
         ping: '/empty.php',
         download: '/garbage.php?ckSize=20',
         upload: '/empty.php',
@@ -100,7 +100,7 @@ var speedtestServer:any;
     {
         name: 'Cmc Danang (100Mbps)',
         url: 'http://c3.mobifone.vn', //ngoai internet
-        getip : '/speedtest/get-ip.jsp',
+        getip : 'https://cuongdq-auth.herokuapp.com/api/ext-public/your-device',
         ping: '/speedtest/latency.txt',
         download: '/speedtest/random1000x1000.jpg',
         upload: '/speedtest/upload.jsp',
@@ -402,53 +402,22 @@ export class ApiSpeedTestService {
         }.bind(this), 200); //cu 200ms thi thong bao ket qua cho contermet
 
         return this.httpClient.get(
-            speedtestServer.url + speedtestServer.getip + this.url_sep(speedtestServer.getip) + "r=" + Math.random()
+            speedtestServer.getip + this.url_sep(speedtestServer.getip) + "r=" + Math.random()
         )
             .toPromise()
             .then(data => {
                 clearInterval(interval);//reset interval
-                let d;
-                d = data;
-                d.dlProgress = 1;
-                d.dlStatus = progress * 100;
-
                 this.postCommand("finish", "ip",
-                    {
-                        ip: (d.rawIspInfo && d.rawIspInfo.ip) ? d.rawIspInfo.ip : d.processedString
-                        , server: d.server ? d.server.ip: ''
+                    {     server: speedtestServer
+                        , device: data 
                         , duration: progress * durationGetIpInSecond
                     });
-
                 return data;
             })
             .catch(err => {
-                //neu loi thi lay ip truc tiep??
                 clearInterval(interval);//reset interval
-                return this.httpClient.get('https://ipinfo.io/json')
-                .toPromise()
-                .then(data=>{
-                    console.log('data get ip', data);
-                    let d;
-                    d = data;
-                    d.dlProgress = 1;
-                    d.dlStatus = progress * 100;
-
-                    this.postCommand("finish", "ip",
-                        {
-                            ip: d.ip
-                            , hostname: d.hostname
-                            , city : d.city
-                            , region : d.region
-                            , country : d.country
-                            , loc : d.loc
-                            , org : d.org
-                            , server: d.server ? d.server.ip : ''
-                            , duration: progress * durationGetIpInSecond
-                        });
-
-                return {processedString: d.ip + ' - ' + (d.org?d.org + ', ' + d.country:'Unknow ISP')
-                        ,rawIspInfo: data};
-                })
+                throw err;
+                
             })
     }
 

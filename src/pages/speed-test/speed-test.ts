@@ -1,10 +1,11 @@
 import { Component } from '@angular/core';
-import { AlertController, reorderArray } from 'ionic-angular';
+import { reorderArray, ModalController, Platform } from 'ionic-angular';
 
 import { ApiGraphService } from '../../services/apiMeterGraphService'
 import { ApiSpeedTestService } from '../../services/apiSpeedTestService'
 import { ApiLocationService } from '../../services/apiLocationService'
 import { ApiHttpPublicService } from '../../services/apiHttpPublicServices';
+import { DynamicFormWebPage } from '../dynamic-form-web/dynamic-form-web';
 
 var worker = null;
 
@@ -18,52 +19,52 @@ var worker = null;
 //class dieu khien rieng cua no
 export class SpeedTestPage {
 
-  objISP: any;
-
   objMeter = {
     graphName: 'Speedtest',
     unit: 'Mbps/ms/km',
   }
 
   results = [];
-  result:any;
-  server:any;
+  result: any;
+  server: any;
 
   isRuning: boolean = false;
-  idx = 0; 
+  idx = 0;
   serverList = [];
 
   dynamicList: any = {
-    is_table: true
-    ,header: {
-      title:"Thời gian"
-      ,strong:"Máy chủ"
-      ,p:"Dowload"
-      ,span:"Upload"
-      ,label:"Ping"
-      ,note:"Jitter"
-      }
+     header: {
+      title: "Thời gian"
+      , strong: "ISP"
+      , p: "Dowload"
+      , span: "Upload"
+      , label: "Ping"
+      , note: "Jitter"
+    }
   };
 
   constructor(private apiLocation: ApiLocationService,
-              private apiGraph: ApiGraphService,
-              private apiPublic: ApiHttpPublicService,
-              private apiSpeedtest: ApiSpeedTestService) { }
+    private apiGraph: ApiGraphService,
+    private modalCtrl: ModalController,
+    private platform: Platform,
+    private apiSpeedtest: ApiSpeedTestService) { }
 
-  ngOnInit() { 
+  ngOnInit() {
+    this.dynamicList.is_table = this.platform.platforms()[0] === 'core'
+
     this.dynamicList.items = this.results;
-    this.resetContermet(); 
+    this.resetContermet();
     this.apiSpeedtest.getSpeedtestServerList()
-    .then(list=>{
+      .then(list => {
         this.serverList = list;
         this.server = this.serverList[0];
-    })
-    .catch(err=>{
-      console.log(err);
-    })
+      })
+      .catch(err => {
+        console.log(err);
+      })
   }
 
-  resetContermet(){
+  resetContermet() {
     this.apiGraph.initUI();
     this.objMeter = {
       graphName: 'Speedtest',
@@ -74,12 +75,6 @@ export class SpeedTestPage {
 
   clearRuning() {
     //speedtest xong
-    /* this.alertCtrl.create({
-      title: 'Speedtest finish',
-      subTitle: 'Thank you for your test with us! See the result and share...',
-      buttons: ['OK']
-    }).present(); */
-
     this.resetContermet();
 
     this.isRuning = false;
@@ -105,9 +100,9 @@ export class SpeedTestPage {
 
       //Thuc hien chu trinh speedTest: getIP, delay, ping, delay, dowload, delay, upload
       this.runTestLoop('_I_P_D_U_S_'); //Get IP, Ping, Download, Upload, Share server, 
-        
+
       worker.onmessage = (e) => { this.onMessageProcess(e) }
-        
+
     }
   }
 
@@ -151,10 +146,10 @@ export class SpeedTestPage {
    */
   updateResults(work, d) {
     //kiem tra phien dau tien cua no
-    if (!this.result){
-      this.result={}; //khoi dau mot phien test moi
+    if (!this.result) {
+      this.result = {}; //khoi dau mot phien test moi
       this.result.id = ++this.idx; //id moi khoi tao
-    }else{
+    } else {
       //da chay phien truoc co roi thi lay tu trong ra
       this.result = this.results.shift();
     }
@@ -162,10 +157,11 @@ export class SpeedTestPage {
     //co cong viec va ket qua hoan thanh
     if (work == 'ip') {
       //cong viec hoan thanh lay ip
-      console.log('ip',work,d);
-
-      this.result.ip = d.ip;
-      this.result.server = (d.server?d.server:this.server.url?this.server.url.substring(this.server.url.indexOf('//')+2):'Unk');
+      // console.log("device ***:", d.device);
+      // console.log("server ***:", d.server);
+      this.result.server = d.server;
+      this.result.device = d.device;
+      this.result.ip = d.device ? d.device.ip : undefined;
       this.results.unshift(this.result);
     } else if (work == 'download') {
       this.result.download = d.speed;
@@ -185,105 +181,102 @@ export class SpeedTestPage {
    * '_I_U' | '_I_P_D_U'
    * @param test_order 
    */
-  runTestLoop(test_order: string){
+  runTestLoop(test_order: string) {
     const delay = 1000;
     var nextIndex = 0;
 
     var pos;
 
     this.apiLocation.getCurrentLocation()
-    .then(pos=> pos = pos)
-    .catch(err=> console.log(err))
-    .then(data=>{
-      if (!this.result) this.result={}; else this.result = this.results.shift();     
-      let dt = new Date();
-      this.result.id = ++this.idx; //id moi khoi tao
-      if (data) this.result.start_location = data;
-      this.result.start_time = dt.getTime();
-      this.result.date = dt.toLocaleDateString();
-      this.result.time = dt.toLocaleTimeString();
-      this.result.time_iso = dt.toISOString().replace(/T/, ' ').replace(/\..+/, '');
-      this.result.time_zone_offset = dt.getTimezoneOffset() / 60;
-      this.results.unshift(this.result);
-    });
+      .then(pos => pos = pos)
+      .catch(err => console.log(err))
+      .then(data => {
+        if (!this.result) this.result = {}; else this.result = this.results.shift();
+        let dt = new Date();
+        this.result.id = ++this.idx; //id moi khoi tao
+        if (data) this.result.start_location = data;
+        this.result.start_time = dt.getTime();
+        this.result.start_local_time = new Date(dt.getTime() - dt.getTimezoneOffset() * 60 * 1000).toISOString().replace(/T/, ' ').replace(/\..+/, '');
+        this.result.time_zone_offset = dt.getTimezoneOffset() / 60;
+        this.result.date = dt.toLocaleDateString();
+        this.result.time = dt.toLocaleTimeString();
+        this.results.unshift(this.result);
+      });
 
     var runNextTest = function () {
       let command = test_order.charAt(nextIndex);
-      
+
       switch (command) {
         case '_': { nextIndex++; setTimeout(runNextTest, delay); } break;
         case 'S': { nextIndex++; this.shareResult(); setTimeout(runNextTest, delay); } break;
-        case 'I': { 
-                    nextIndex++; 
-                    if (!this.isRuning) { 
-                        runNextTest(); 
-                        return; 
-                    }
-                    this.apiSpeedtest.getISP()
-                    .then(data => {
-                        this.objISP 
-                        = data; //ghi ket qua duoi dong ho do
-                        runNextTest();
-                        })
-                    .catch(err => {
-                        console.log('err no get IP',err);
-                        runNextTest();
-                    });
-                  } 
-            break;
-        case 'P': { 
-                    nextIndex++; 
-                    if (!this.isRuning) { 
-                        runNextTest(); 
-                        return; 
-                    }
-                    this.apiSpeedtest.ping()//.multiDownload()
-                      .then(result => {
-                        // console.log('Ping Data: ',result);
-                        runNextTest();
-                      })
-                      .catch(err => {
-                        // console.log('Ping Error: ',err);
-                        runNextTest();
-                      });
-                  } 
-            break;
-        case 'D': { 
-                    nextIndex++; 
-                    if (!this.isRuning) { 
-                        runNextTest(); 
-                        return; 
-                    }
-                    
-                    this.apiSpeedtest.download()
-                      .then(result => 
-                        {
-                        // console.log('Download Data: ',result);
-                        runNextTest();
-                      })
-                      .catch(err => {
-                        // console.log('Download Error: ',err);
-                        runNextTest();
-                      });
-                  } 
-            break;
-        case 'U': { 
-                    nextIndex++; 
-                    if (!this.isRuning) { 
-                        runNextTest(); 
-                        return; 
-                    }
-                    this.apiSpeedtest.upload()
-                      .then(result => {
-                        // console.log ('Upload Data: ', result);
-                        runNextTest();
-                      })
-                      .catch(err => {
-                        // console.log('Upload Error: ',err);
-                        runNextTest();
-                      });
-                  } 
-            break;
+        case 'I': {
+          nextIndex++;
+          if (!this.isRuning) {
+            runNextTest();
+            return;
+          }
+          this.apiSpeedtest.getISP()
+            .then(data => {
+              //console.log('your ip',data);
+              runNextTest();
+            })
+            .catch(err => {
+              console.log('err no get IP', err);
+            });
+        }
+          break;
+        case 'P': {
+          nextIndex++;
+          if (!this.isRuning) {
+            runNextTest();
+            return;
+          }
+          this.apiSpeedtest.ping()//.multiDownload()
+            .then(result => {
+              // console.log('Ping Data: ',result);
+              runNextTest();
+            })
+            .catch(err => {
+              // console.log('Ping Error: ',err);
+              runNextTest();
+            });
+        }
+          break;
+        case 'D': {
+          nextIndex++;
+          if (!this.isRuning) {
+            runNextTest();
+            return;
+          }
+
+          this.apiSpeedtest.download()
+            .then(result => {
+              // console.log('Download Data: ',result);
+              runNextTest();
+            })
+            .catch(err => {
+              // console.log('Download Error: ',err);
+              runNextTest();
+            });
+        }
+          break;
+        case 'U': {
+          nextIndex++;
+          if (!this.isRuning) {
+            runNextTest();
+            return;
+          }
+          this.apiSpeedtest.upload()
+            .then(result => {
+              // console.log ('Upload Data: ', result);
+              runNextTest();
+            })
+            .catch(err => {
+              // console.log('Upload Error: ',err);
+              runNextTest();
+            });
+        }
+          break;
         default: nextIndex++;
       }
 
@@ -295,43 +288,94 @@ export class SpeedTestPage {
   }
 
   //gui ket qua cho may chu
-  shareResult(){
+  shareResult() {
     //lay vi tri ket thuc chu trinh de ghi lai vi tri ket thuc test
     this.apiLocation.getCurrentLocation()
-    .then(pos=>{
-      if (this.result){
-        this.result = this.results.shift();
-        this.result.end_location = pos;
-        this.result.end_time = new Date().getTime();
-        this.results.unshift(this.result);
-      }
-      //xem kq --send
-      console.log(this.result);
+      .then(pos => {
+        if (this.result) {
+          this.result = this.results.shift();
+          this.result.end_location = pos;
+          this.result.end_time = new Date().getTime();
+          this.results.unshift(this.result);
+        }
+        //xem kq --send
+        console.log(this.result);
 
-    })
-    .catch(err=>{
-      //console.log(err);
-    });
+      })
+      .catch(err => {
+        //console.log(err);
+      });
 
   }
 
-  toggleSwitch(){
+  toggleSwitch() {
   }
 
-  toggleEdit(){
-    
+  toggleEdit() {
+
   }
 
   reorderData(indexes: any) {
     this.dynamicList.items = reorderArray(this.dynamicList.items, indexes);
   }
 
-  onClickHeader(btn){
+  onClickHeader(btn) {
     console.log(btn);
   }
 
 
-  onClickItem(it,idx){
-    console.log(idx,it);
+  onClickItem(it, idx) {
+    console.log(idx, it);
   }
+
+
+  onClickSetting() {
+
+    let selectOptions = [];
+
+    this.serverList.forEach((el,idx)=>{
+      selectOptions.push({name: idx+1 + ". " + el.name, value: idx})
+    })
+
+    let data = {
+      title: "Thiết lập"
+      , items: [
+        { key: "server", name: "Lựa Chọn Máy chủ", hint:"Chọn ít nhất 1 cái nhé em", type: "select", value:0, options: selectOptions }
+        , { key:"is_table", name: "Kết quả kiểu bảng?", icon: "grid", value: this.dynamicList.is_table, type: "toggle" }
+        , {
+          type: "button", options: [
+            { name: "Chọn", next: "CALLBACK"}
+          ]
+        }
+      ]
+    };
+
+    let settings = {
+      parent: this, //bind this for call
+      callback: this.callbackSettings,
+      step: 'form-user-info',
+      form: data
+    }
+
+    this.openModal(settings);
+  }
+
+/**
+ * Cau truc cua ham callback phai chuan nhu nay
+ */
+  callbackSettings = function (that,res){
+    //console.log(res);
+    if (res.data) this.dynamicList.is_table = res.data.is_table;
+    if (res.data&&res.data.server) this.server = this.serverList[res.data.server];
+    return new Promise((resolve, reject)=>{
+      resolve({next: "CLOSE"});
+    })
+  }.bind(this);
+
+
+  openModal(data) {
+    let modal = this.modalCtrl.create(DynamicFormWebPage, data);
+    modal.present();
+  }
+
 }

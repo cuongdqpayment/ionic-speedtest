@@ -10,6 +10,7 @@ import { DynamicListOrderPage } from '../dynamic-list-order/dynamic-list-order';
 import { HomePage } from '../home/home';
 import { SignaturePage } from '../signature/signature';
 import { LoginPage } from '../login/login';
+import { SpeedTestPage } from '../speed-test/speed-test';
 
 @Component({
   templateUrl: 'tabs.html'
@@ -18,8 +19,8 @@ export class TabsPage {
   
   tabs: any = [
     {
-      root: HomePage,
-      title: 'Home',
+      root: SpeedTestPage,
+      title: 'SpeedTest',
       icon: 'home'
     },
     {
