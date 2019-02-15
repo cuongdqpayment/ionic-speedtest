@@ -91,6 +91,7 @@
     <plugin name="cordova-plugin-geolocation" spec="^4.0.1">
         <variable name="GEOLOCATION_USAGE_DESCRIPTION" value="Cần biết vị trí của bạn để xác định nơi kiểm tra tốc độ!" />
     </plugin>
-    <engine name="android" spec="7.0.0" />
-    <engine name="ios" spec="~4.5.5" />
+    <engine name="android" spec="^7.1.4" />
+    <engine name="ios" spec="4.5.5" />
+    <engine name="browser" spec="5.0.4" />
 </widget>
