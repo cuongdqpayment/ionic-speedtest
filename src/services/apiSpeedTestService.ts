@@ -147,7 +147,8 @@ export class ApiSpeedTestService {
     postCommand(command: 'init' | 'progress' | 'finish'
         , work: 'ip' | 'ping' | 'download' | 'upload'
         , data?:
-            { graphName: string, unit: string, backgroundColor: string, statusColor: string, progressColor: string } //for init
+            any
+            | { graphName: string, unit: string, backgroundColor: string, statusColor: string, progressColor: string } //for init
             | { progress: number, contermet: string } //for progress
             | { ip: string, server: string, duration: number } //for work ip 
             | { ping: number, jitter: number } //for work ping
@@ -414,9 +415,7 @@ export class ApiSpeedTestService {
                 this.postCommand("finish", "ip",
                     {
                         ip: (d.rawIspInfo && d.rawIspInfo.ip) ? d.rawIspInfo.ip : d.processedString
-                        , server: d.server ? d.server.ip /* + ' - ' + d.server.org
-                                            + d.server.city + d.server.region
-                                            + d.server.country */: ''
+                        , server: d.server ? d.server.ip: ''
                         , duration: progress * durationGetIpInSecond
                     });
 
@@ -425,12 +424,10 @@ export class ApiSpeedTestService {
             .catch(err => {
                 //neu loi thi lay ip truc tiep??
                 clearInterval(interval);//reset interval
-                return this.httpClient.get('https://ipinfo.io/json?'+ "r=" + Math.random())
+                return this.httpClient.get('https://ipinfo.io/json')
                 .toPromise()
                 .then(data=>{
-                    
-                    //console.log(data);
-
+                    console.log('data get ip', data);
                     let d;
                     d = data;
                     d.dlProgress = 1;
@@ -439,14 +436,18 @@ export class ApiSpeedTestService {
                     this.postCommand("finish", "ip",
                         {
                             ip: d.ip
+                            , hostname: d.hostname
+                            , city : d.city
+                            , region : d.region
+                            , country : d.country
+                            , loc : d.loc
+                            , org : d.org
                             , server: d.server ? d.server.ip : ''
                             , duration: progress * durationGetIpInSecond
                         });
 
-                return {
-                    processedString: d.ip + ' - ' + (d.org?d.org + ', ' + d.country:'Unknow ISP')
-                    ,
-                    rawIspInfo: data};
+                return {processedString: d.ip + ' - ' + (d.org?d.org + ', ' + d.country:'Unknow ISP')
+                        ,rawIspInfo: data};
                 })
             })
     }

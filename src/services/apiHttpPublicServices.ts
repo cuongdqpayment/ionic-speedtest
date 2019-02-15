@@ -359,14 +359,36 @@ export class ApiHttpPublicService {
             .map(res => res['results']) //kieu chuyen ve observable
     }
 
+
+    getMyIp(){
+        return this.httpClient.get('https://ipinfo.io/json')
+                .toPromise()
+                .then(data => {
+                let rtn:any;
+                rtn = data;
+                return rtn;
+                });
+    }
+
+
     getDataForm(form:string){
         return this.httpClient.get('assets/data/'+ form)
-               .toPromise()
+                .toPromise()
+                .then(data => {
+                let rtn:any;
+                rtn = data;
+                return rtn;
+                });
     }
 
     getUserInfoForm(){
         return this.httpClient.get('assets/data/form-register.json')
                .toPromise()
+               .then(data => {
+                let rtn:any;
+                rtn = data;
+                return rtn;
+                });
     }
 
 

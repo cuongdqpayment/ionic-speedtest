@@ -4,6 +4,7 @@ import { AlertController, reorderArray } from 'ionic-angular';
 import { ApiGraphService } from '../../services/apiMeterGraphService'
 import { ApiSpeedTestService } from '../../services/apiSpeedTestService'
 import { ApiLocationService } from '../../services/apiLocationService'
+import { ApiHttpPublicService } from '../../services/apiHttpPublicServices';
 
 var worker = null;
 
@@ -46,7 +47,7 @@ export class SpeedTestPage {
 
   constructor(private apiLocation: ApiLocationService,
               private apiGraph: ApiGraphService,
-              private alertCtrl: AlertController,
+              private apiPublic: ApiHttpPublicService,
               private apiSpeedtest: ApiSpeedTestService) { }
 
   ngOnInit() { 
@@ -70,6 +71,7 @@ export class SpeedTestPage {
     }
     this.apiGraph.updateUI({ state: 0, contermet: '...', progress: 0 });
   }
+
   clearRuning() {
     //speedtest xong
     /* this.alertCtrl.create({
@@ -218,14 +220,15 @@ export class SpeedTestPage {
                         return; 
                     }
                     this.apiSpeedtest.getISP()
-                        .then(data => {
-                          this.objISP 
-                          = data; //ghi ket qua duoi dong ho do
-                          runNextTest();
-                          })
-                          .catch(err => {
-                            runNextTest();
-                          });
+                    .then(data => {
+                        this.objISP 
+                        = data; //ghi ket qua duoi dong ho do
+                        runNextTest();
+                        })
+                    .catch(err => {
+                        console.log('err no get IP',err);
+                        runNextTest();
+                    });
                   } 
             break;
         case 'P': { 
