@@ -160,6 +160,8 @@ export class SpeedTestPage {
     //co cong viec va ket qua hoan thanh
     if (work == 'ip') {
       //cong viec hoan thanh lay ip
+      console.log('ip',work,d);
+
       this.result.ip = d.ip;
       this.result.server = (d.server?d.server:this.server.url?this.server.url.substring(this.server.url.indexOf('//')+2):'Unk');
       this.results.unshift(this.result);
@@ -234,14 +236,11 @@ export class SpeedTestPage {
                     }
                     this.apiSpeedtest.ping()//.multiDownload()
                       .then(result => {
-                        // console.log
-                        ('Ping Data: ');
-                        // console.log(result);
+                        // console.log('Ping Data: ',result);
                         runNextTest();
                       })
                       .catch(err => {
-                        // console.log('Ping Error: ');
-                        // console.log(err);
+                        // console.log('Ping Error: ',err);
                         runNextTest();
                       });
                   } 
@@ -256,13 +255,11 @@ export class SpeedTestPage {
                     this.apiSpeedtest.download()
                       .then(result => 
                         {
-                        // console.log('Download Data: ');
-                        // console.log(result);
+                        // console.log('Download Data: ',result);
                         runNextTest();
                       })
                       .catch(err => {
-                        // console.log('Download Error: ');
-                        // console.log(err);
+                        // console.log('Download Error: ',err);
                         runNextTest();
                       });
                   } 
@@ -275,14 +272,11 @@ export class SpeedTestPage {
                     }
                     this.apiSpeedtest.upload()
                       .then(result => {
-                        // console.log
-                        ('Upload Data: ');
-                        // console.log(result);
+                        // console.log ('Upload Data: ', result);
                         runNextTest();
                       })
                       .catch(err => {
-                        // console.log('Upload Error: ');
-                        // console.log(err);
+                        // console.log('Upload Error: ',err);
                         runNextTest();
                       });
                   } 
