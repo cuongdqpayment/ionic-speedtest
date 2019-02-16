@@ -6,6 +6,7 @@ import { SplashScreen } from '@ionic-native/splash-screen';
 import { StatusBar } from '@ionic-native/status-bar';
 import { Geolocation } from '@ionic-native/geolocation';
 import { StorageServiceModule } from 'angular-webstorage-service';
+import { SQLite } from '@ionic-native/sqlite';
 
 import { MyApp } from './app.component';
 import { HomePage } from '../pages/home/home';
@@ -32,12 +33,15 @@ import { ApiResourceService } from '../services/apiResourceServices';
 import { RequestInterceptor } from '../interceptors/requestInterceptor';
 import { ResponseInterceptor } from '../interceptors/responseInterceptor';
 import { SpeedTestPage } from '../pages/speed-test/speed-test';
+import { ApiSqliteService } from '../services/apiSqliteService';
+import { ResultsPage } from '../pages/results/results';
 
 @NgModule({
   declarations: [
     MyApp,
     LoginPage,
     HomePage,
+    ResultsPage,
     TabsPage,
     SpeedTestPage,
     DynamicFormWebPage,
@@ -60,6 +64,7 @@ import { SpeedTestPage } from '../pages/speed-test/speed-test';
     MyApp,
     LoginPage,
     HomePage,
+    ResultsPage,
     TabsPage,
     SpeedTestPage,
     DynamicFormWebPage,
@@ -74,10 +79,12 @@ import { SpeedTestPage } from '../pages/speed-test/speed-test';
     StatusBar,
     SplashScreen,
     Geolocation,
+    SQLite,
     ApiGraphService,
     ApiImageService,
     ApiAuthService,
     ApiStorageService,
+    ApiSqliteService,
     ApiSpeedTestService,
     ApiHttpPublicService,
     ApiResourceService,

@@ -5,30 +5,9 @@ import { Injectable } from '@angular/core';
 //ung dung cuongdq-upload post any
 var speedtestServer:any;
 
-/*  =
-    { url: "https://c3.mobifone.vn", 
-    name: "Cmc Danang (100Mbps)", 
-    getip: "/speedtest/get-ip.jsp", 
-    ping: "/speedtest/latency.txt", 
-    upload: "/speedtest/upload.jsp", 
-    download: "/speedtest/random1000x1000.jpg", 
-    description: "Máy chủ test demo speedtest của kola tại Cty3", 
-    location: "16.00,108.00" } */
-    
-    
     var speedTestServers = [
     { 
-        name: 'VTN 5 (VNPT) (Speedtest)',
-        url: 'http://speedtest5.vtn.com.vn.prod.hosts.ooklaserver.net:8080', 
-        getip : 'https://c3.mobifone.vn/api/ext-public/your-device',
-        ping: '/latency.txt',
-        download: '/random350x350.jpg',
-        upload: '/upload.php',
-        description:'May chủ speedtest của Mobifone tại Hà nội',
-        location:'16.00,108.00'
-    },
-    { 
-        name: 'Mobifone Hanoi (Speedtest)',
+        name: 'Mobifone Hanoi',
         url: 'http://st1.mobifone.vn.prod.hosts.ooklaserver.net:8080', 
         getip : 'https://c3.mobifone.vn/api/ext-public/your-device',
         ping: '/latency.txt',
@@ -38,7 +17,17 @@ var speedtestServer:any;
         location:'16.00,108.00'
     },
     { 
-        name: 'Viettel kv2a (Speedtest)',
+        name: 'VTN 5 (VNPT)',
+        url: 'http://speedtest5.vtn.com.vn.prod.hosts.ooklaserver.net:8080', 
+        getip : 'https://c3.mobifone.vn/api/ext-public/your-device',
+        ping: '/latency.txt',
+        download: '/random350x350.jpg',
+        upload: '/upload.php',
+        description:'May chủ speedtest của Mobifone tại Hà nội',
+        location:'16.00,108.00'
+    },
+    { 
+        name: 'Viettel KV2a',
         url: 'http://speedtestkv2a.viettel.vn.prod.hosts.ooklaserver.net:8080', 
         getip : 'https://c3.mobifone.vn/api/ext-public/your-device',
         ping: '/latency.txt',
@@ -48,7 +37,7 @@ var speedtestServer:any;
         location:'16.00,108.00'
     },
     { 
-        name: 'VietnamMobile Da nang (Speedtest)',
+        name: 'VietnamMobile DN',
         url: 'http://vnmdngspt1.vietnamobile.com.vn.prod.hosts.ooklaserver.net:8080', 
         getip : 'https://c3.mobifone.vn/api/ext-public/your-device',
         ping: '/latency.txt',
@@ -58,7 +47,7 @@ var speedtestServer:any;
         location:'16.00,108.00'
     },
     { 
-        name: 'HTC-ITC (Speedtest)',
+        name: 'HTC-ITC',
         url: 'http://speedtest.htc-itc.vn.prod.hosts.ooklaserver.net:8080', 
         getip : 'https://c3.mobifone.vn/api/ext-public/your-device',
         ping: '/latency.txt',
@@ -68,7 +57,7 @@ var speedtestServer:any;
         location:'16.00,108.00'
     },
     { 
-        name: 'ChinaMobile (Speedtest)',
+        name: 'ChinaMobile',
         url: 'http://speedtest1.hi.chinamobile.com.prod.hosts.ooklaserver.net:8080', 
         getip : 'https://c3.mobifone.vn/api/ext-public/your-device',
         ping: '/latency.txt',
@@ -108,7 +97,6 @@ var speedtestServer:any;
         location:'16.00,108.00'
     }
     ]
-
 
 var contermet;
 var xhr = null; //tao da luong de truy cap server

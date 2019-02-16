@@ -1,14 +1,8 @@
 import { Component } from '@angular/core';
 import { NavController, ModalController, Platform, AlertController, LoadingController } from 'ionic-angular';
 import { DynamicFormWebPage } from '../dynamic-form-web/dynamic-form-web';
-import { DynamicListPage } from '../dynamic-list/dynamic-list';
 import { ApiResourceService } from '../../services/apiResourceServices';
 import { DynamicFormMobilePage } from '../dynamic-form-mobile/dynamic-form-mobile';
-import { DynamicCardSocialPage } from '../dynamic-card-social/dynamic-card-social';
-import { DynamicMediasPage } from '../dynamic-medias/dynamic-medias';
-import { DynamicListOrderPage } from '../dynamic-list-order/dynamic-list-order';
-import { HomePage } from '../home/home';
-import { SignaturePage } from '../signature/signature';
 import { LoginPage } from '../login/login';
 import { SpeedTestPage } from '../speed-test/speed-test';
 
@@ -27,7 +21,8 @@ export class TabsPage {
       root: LoginPage,
       title: 'Login',
       icon: 'log-in'
-    },
+    }
+    /* ,
     {
       root: DynamicFormWebPage,
       title: 'Form web',
@@ -62,7 +57,7 @@ export class TabsPage {
       root: SignaturePage,
       title: 'Signature',
       icon: 'create'
-    }
+    } */
   ];
 
   constructor(private navCtrl: NavController

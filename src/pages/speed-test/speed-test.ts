@@ -1,11 +1,14 @@
 import { Component } from '@angular/core';
-import { reorderArray, ModalController, Platform } from 'ionic-angular';
+import { reorderArray, ModalController, Platform, NavController } from 'ionic-angular';
 
 import { ApiGraphService } from '../../services/apiMeterGraphService'
 import { ApiSpeedTestService } from '../../services/apiSpeedTestService'
 import { ApiLocationService } from '../../services/apiLocationService'
 import { ApiHttpPublicService } from '../../services/apiHttpPublicServices';
 import { DynamicFormWebPage } from '../dynamic-form-web/dynamic-form-web';
+import { ApiSqliteService } from '../../services/apiSqliteService';
+import { ApiStorageService } from '../../services/apiStorageService';
+import { ResultsPage } from '../results/results';
 
 var worker = null;
 
@@ -19,10 +22,12 @@ var worker = null;
 //class dieu khien rieng cua no
 export class SpeedTestPage {
 
-  objMeter = {
-    graphName: 'Speedtest',
-    unit: 'Mbps/ms/km',
+  objMeterOrigin = {
+    graphName: 'Speed Test',
+    unit: 'Mbps/ms',
   }
+
+  objMeter = {};
 
   results = [];
   result: any;
@@ -34,8 +39,8 @@ export class SpeedTestPage {
 
   dynamicList: any = {
      header: {
-      title: "Thời gian"
-      , strong: "ISP"
+      title: "Time"
+      , strong: "Server-ISP"
       , p: "Dowload"
       , span: "Upload"
       , label: "Ping"
@@ -43,16 +48,27 @@ export class SpeedTestPage {
     }
   };
 
-  constructor(private apiLocation: ApiLocationService,
+  constructor(
+    private navCtrl: NavController,
+    private apiLocation: ApiLocationService,
     private apiGraph: ApiGraphService,
     private modalCtrl: ModalController,
     private platform: Platform,
-    private apiSpeedtest: ApiSpeedTestService) { }
+    private apiSpeedtest: ApiSpeedTestService,
+    private apiSqlite: ApiSqliteService,
+    private apiStorage: ApiStorageService
+    ) { }
 
   ngOnInit() {
+
+    if (this.platform.is("cordova")){
+
+    }else{
+      this.results = this.apiStorage.getResults();
+    }
+
     this.dynamicList.is_table = this.platform.platforms()[0] === 'core'
 
-    this.dynamicList.items = this.results;
     this.resetContermet();
     this.apiSpeedtest.getSpeedtestServerList()
       .then(list => {
@@ -66,21 +82,22 @@ export class SpeedTestPage {
 
   resetContermet() {
     this.apiGraph.initUI();
-    this.objMeter = {
-      graphName: 'Speedtest',
-      unit: 'Mbps/ms/km',
-    }
+    this.objMeter = this.objMeterOrigin;
     this.apiGraph.updateUI({ state: 0, contermet: '...', progress: 0 });
   }
 
   clearRuning() {
     //speedtest xong
-    this.resetContermet();
+    if (this.results.length>0){
+      if (this.platform.is("cordova")){
 
+      }else{
+        this.apiStorage.saveResults(this.results);
+      }
+    }
+    this.resetContermet();
     this.isRuning = false;
-    //this.apiGraph.I("startStopBtn").className = "";
     worker = null;
-    this.result = null;
   }
 
   startStop() {
@@ -93,6 +110,7 @@ export class SpeedTestPage {
       //lay vi tri de ghi ket qua
       //this.apiGraph.I("startStopBtn").className = "running";
       //bat dau chay
+      this.result = null;
 
       worker = new Worker('worker-message.js');
       this.apiSpeedtest.setWorker(worker);
@@ -157,6 +175,7 @@ export class SpeedTestPage {
     //co cong viec va ket qua hoan thanh
     if (work == 'ip') {
       //cong viec hoan thanh lay ip
+      if (d.device&&d.device.ip_info) try{ d.device.ip_info = JSON.parse(d.device.ip_info);}catch(e){}
       // console.log("device ***:", d.device);
       // console.log("server ***:", d.server);
       this.result.server = d.server;
@@ -376,6 +395,10 @@ export class SpeedTestPage {
   openModal(data) {
     let modal = this.modalCtrl.create(DynamicFormWebPage, data);
     modal.present();
+  }
+
+  viewResult(){
+    this.navCtrl.push(ResultsPage,{form:this.dynamicList});
   }
 
 }

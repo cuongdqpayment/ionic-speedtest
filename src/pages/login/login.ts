@@ -15,7 +15,8 @@ import { ApiAuthService } from '../../services/apiAuthService';
 })
 export class LoginPage {
 
-  constructor(private navCtrl: NavController
+  constructor(
+    private navCtrl: NavController
     , private pubService: ApiHttpPublicService
     , private auth: ApiAuthService
     , private resources: ApiResourceService
