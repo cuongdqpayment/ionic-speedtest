@@ -60,12 +60,7 @@ export class SpeedTestPage {
     ) { }
 
   ngOnInit() {
-
-    if (this.platform.is("cordova")){
-
-    }else{
-      this.results = this.apiStorage.getResults();
-    }
+    this.resetForm();  
 
     this.dynamicList.is_table = this.platform.platforms()[0] === 'core'
 
@@ -80,6 +75,14 @@ export class SpeedTestPage {
       })
   }
 
+  resetForm(){
+    if (this.platform.is("cordova")){
+
+    }else{
+      this.results = this.apiStorage.getResults();
+    }    
+  }
+
   resetContermet() {
     this.apiGraph.initUI();
     this.objMeter = this.objMeterOrigin;
@@ -87,7 +90,9 @@ export class SpeedTestPage {
   }
 
   clearRuning() {
-    //speedtest xong
+    //speedtest finish
+    this.hideShowTab();
+
     if (this.results.length>0){
       if (this.platform.is("cordova")){
 
@@ -98,11 +103,14 @@ export class SpeedTestPage {
     this.resetContermet();
     this.isRuning = false;
     worker = null;
+
   }
 
   startStop() {
+    //speedtest start
 
     this.isRuning = !this.isRuning;
+
     if (!this.isRuning) {
       //this.apiGraph.I("startStopBtn").className = "";
       //dung test
@@ -111,7 +119,7 @@ export class SpeedTestPage {
       //this.apiGraph.I("startStopBtn").className = "running";
       //bat dau chay
       this.result = null;
-
+      this.hideShowTab();
       worker = new Worker('worker-message.js');
       this.apiSpeedtest.setWorker(worker);
       this.apiSpeedtest.setServer(this.server);
@@ -318,7 +326,7 @@ export class SpeedTestPage {
           this.results.unshift(this.result);
         }
         //xem kq --send
-        console.log(this.result);
+        //console.log(this.result);
 
       })
       .catch(err => {
@@ -398,7 +406,20 @@ export class SpeedTestPage {
   }
 
   viewResult(){
-    this.navCtrl.push(ResultsPage,{form:this.dynamicList});
+    this.navCtrl.push(ResultsPage,{form:this.dynamicList,results:this.results,callback:this.callBack});
+  }
+
+  callBack = function(reset?:boolean){
+    if (reset) this.resetForm();
+  }.bind(this);
+
+  hideShowTab(){
+    /* let elements = document.querySelectorAll(".tabbar");
+    if (elements != null) {
+        Object.keys(elements).map((key) => {
+            elements[key].style.display = (elements[key].style.display=='none'?"block":"none");
+        });
+    } */
   }
 
 }

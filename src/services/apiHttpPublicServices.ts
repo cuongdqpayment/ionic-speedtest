@@ -370,8 +370,8 @@ export class ApiHttpPublicService {
                 });
     }
 
-    getMyDevice(){
-        return this.httpClient.get('https://c3.mobifone.vn/api/ext-public/your-device')
+    getMyDevice(id?:string){
+        return this.httpClient.get('https://c3.mobifone.vn/api/ext-public/your-device'+(id?"?id="+id:""))
                 .toPromise()
                 .then(data => {
                 let rtn:any;

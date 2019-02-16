@@ -21,6 +21,8 @@ export class ResultsPage {
     }
   };
 
+  callback:any;
+
   constructor(
     private navCtrl: NavController
     , private platform: Platform
@@ -31,15 +33,27 @@ export class ResultsPage {
   ngOnInit() {
 
     this.dynamicList = this.navParams.get("form") ? this.navParams.get("form") : this.dynamicList;
-
+    this.results = this.navParams.get("results") ? this.navParams.get("results") : this.results;
     this.dynamicList.items = this.results;
+    
+    this.callback = this.navParams.get("callback");
 
+    
+  }
+
+  onClickResetResults(){
     if (this.platform.is("cordova")){
 
     }else{
-      this.results = this.apiStorage.getResults();
-      console.log('results',this.results);
+      this.apiStorage.deleteResults();
+      this.results=[];
     }
+    
+    if (this.callback){
+      this.callback(true);
+    }
+
+    this.navCtrl.pop();
   }
 
 }

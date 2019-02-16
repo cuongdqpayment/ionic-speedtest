@@ -48,6 +48,10 @@ export class ApiStorageService {
         }
     }
 
+    deleteResults(){
+        this.delete('results');
+    }
+
     saveToken(value){
         this.save('token',value);
     }
