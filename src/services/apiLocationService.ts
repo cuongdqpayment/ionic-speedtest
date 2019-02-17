@@ -35,8 +35,7 @@ export class ApiLocationService {
                 this.startTracking();
                 resolve(this.currenLocation);
             }).catch((err) => {
-                //console.log('error get current');
-                console.log(err);
+                console.log('error get current',err);
                 this.startTracking();
                 reject(err);
             });       

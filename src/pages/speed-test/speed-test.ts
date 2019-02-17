@@ -9,6 +9,7 @@ import { DynamicFormWebPage } from '../dynamic-form-web/dynamic-form-web';
 import { ApiSqliteService } from '../../services/apiSqliteService';
 import { ApiStorageService } from '../../services/apiStorageService';
 import { ResultsPage } from '../results/results';
+import { ApiAuthService } from '../../services/apiAuthService';
 
 var worker = null;
 
@@ -21,6 +22,12 @@ var worker = null;
 
 //class dieu khien rieng cua no
 export class SpeedTestPage {
+
+  app:any = {
+    id: "SPEEDTEST",
+    name: "Speedtest VN",
+    image: "assets/imgs/logo.png"
+  }
 
   objMeterOrigin = {
     graphName: 'Speed Test',
@@ -48,6 +55,9 @@ export class SpeedTestPage {
     }
   };
 
+
+  shareUrl:any;
+
   constructor(
     private navCtrl: NavController,
     private apiLocation: ApiLocationService,
@@ -55,51 +65,107 @@ export class SpeedTestPage {
     private modalCtrl: ModalController,
     private platform: Platform,
     private apiSpeedtest: ApiSpeedTestService,
+    private apiPublic: ApiHttpPublicService,
+    private authService: ApiAuthService,
     private apiSqlite: ApiSqliteService,
     private apiStorage: ApiStorageService
     ) { }
 
   ngOnInit() {
+
+    console.log('platform',this.platform.platforms());
+    console.log('cordova',this.platform.is("cordova"));
+
     this.resetForm();  
 
     this.dynamicList.is_table = this.platform.platforms()[0] === 'core'
 
-    this.resetContermet();
     this.apiSpeedtest.getSpeedtestServerList()
-      .then(list => {
-        this.serverList = list;
-        this.server = this.serverList[0];
-      })
-      .catch(err => {
-        console.log(err);
-      })
-  }
+    .then(list => {
+      this.serverList = list;
+      this.server = this.serverList[0];
+    })
+    .catch(err => {
+      console.log(err);
+    })
 
+  }
+  
   resetForm(){
     if (this.platform.is("cordova")){
+      //this.results = this.apiSqlite.getResults();
+      let selectSql = {name:"SPEEDTEST"
+                          , cols:[
+                              { name:"time"}
+                              ,{ name:"result"}
+                          ]};
+      this.apiSqlite.selectAll(selectSql)
+          .then(data=>{
+            console.log('Select', data);
 
+          })
+          .catch(err=>{
+            console.log('err Select', err);
+          })
     }else{
       this.results = this.apiStorage.getResults();
     }    
+    
+    //lay thong tin tu may chu
+    //GET https://c3.mobifone.vn/api/ext-public/your-device?id=SPEEDTEST
+    //return data.share_url for share post
+    //duong dan gui ket qua {url:"https://c3.mobifone.vn/api/speedtest/post-result",method:"POST"}
+    this.apiPublic.getMyDevice(this.app.id)
+    .then(data=>{
+      if (data) this.shareUrl = data.share_url; 
+    })
+    .catch(err=>{});
+    
+    this.resetContermet();
   }
 
   resetContermet() {
-    this.apiGraph.initUI();
-    this.objMeter = this.objMeterOrigin;
-    this.apiGraph.updateUI({ state: 0, contermet: '...', progress: 0 });
+    if (this.isRuning){
+      this.apiGraph.initUI();
+      this.objMeter = this.objMeterOrigin;
+      this.apiGraph.updateUI({ state: 0, contermet: '...', progress: 0 });
+    }
   }
 
   clearRuning() {
     //speedtest finish
-    this.hideShowTab();
+    //this.hideShowTab();
 
+    console.log('Finish Run!');
+    
     if (this.results.length>0){
       if (this.platform.is("cordova")){
+        if (this.result){
 
+          let insertSql = {name:"SPEEDTEST"
+          , cols:[
+            { name:"time", value: this.result.start_time}
+            ,{ name:"result", value: this.result}
+          ]};
+
+          console.log('sql save',insertSql);
+
+          this.apiSqlite.insert(insertSql)
+          .then(data=>{
+
+            console.log('Insert', data);
+
+          })
+          .catch(err=>{
+            console.log('err Insert', err);
+          })
+
+        }
       }else{
         this.apiStorage.saveResults(this.results);
       }
     }
+
     this.resetContermet();
     this.isRuning = false;
     worker = null;
@@ -143,7 +209,9 @@ export class SpeedTestPage {
     if (objCommand.command === 'init') {
       this.initUI(objCommand.data);
     } else if (objCommand.command === 'progress') {
-      this.apiGraph.updateUI({ state: 1, contermet: objCommand.data.contermet, progress: objCommand.data.progress });
+      try{
+        this.apiGraph.updateUI({ state: 1, contermet: objCommand.data.contermet, progress: objCommand.data.progress });
+      }catch(e){}
     } else if (objCommand.command === 'finish') {
       this.updateResults(objCommand.work, objCommand.data);
     }
@@ -156,11 +224,13 @@ export class SpeedTestPage {
       unit: formWork.unit,
     }
     //gan mau cho thang do
-    this.apiGraph.initUI({
-      statusColor: formWork.statusColor,
-      backgroundColor: formWork.backgroundColor,
-      progressColor: formWork.progressColor
-    });
+    try{
+      this.apiGraph.initUI({
+        statusColor: formWork.statusColor,
+        backgroundColor: formWork.backgroundColor,
+        progressColor: formWork.progressColor
+      });
+    }catch(e){}
   }
 
 
@@ -209,7 +279,7 @@ export class SpeedTestPage {
    * @param test_order 
    */
   runTestLoop(test_order: string) {
-    const delay = 1000;
+    const delay = 500;
     var nextIndex = 0;
 
     var pos;
@@ -307,7 +377,12 @@ export class SpeedTestPage {
         default: nextIndex++;
       }
 
-      if (!command) this.clearRuning();
+      console.log('step',command);
+      if (!command) {
+        console.log('stop');
+
+        this.clearRuning();
+      }
 
     }.bind(this) //thuc hien gan this nay vao moi goi lenh duoc
 
@@ -325,14 +400,47 @@ export class SpeedTestPage {
           this.result.end_time = new Date().getTime();
           this.results.unshift(this.result);
         }
-        //xem kq --send
-        //console.log(this.result);
+        //xem kq --send tu dong neu co url
+        console.log('result share location:',this.shareUrl);
+        if (this.shareUrl) this.sendResult(this.shareUrl);
 
       })
       .catch(err => {
         //console.log(err);
+        //ket qua send tu dong
+        console.log('result share no LOC:',this.shareUrl);
+        if (this.shareUrl) this.sendResult(this.shareUrl);
       });
 
+  }
+
+  /**
+   * 
+   * @param shareUrl 
+   * {url:"https://...", method:"POST", token:true|false}
+   */
+  sendResult(shareUrl){
+    if (this.result&&shareUrl.url&&shareUrl.method) {
+      if (shareUrl.method=="POST"){
+        if (shareUrl.token){
+          this.authService.postDynamicForm(shareUrl.url, this.result)
+            .then(data => {
+              console.log('save OK',data);
+            })
+            .catch(err => {
+              console.log('save err', err);
+            });
+        }else{
+          this.apiPublic.postDynamicForm(shareUrl.url, this.result)
+            .then(data => {
+              console.log('save OK',data);
+            })
+            .catch(err => {
+              console.log('save err', err);
+            });
+        }
+      }
+    }
   }
 
   toggleSwitch() {

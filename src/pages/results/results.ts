@@ -43,7 +43,7 @@ export class ResultsPage {
 
   onClickResetResults(){
     if (this.platform.is("cordova")){
-
+      
     }else{
       this.apiStorage.deleteResults();
       this.results=[];

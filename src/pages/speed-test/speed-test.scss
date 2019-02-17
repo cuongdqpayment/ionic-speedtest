@@ -25,6 +25,26 @@ page-speed-test {
 		box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
 		border-radius: 0.8em;
     }
+
+    .card-background-page {
+        position: relative;
+        text-align: center;
+    }
+
+    .card-background-page .card-title {
+            position: absolute;
+            top: 60%;
+            font-size: 2.0em;
+            width: 100%;
+            font-weight: bold;
+            color: #fff;
+    }
+
+    .title-item {
+		color: rgba(4, 17, 109, 0.932);
+		text-align: center;
+		font-size: 1.4em;
+	}
     
 	.gradient {
         background-image: url("../../assets/imgs/gradient.png");

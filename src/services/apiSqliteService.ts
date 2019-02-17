@@ -9,17 +9,29 @@ export class ApiSqliteService {
     db:any;
 
     constructor(private httpClient: HttpClient
-                , private sqlite: SQLite) {this.init()}
+                , private sqlite: SQLite) {}
 
     init(){
-        this.sqlite.create({
+        return this.sqlite.create({
             name: this.dbName,
             location: 'default'
           }).then((db: SQLiteObject) => {
               console.log('database init OK!',this.dbName);
               this.db = db;
+              return db;
           })
-          .catch(e => console.log('database error',e));
+          .catch(e => {
+            console.log('database error',e)
+            throw e;
+          });
+    }
+
+
+    /**
+     * tra ve db for execute...
+     */
+    getDb(){
+      return this.db;
     }
 
     /**
@@ -94,6 +106,7 @@ export class ApiSqliteService {
    * 
    */
   insert(insertTable) {
+    
     let sql = 'INSERT INTO ' + insertTable.name
       + ' ('
     let i = 0;
@@ -225,7 +238,42 @@ export class ApiSqliteService {
     }
     //console.log(sql);
     //console.log(params);
-    return this.getRst(sql, params)
+    return this.getRsts(sql, params)
+  }
+  //
+  /**
+   *lenh select, update, delete su dung keu json 
+   * @param {*} selectTable 
+   */
+  selectAll(selectTable) {
+    let sql = 'SELECT * FROM ' + selectTable.name;
+    let i = 0;
+    let params = [];
+    let sqlNames='';
+    for (let col of selectTable.cols) {
+        if (i++ == 0) {
+          sqlNames += col.name;
+        } else {
+          sqlNames += ', ' + col.name;
+        }
+    }
+    sql = 'SELECT '+sqlNames+' FROM ' + selectTable.name;
+    i = 0;
+    if (selectTable.wheres){
+      for (let col of selectTable.wheres) {
+        if (col.value!=undefined&&col.value!=null){
+          params.push(col.value);
+          if (i++ == 0) {
+            sql += ' WHERE ' + col.name + '= ?';
+          } else {
+            sql += ' AND ' + col.name + '= ?';
+          }
+        }
+      }
+    }
+    //console.log(sql);
+    //console.log(params);
+    return this.getRsts(sql, params)
   }
   //lay 1 bang ghi dau tien cua select
   /**
@@ -253,10 +301,15 @@ export class ApiSqliteService {
    * @param {*} params 
    */
   runSql(sql, params = []) {  //Hàm do ta tự đặt tên gồm 2 tham số truyền vào.
+    
+    console.log('sql save',sql);
+
     if (this.db) return this.db.executeSql(sql, params);
     return new Promise((resolve,reject)=>{
         reject('Database not Open!');
     })
   }
+
+
 
 }
