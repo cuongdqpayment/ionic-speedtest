@@ -271,6 +271,10 @@ export class ApiSqliteService {
         }
       }
     }
+
+    if (selectTable.order_by){
+      sql += ' ORDER BY ' + selectTable.order_by;
+    }
     //console.log(sql);
     //console.log(params);
     return this.getRsts(sql, params)

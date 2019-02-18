@@ -108,6 +108,7 @@ export class SpeedTestPage {
           { name: "time" }
           , { name: "result" }
         ]
+        , order_by:"time desc"
       };
       this.apiSqlite.selectAll(selectSql)
         .then(data => {
