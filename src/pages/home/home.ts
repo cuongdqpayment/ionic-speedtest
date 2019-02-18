@@ -91,7 +91,7 @@ export class HomePage {
             ,
             {
               name: 'result',
-              type: 'BLOB',
+              type: 'TEXT',
               option_key: '',
               description: 'Lưu trữ kết quả test từ máy'
             }

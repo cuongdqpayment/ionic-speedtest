@@ -112,7 +112,13 @@ export class SpeedTestPage {
       this.apiSqlite.selectAll(selectSql)
         .then(data => {
           //console.log('Select all', JSON.stringify(data));
-          this.debug = 'Select all: ' + JSON.stringify(data);
+          // this.debug = 'Select all: ' + JSON.stringify(data.rows) 
+          //              + (data.rows&&data.rows.item&&data.rows.item(0)?'item(0)JSON: ' + JSON.stringify(data.rows.item(0)):'');
+            ;
+            this.results = [];
+            for (let i=0; i<data.rows.length; i++){
+              this.results.push(JSON.parse(data.rows.item(i).result));
+            }
         })
         .catch(err => {
           console.log('err Select', err);
@@ -156,7 +162,7 @@ export class SpeedTestPage {
             name: "SPEEDTEST"
             , cols: [
               { name: "time", value: this.result.start_time }
-              , { name: "result", value: this.result }
+              , { name: "result", value: JSON.stringify(this.result)}
             ]
           };
 
@@ -166,7 +172,7 @@ export class SpeedTestPage {
             .then(data => {
 
               console.log('Insert', JSON.stringify(data));
-              this.debug = 'Insert: ' + JSON.stringify(data);
+              //this.debug = 'Insert: ' + JSON.stringify(data);
 
             })
             .catch(err => {
