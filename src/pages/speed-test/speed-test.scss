@@ -50,7 +50,8 @@ page-speed-test {
         background-image: url("../../assets/imgs/gradient.png");
 		background-repeat: no-repeat;
 		background-attachment: fixed;
-		background-position: center;
+        background-position: center;
+        background-size: cover;
 	}
 	
 	.grid-border{
@@ -61,7 +62,8 @@ page-speed-test {
     .speedtest {
         background-image: url("../../assets/imgs/gradient.png");
 		background-repeat: no-repeat;
-		background-position: center;
+        background-position: center;
+        background-size: cover;
 	}
 
     .card-meter{

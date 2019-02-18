@@ -67,6 +67,9 @@
                             </ion-note>
 
                         </ion-item>
+                        <ion-item class="background-item" *ngIf="debug">
+                            <p text-wrap>{{debug}}</p>
+                        </ion-item>
                     </ion-item-group>
                 </ion-list>
             </ion-col>
