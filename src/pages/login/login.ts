@@ -115,12 +115,12 @@ export class LoginPage {
             },
             {
               name: "Thời gian khởi tạo",
-              value: userInfo.iat,
+              value: userInfo.iat * 1000,
               pipe_date: "HH:mm:ss dd/MM/yyyy"
             },
             {
               name: "Thời gian hết hạn",
-              value: userInfo.exp,
+              value: userInfo.exp * 1000,
               pipe_date: "HH:mm:ss dd/MM/yyyy"
             },
             {
