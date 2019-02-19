@@ -24,8 +24,11 @@
 							<strong item-start>
 								{{dt.name}}
 							</strong>
-							<ion-label text-wrap item-end>
-									{{dt.value}}
+							<ion-label text-wrap item-end *ngIf="dt.pipe_date">
+								{{dt.value | date:dt.pipe_date}}
+							</ion-label>
+							<ion-label text-wrap item-end *ngIf="!dt.pipe_date">
+								{{dt.value}}
 							</ion-label>
 						</ion-item>
 					</ion-list>

@@ -2,7 +2,6 @@ import { Component } from '@angular/core';
 import { NavController } from 'ionic-angular';
 import { ApiSqliteService } from '../../services/apiSqliteService';
 import { TabsPage } from '../tabs/tabs';
-import { SpeedTestPage } from '../speed-test/speed-test';
 import { ApiHttpPublicService } from '../../services/apiHttpPublicServices';
 
 /* var dataType = {};
