@@ -69,7 +69,6 @@ export class SpeedTestPage {
   constructor(
     private navCtrl: NavController,
     private apiLocation: ApiLocationService,
-    //private apiGraph: ApiGraphService,
     private modalCtrl: ModalController,
     private platform: Platform,
     private apiSpeedtest: ApiSpeedTestService,
@@ -171,10 +170,8 @@ export class SpeedTestPage {
 
           this.apiSqlite.insert(insertSql)
             .then(data => {
-
-              console.log('Insert', JSON.stringify(data));
+              //console.log('Insert', JSON.stringify(data));
               //this.debug = 'Insert: ' + JSON.stringify(data);
-
             })
             .catch(err => {
               console.log('err Insert', err);
@@ -301,12 +298,8 @@ export class SpeedTestPage {
   runTestLoop(test_order: string) {
     const delay = 500;
     var nextIndex = 0;
-
-    var pos;
-
-    this.apiLocation.getCurrentLocation()
-      .then(pos => pos = pos)
-      .catch(err => console.log(err))
+    
+    this.apiLocation.initPosition()
       .then(data => {
         if (!this.result) this.result = {}; else this.result = this.results.shift();
         let dt = new Date();
@@ -318,7 +311,8 @@ export class SpeedTestPage {
         this.result.date = dt.toLocaleDateString();
         this.result.time = dt.toLocaleTimeString();
         this.results.unshift(this.result);
-      });
+      })
+      .catch(err => console.log(err));
 
     var runNextTest = function () {
       let command = test_order.charAt(nextIndex);
@@ -412,7 +406,7 @@ export class SpeedTestPage {
   //gui ket qua cho may chu
   shareResult() {
     //lay vi tri ket thuc chu trinh de ghi lai vi tri ket thuc test
-    this.apiLocation.getCurrentLocation()
+    this.apiLocation.initPosition()
       .then(pos => {
         if (this.result) {
           this.result = this.results.shift();
@@ -421,14 +415,14 @@ export class SpeedTestPage {
           this.results.unshift(this.result);
         }
         //xem kq --send tu dong neu co url
-        console.log('result share location:', this.shareUrl);
+        //console.log('share result location:', this.shareUrl);
         if (this.shareUrl) this.sendResult(this.shareUrl);
 
       })
       .catch(err => {
         //console.log(err);
         //ket qua send tu dong
-        console.log('result share no LOC:', this.shareUrl);
+        //console.log('result share no LOC:', this.shareUrl);
         if (this.shareUrl) this.sendResult(this.shareUrl);
       });
 
@@ -445,10 +439,10 @@ export class SpeedTestPage {
         if (shareUrl.token) {
           this.authService.postDynamicForm(shareUrl.url, this.result)
             .then(data => {
-              console.log('save OK', data);
+              console.log('save token OK', data);
             })
             .catch(err => {
-              console.log('save err', err);
+              console.log('save token err', err);
             });
         } else {
           this.apiPublic.postDynamicForm(shareUrl.url, this.result)

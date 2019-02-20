@@ -1,45 +1,35 @@
 
-import { Geolocation } from '@ionic-native/geolocation';
+import { Geolocation, Geoposition } from '@ionic-native/geolocation';
 import { Injectable } from '@angular/core';
 
 @Injectable()
 export class ApiLocationService {
 
     public locationTracking;
-    public currenLocation;
+    public currenLocation:any;
 
     constructor(private geoLocation: Geolocation) { }
 
     getCurrentLocation(){
-        //chuyen doi vi tri tra ve vi tri hien tai theo thuat toan
-        if (this.currenLocation){
-            return new Promise((resolve,reject)=>{
-                resolve(this.currenLocation)
-            })
-        }else{
-            return this.init();
-        }
+        this.stopTracking();
+        this.startTracking();
+        return this.currenLocation;
     }
 
-    init() {
-        return new Promise((resolve,reject)=>{
-            this.stopTracking();
-            this.geoLocation.getCurrentPosition({
-                enableHighAccuracy: true,
-                timeout: 10000,
-                maximumAge: 7000
-            }).then((pos) => {
-                //console.log('current get ok');
+    initPosition() {
+        return this.geoLocation.getCurrentPosition()
+        .then(pos => {
+                console.log('debug',pos);
                 this.currenLocation = pos;
-                this.currenLocation.timereturn = new Date().getTime(); 
-                this.startTracking();
-                resolve(this.currenLocation);
-            }).catch((err) => {
-                console.log('error get current',err);
-                this.startTracking();
-                reject(err);
-            });       
-        })
+                return {lat:pos.coords.latitude,
+                        lon:pos.coords.longitude,
+                        timestamp:pos.timestamp,
+                        time_tracking: new Date().getTime()};
+                        })
+        .catch((err) => {
+                console.log('error get current loc',err);
+                throw err;
+            })
 
     }
     //Theo dõi thay đổi vị trí
@@ -50,18 +40,14 @@ export class ApiLocationService {
             maximumAge: 3000
         })
             .subscribe((pos) => {
-
-                //console.log('tracking get Ok');
                 this.currenLocation = pos;
-                this.currenLocation.timereturn = new Date().getTime(); //thoi gian tinh ms hien tai
+                this.currenLocation.time_tracking = new Date().getTime(); //thoi gian tinh ms hien tai
             },
                 err => {
-                    // console.log('error get tracking');
-                    console.log(err);
+                    console.log('error get tracking loc',err);
                 }
             )
     }
-
     stopTracking() {
         try { this.locationTracking.unsubscribe() } catch (e) { };
     }
