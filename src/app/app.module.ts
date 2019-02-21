@@ -35,6 +35,7 @@ import { ResponseInterceptor } from '../interceptors/responseInterceptor';
 import { SpeedTestPage } from '../pages/speed-test/speed-test';
 import { ApiSqliteService } from '../services/apiSqliteService';
 import { ResultsPage } from '../pages/results/results';
+import { GoogleMapPage } from '../pages/google-map/google-map';
 
 @NgModule({
   declarations: [
@@ -50,6 +51,7 @@ import { ResultsPage } from '../pages/results/results';
     DynamicCardSocialPage,
     DynamicMediasPage,
     DynamicListOrderPage,
+    GoogleMapPage,
     SignaturePage,
     ArraySortPipe
   ],
@@ -73,6 +75,7 @@ import { ResultsPage } from '../pages/results/results';
     DynamicCardSocialPage,
     DynamicMediasPage,
     DynamicListOrderPage,
+    GoogleMapPage,
     SignaturePage
   ],
   providers: [

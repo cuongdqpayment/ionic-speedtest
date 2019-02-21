@@ -1,0 +1,86 @@
+<ion-header *ngIf="isShowHeader">
+  <ion-toolbar color="primary">
+    
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <div #map id="map"></div>
+  <!--cac object sau se hien thi len truoc-->
+  <ion-icon name="pin" [ngClass]="className" *ngIf="isShowCenter"></ion-icon>
+  
+  <!--nut trung tam de lua chon vi tri-->
+  <ion-fab *ngIf="commands.dynamic" [attr.middle]="commands.dynamic.middle" [attr.center]="commands.dynamic.center" [attr.left]="commands.dynamic.left" [attr.right]="commands.dynamic.right" [attr.bottom]="commands.dynamic.bottom" [attr.top]="commands.dynamic.top" auto-close-on-click-outside>
+    <button ion-fab [attr.mini]="commands.dynamic.mini" color="{{commands.dynamic.controler.color}}">
+      <ion-icon name="{{commands.dynamic.controler.icon}}"></ion-icon>
+    </button>
+    <ion-fab-list *ngFor="let direct of commands.dynamic.directions" attr.side="{{direct.side}}">
+      <button *ngFor="let btn of direct.actions" color="{{btn.color}}" ion-fab (click)="onClickAction(btn)">
+        <ion-icon *ngIf="btn.icon" name="{{btn.icon}}"></ion-icon>
+        <span *ngIf="btn.name">{{btn.name}}</span>
+      </button>
+    </ion-fab-list>
+  </ion-fab>
+
+  <ion-fab *ngIf="commands.fix" [attr.middle]="commands?.fix?.middle" [attr.center]="commands?.fix?.center" [attr.left]="commands?.fix?.left" [attr.right]="commands?.fix?.right" [attr.bottom]="commands?.fix?.bottom" [attr.top]="commands?.fix?.top">
+    <button *ngFor="let btn of commands.fix.actions" [attr.mini]="commands?.fix?.mini" ion-fab color="{{btn.color}}" (click)="onClickAction(btn)">
+        <ion-icon *ngIf="btn.icon" name="{{btn.icon}}"></ion-icon>
+        <span *ngIf="btn.name">{{btn.name}}</span>
+    </button>
+  </ion-fab>
+
+  
+  <!--chum nut dieu khien phia trai ben tren-->
+  <!-- <ion-fab left top auto-close-on-click-outside *ngIf="commands.top_left">
+    <button ion-fab color="{{commands.top_left.controler.color}}">
+      <ion-icon name="{{commands.top_left.controler.icon}}"></ion-icon>
+    </button>
+    <ion-fab-list side="right">
+      <button *ngFor="let btn of commands.top_left.actions" color="{{btn.color}}" ion-fab (click)="onClickAction(btn)">
+        <ion-icon *ngIf="btn.icon" name="{{btn.icon}}"></ion-icon>
+        <span *ngIf="btn.name">{{btn.name}}</span>
+      </button>
+    </ion-fab-list>
+  </ion-fab> -->
+  
+  <!--chum nut dieu khien phia phai ben duoi-->
+  <!-- <ion-fab left bottom auto-close-on-click-outside *ngIf="commands.bottom_left">
+    <button ion-fab color="{{commands.bottom_left.controler.color}}">
+      <ion-icon name="{{commands.bottom_left.controler.icon}}"></ion-icon>
+    </button>
+    <ion-fab-list side="top">
+      <button *ngFor="let btn of commands.bottom_left.actions" color="{{btn.color}}" ion-fab (click)="onClickAction(btn)">
+        <ion-icon *ngIf="btn.icon" name="{{btn.icon}}"></ion-icon>
+        <span *ngIf="btn.name">{{btn.name}}</span>
+      </button>
+    </ion-fab-list>
+  </ion-fab> -->
+  
+  <!--chum nut dieu khien phia phai ben tren-->
+  <!-- <ion-fab top right auto-close-on-click-outside *ngIf="commands.top_right">
+    <button ion-fab mini color="{{commands.top_right.controler.color}}">
+      <ion-icon name="{{commands.top_right.controler.icon}}"></ion-icon>
+    </button>
+    <ion-fab-list>
+      <button *ngFor="let btn of commands.top_right.actions" color="{{btn.color}}" ion-fab (click)="onClickAction(btn)">
+        <ion-icon *ngIf="btn.icon" name="{{btn.icon}}"></ion-icon>
+        <span *ngIf="btn.name">{{btn.name}}</span>
+      </button>
+    </ion-fab-list>
+  </ion-fab> -->
+  
+  <!--chum nut dieu khien phia trai ben duoi-->
+  <!-- <ion-fab right bottom auto-close-on-click-outside *ngIf="commands.bottom_right">
+    <button ion-fab large color="{{commands.bottom_right.controler.color}}">
+      <ion-icon name="{{commands.bottom_right.controler.icon}}"></ion-icon>
+    </button>
+    <ion-fab-list side="left">
+      <button *ngFor="let btn of commands.bottom_right.actions" color="{{btn.color}}" ion-fab (click)="onClickAction(btn)">
+        <ion-icon *ngIf="btn.icon" name="{{btn.icon}}"></ion-icon>
+        <span *ngIf="btn.name">{{btn.name}}</span>
+      </button>
+    </ion-fab-list>
+  </ion-fab> -->
+  
+
+</ion-content>

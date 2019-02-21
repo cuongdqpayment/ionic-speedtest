@@ -5,6 +5,7 @@ import { ApiResourceService } from '../../services/apiResourceServices';
 import { DynamicFormMobilePage } from '../dynamic-form-mobile/dynamic-form-mobile';
 import { LoginPage } from '../login/login';
 import { SpeedTestPage } from '../speed-test/speed-test';
+import { GoogleMapPage } from '../google-map/google-map';
 
 @Component({
   templateUrl: 'tabs.html'
@@ -16,6 +17,11 @@ export class TabsPage {
       root: SpeedTestPage,
       title: 'SpeedTest',
       icon: 'home'
+    },
+    {
+      root: GoogleMapPage,
+      title: 'Map',
+      icon: 'globe'
     },
     {
       root: LoginPage,
