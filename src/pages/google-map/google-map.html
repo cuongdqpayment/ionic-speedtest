@@ -11,7 +11,7 @@
     (keyup.esc)="searchEnter()">
     </ion-searchbar>
     
-    <ion-title *ngIf="!isSearch">{{header?.title}}</ion-title>
+    <ion-title *ngIf="!isSearch">{{header?.title}} - {{(isLocOK?'ON':'OFF')}}</ion-title>
 
     <ion-buttons end *ngFor="let btn of header?.buttons">
         <button *ngIf="!isSearch" class="badge-background" ion-button icon-only color="{{btn.color}}" (click)="onClickAction(btn)">

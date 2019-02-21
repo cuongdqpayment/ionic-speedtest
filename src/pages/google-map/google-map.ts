@@ -108,7 +108,7 @@ export class GoogleMapPage {
 
   ngOnInit() {
     //lay vi tri tracking
-    this.startTracking();
+    this.getLocation();
   }
 
   ionViewDidLoad() {
@@ -183,6 +183,31 @@ export class GoogleMapPage {
     loading.dismiss();
   }
 
+  //lấy vị trí hiện tại và theo dõi vị trí nếu có thay đổi
+  getLocation() {
+    this.stopTracking();
+    this.geoLocation.getCurrentPosition({
+      enableHighAccuracy: true,
+      timeout: 10000,
+      maximumAge: 7000
+    }).then((pos) => {
+      this.isLocOK = true;
+      this.showLocation({ lat:pos.coords.latitude,
+                            lng:pos.coords.longitude,
+                            accuracy: pos.coords.accuracy,
+                            speed: pos.coords.speed,
+                            altitude: pos.coords.altitude,
+                            altitudeAccuracy: pos.coords.altitudeAccuracy,
+                            heading: pos.coords.heading,
+                            timestamp:pos.timestamp,
+                            time_tracking: new Date().getTime()
+                          });
+    }).catch((err) => {
+      this.isLocOK = false;
+    });
+    this.startTracking();
+  }
+
   //Theo dõi thay đổi vị trí
   startTracking() {
     this.locationTracking = this.geoLocation.watchPosition(
@@ -207,7 +232,6 @@ export class GoogleMapPage {
                 
         },
         err => {
-              console.log('error get tracking loc',err);
               this.isLocOK = false;
             }
         )
@@ -249,6 +273,7 @@ export class GoogleMapPage {
   onClickAction(btn){
     //console.log('click:',btn);
     if (btn.next==="CENTER"){
+      this.getLocation();
       this.map.setCenter(latLng);
     }
   }
