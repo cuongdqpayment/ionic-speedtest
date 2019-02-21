@@ -5,8 +5,8 @@ import { Injectable } from '@angular/core';
 @Injectable()
 export class ApiLocationService {
 
-    public locationTracking;
-    public currenLocation:any;
+    locationTracking: any;
+    currenLocation: any;
 
     constructor(private geoLocation: Geolocation) { }
 
@@ -24,8 +24,9 @@ export class ApiLocationService {
                 return {lat:pos.coords.latitude,
                         lon:pos.coords.longitude,
                         timestamp:pos.timestamp,
-                        time_tracking: new Date().getTime()};
-                        })
+                        time_tracking: new Date().getTime()
+                        };
+                    })
         .catch((err) => {
                 console.log('error get current loc',err);
                 throw err;
@@ -40,8 +41,12 @@ export class ApiLocationService {
             maximumAge: 3000
         })
             .subscribe((pos) => {
-                this.currenLocation = pos;
-                this.currenLocation.time_tracking = new Date().getTime(); //thoi gian tinh ms hien tai
+                this.currenLocation = { lat:pos.coords.latitude,
+                                        lon:pos.coords.longitude,
+                                        timestamp:pos.timestamp,
+                                        time_tracking: new Date().getTime()
+                                      }
+                    
             },
                 err => {
                     console.log('error get tracking loc',err);

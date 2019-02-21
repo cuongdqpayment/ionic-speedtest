@@ -8,7 +8,7 @@ import { GoogleMapPage } from '../pages/google-map/google-map';
   templateUrl: 'app.html'
 })
 export class MyApp {
-  rootPage:any = GoogleMapPage;
+  rootPage:any = HomePage;
 
   constructor(platform: Platform, statusBar: StatusBar, splashScreen: SplashScreen) {
     platform.ready().then(() => {

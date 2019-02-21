@@ -1,5 +1,6 @@
 import { Component, ViewChild, ElementRef } from '@angular/core';
 import { NavController, LoadingController, ToastController } from 'ionic-angular';
+import { Geolocation } from '@ionic-native/geolocation';
 
 declare var google;
 let latLng;
@@ -17,18 +18,39 @@ export class GoogleMapPage {
   map: any;
   isMapLoaded:boolean = false;
   isShowCenter: boolean = true;
+  isLocOK: boolean = false;
   className = "icon-center icon-blue";
+  
+  isSearch: boolean = false;
+  shouldShowCancel: boolean = false;
+
+  locationTracking: any;
+  
+
+  header = {
+    title:"Ban do"
+    ,search_bar:{hint:"tim gi",search_string:""}
+    ,buttons:[
+      {color:"primary", icon:"add", next:"ADD"}
+      , {color:"primary", icon:"contacts", next:"FRIENDS"}
+      , {color:"primary", icon:"notifications", next:"NOTIFY"
+        , alerts:[
+            "cuong.dq"
+            ]
+        }
+      , {color:"royal", icon:"cog", next:"SETTINGS"}
+    ]
+
+
+  }
 
   commands = {
-
     fix:{
-      top:true        //left/center/right
-      , right:true    //top/middle/bottom
+      right:true        //left/center/right
+      , bottom:true    //top/middle/bottom
       , mini:true
       , actions:[
-        {color:"dark", icon:"add", next:"ADD"}
-        ,{color:"danger", icon:"cog", next:"SETTINGS"}
-        ,{color:"secondary", name:"Tìm", next:"SEARCH"}
+        {color:"light", icon:"locate", next:"CENTER"}
       ]
     }
     ,
@@ -74,18 +96,19 @@ export class GoogleMapPage {
             ,{color:"danger", name:"Phải", next:"SEARCH"}
           ]
         }
-
       ]
     }
   }
 
   constructor(private navCtrl: NavController
               ,private loadingCtrl: LoadingController
+              ,private geoLocation: Geolocation
               ,private toastCtrl: ToastController
     ) {}
 
   ngOnInit() {
-    
+    //lay vi tri tracking
+    this.startTracking();
   }
 
   ionViewDidLoad() {
@@ -157,18 +180,77 @@ export class GoogleMapPage {
 
     this.isMapLoaded = true;
 
-    //lay vi tri tracking
-
-
     loading.dismiss();
   }
 
-
-  onClickAction(btn){
-    console.log('click:',btn);
+  //Theo dõi thay đổi vị trí
+  startTracking() {
+    this.locationTracking = this.geoLocation.watchPosition(
+      {
+        enableHighAccuracy: true,
+        timeout: 5000,
+        maximumAge: 3000
+      }
+    )
+        .subscribe((pos) => {
+          this.isLocOK = true;
+          this.showLocation({ lat:pos.coords.latitude,
+                                lng:pos.coords.longitude,
+                                accuracy: pos.coords.accuracy,
+                                speed: pos.coords.speed,
+                                altitude: pos.coords.altitude,
+                                altitudeAccuracy: pos.coords.altitudeAccuracy,
+                                heading: pos.coords.heading,
+                                timestamp:pos.timestamp,
+                                time_tracking: new Date().getTime()
+                              });
+                
+        },
+        err => {
+              console.log('error get tracking loc',err);
+              this.isLocOK = false;
+            }
+        )
   }
 
+  stopTracking() {
+      try { this.locationTracking.unsubscribe() } catch (e) { };
+  }
 
+  showLocation(loc){
+    let loclatLng = {lat:loc.lat,lng:loc.lng};
+    latLng = new google.maps.LatLng(loc.lat, loc.lng);
 
+    if (this.isMapLoaded){
+      //curMarker.setPosition(loclatLng);
+      curCircleIcon.setCenter(loclatLng);
+      curCircle.setCenter(loclatLng);
+      curCircle.setRadius(loc.accuracy);
+      //dua ban do ve vi tri trung tam
+      this.map.setCenter(latLng);
+    }
+
+  }
+
+  //Su dung search
+  //---------------------
+  goSearch(){
+    this.isSearch = true;
+  }
+
+  searchEnter(){
+    this.isSearch = false;
+  }
+
+  onInput(e){
+    console.log(this.header.search_bar.search_string);
+  }
+
+  onClickAction(btn){
+    //console.log('click:',btn);
+    if (btn.next==="CENTER"){
+      this.map.setCenter(latLng);
+    }
+  }
 
 }
