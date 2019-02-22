@@ -26,7 +26,12 @@
 <ion-content>
   <div #map id="map"></div>
   <!--cac object sau se hien thi len truoc-->
-  <ion-icon name="pin" [ngClass]="className" *ngIf="isShowCenter"></ion-icon>
+  <div *ngIf="isShowCenter">
+    <div [ngClass]="classFloatInfo">{{view.header.search_bar.search_result}}</div>
+    <div class="h-line"></div>
+    <div class="v-line"></div>
+    <ion-icon name="pin" [ngClass]="className"></ion-icon>
+  </div>
   
   <!--nut trung tam de lua chon vi tri-->
   <ion-fab *ngIf="view.dynamic" [attr.middle]="view.dynamic.middle" [attr.center]="view.dynamic.center" [attr.left]="view.dynamic.left" [attr.right]="view.dynamic.right" [attr.bottom]="view.dynamic.bottom" [attr.top]="view.dynamic.top">

@@ -530,9 +530,6 @@ export class SpeedTestPage {
 
   callBack = function (reset?: boolean) {
     if (reset) this.resetForm();
-    return new Promise((resolve, reject) => {
-      resolve({ next: "CLOSE" });
-    })
   }.bind(this);
 
   hideShowTab() {

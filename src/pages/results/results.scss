@@ -88,7 +88,7 @@ page-results {
 
 		.table-row .table-header { //tất cả các cột sau class này
 		background: #99b7f0e0;
-				color:#202020;
+		color:#202020;
 	}
 
 	.table-row ion-col { //tất cả các cột sau class này
@@ -97,12 +97,16 @@ page-results {
 
 	.table-row .row-content ion-col:nth-of-type(odd) { //cột lẻ
 		background: #dde7fa;
-				color:#202020;
+		color:#202020;
+		opacity: 0.8;              //lam mo chu va nen 80%
+        filter: alpha(opacity=80); /* For IE8 and earlier */
 	}
 
 	.table-row ion-row:nth-of-type(even) { //dòng chẵn
 		background: #e6f5f8;
-				color:#202020;
+		color:#202020;
+		opacity: 0.6;              //lam mo chu va nen 60%
+		filter: alpha(opacity=60); /* For IE8 and earlier */
 		
 	}
 }

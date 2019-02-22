@@ -23,7 +23,8 @@ export class GoogleMapPage {
   isMapLoaded:boolean = false;
   isShowCenter: boolean = false;
   isLocOK: boolean = false;
-  className = "icon-center icon-blue";
+  className = "icon-center size-md icon-blue";
+  classFloatInfo = "text-center size-sm icon-green text-blur";
   
   isSearch: boolean = false;
   shouldShowCancel: boolean = false;
@@ -36,7 +37,7 @@ export class GoogleMapPage {
   view = {
     header: {
       title:"Map"
-      ,search_bar:{hint:"Tìm địa chỉ hoặc tọa độ",search_string:""}
+      ,search_bar:{hint:"Tìm địa chỉ hoặc tọa độ", search_string:"", search_result:""}
       ,buttons:[
          {color:"primary", icon:"notifications", next:"NOTIFY"
           , alerts:[
@@ -313,7 +314,7 @@ export class GoogleMapPage {
         });
         //console.log('data',addresses);
         if (addresses.length>=1){
-          
+          this.view.header.search_bar.search_result = addresses[0].address;
           this.map.setCenter(new google.maps.LatLng(addresses[0].lat, addresses[0].lng));
           this.isShowCenter = true;
 
