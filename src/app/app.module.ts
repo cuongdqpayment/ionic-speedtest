@@ -36,6 +36,7 @@ import { SpeedTestPage } from '../pages/speed-test/speed-test';
 import { ApiSqliteService } from '../services/apiSqliteService';
 import { ResultsPage } from '../pages/results/results';
 import { GoogleMapPage } from '../pages/google-map/google-map';
+import { ApiMapService } from '../services/apiMapService';
 
 @NgModule({
   declarations: [
@@ -92,6 +93,7 @@ import { GoogleMapPage } from '../pages/google-map/google-map';
     ApiHttpPublicService,
     ApiResourceService,
     ApiLocationService,
+    ApiMapService,
     RequestInterceptor,
     {
       provide: HTTP_INTERCEPTORS,

@@ -8,7 +8,7 @@
 
     <ion-searchbar start *ngIf="isSearch && view.header?.search_bar" placeholder="{{view.header.search_bar.hint}}" [(ngModel)]="view.header.search_bar.search_string"
     [showCancelButton]="shouldShowCancel" (ionInput)="onInput($event)" (keyup.enter)="searchEnter()"
-    (keyup.esc)="searchEnter()">
+    (keyup.esc)="searchEnterEsc()" (focusout)="searchEnterEsc()">
     </ion-searchbar>
     
     <ion-title *ngIf="!isSearch">{{view.header?.title}}{{(isRuningInterval?' - TRACKING':'')}}</ion-title>

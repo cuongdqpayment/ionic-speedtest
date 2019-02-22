@@ -8,7 +8,9 @@ const sessionStorageAvailable = isStorageAvailable(sessionStorage);
 export class ApiStorageService {
  
     public static token;
-    public static resourceServer = 'https://qld-invoices.herokuapp.com'; 
+    public static mapServer = 'https://c3.mobifone.vn/i_api'; 
+    public static mediaServer = 'https://c3.mobifone.vn/media'; 
+    public static resourceServer = 'https://c3.mobifone.vn/qld'; 
     public static authenticationServer = 'https://c3.mobifone.vn/api/ext-auth';
 
     constructor(@Inject(LOCAL_STORAGE) private storage: StorageService) {

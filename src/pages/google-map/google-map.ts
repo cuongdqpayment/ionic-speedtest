@@ -2,6 +2,7 @@ import { Component, ViewChild, ElementRef } from '@angular/core';
 import { NavController, LoadingController, ToastController, ModalController } from 'ionic-angular';
 import { Geolocation } from '@ionic-native/geolocation';
 import { DynamicFormWebPage } from '../dynamic-form-web/dynamic-form-web';
+import { ApiMapService } from '../../services/apiMapService';
 
 declare var google;
 let latLng;
@@ -20,7 +21,7 @@ export class GoogleMapPage {
 
   map: any;
   isMapLoaded:boolean = false;
-  isShowCenter: boolean = true;
+  isShowCenter: boolean = false;
   isLocOK: boolean = false;
   className = "icon-center icon-blue";
   
@@ -34,8 +35,8 @@ export class GoogleMapPage {
   
   view = {
     header: {
-      title:"Ban do"
-      ,search_bar:{hint:"tim gi",search_string:""}
+      title:"Map"
+      ,search_bar:{hint:"Tìm địa chỉ hoặc tọa độ",search_string:""}
       ,buttons:[
          {color:"primary", icon:"notifications", next:"NOTIFY"
           , alerts:[
@@ -113,6 +114,7 @@ export class GoogleMapPage {
               , private modalCtrl: ModalController
               , private loadingCtrl: LoadingController
               , private geoLocation: Geolocation
+              , private apiMap: ApiMapService
               , private toastCtrl: ToastController
     ) {}
 
@@ -201,17 +203,21 @@ export class GoogleMapPage {
       timeout: 10000,
       maximumAge: 7000
     }).then((pos) => {
-      this.isLocOK = true;
-      this.showLocation({ lat:pos.coords.latitude,
-                            lng:pos.coords.longitude,
-                            accuracy: pos.coords.accuracy,
-                            speed: pos.coords.speed,
-                            altitude: pos.coords.altitude,
-                            altitudeAccuracy: pos.coords.altitudeAccuracy,
-                            heading: pos.coords.heading,
-                            timestamp:pos.timestamp,
-                            time_tracking: new Date().getTime()
-                          });
+      if (pos.coords) {
+        this.isLocOK = true;
+        this.showLocation({ lat:pos.coords.latitude,
+          lng:pos.coords.longitude,
+          accuracy: pos.coords.accuracy,
+          speed: pos.coords.speed,
+          altitude: pos.coords.altitude,
+          altitudeAccuracy: pos.coords.altitudeAccuracy,
+          heading: pos.coords.heading,
+          timestamp:pos.timestamp,
+          time_tracking: new Date().getTime()
+        });
+      } else {
+        this.isLocOK = true;
+      }
     }).catch((err) => {
       this.isLocOK = false;
       
@@ -234,8 +240,9 @@ export class GoogleMapPage {
       }
     )
         .subscribe((pos) => {
-          this.isLocOK = true;
-          this.showLocation({ lat:pos.coords.latitude,
+          if (pos.coords) {
+            this.isLocOK = true;
+            this.showLocation({ lat:pos.coords.latitude,
                                 lng:pos.coords.longitude,
                                 accuracy: pos.coords.accuracy,
                                 speed: pos.coords.speed,
@@ -245,6 +252,9 @@ export class GoogleMapPage {
                                 timestamp:pos.timestamp,
                                 time_tracking: new Date().getTime()
                               });
+          } else {
+            this.isLocOK = true;
+          }
                 
         },
         err => {
@@ -283,11 +293,47 @@ export class GoogleMapPage {
   }
 
   searchEnter(){
+    //xu ly tim kiem
+    console.log(this.view.header.search_bar.search_string);
+    this.apiMap.getLatlngFromAddress(this.view.header.search_bar.search_string)
+    .then(data=>{
+      //tim thay dia chi lat,lng
+      //setCenter and show Center marker
+      //share ? popup temporary, ???
+      if (data.status === 'OK' && data.results && data.results.length>0){
+        let addresses = []
+        data.results.forEach(el => {
+          addresses.push({address: el.formatted_address, lat: el.geometry.location.lat, lng: el.geometry.location.lng})
+        });
+        //console.log('data',addresses);
+        if (addresses.length>=1){
+          
+          this.map.setCenter(new google.maps.LatLng(addresses[0].lat, addresses[0].lng));
+          this.isShowCenter = true;
+
+          if (addresses.length>1){
+            //popup cua so len cho user chon
+          }
+
+        }
+      }
+    })
+    .catch(err=>{
+      console.log('err',err);
+
+    });
+
+    this.view.header.search_bar.search_string = '';
+    this.isSearch = false;
+  }
+
+  searchEnterEsc(){
     this.isSearch = false;
   }
 
   onInput(e){
-    console.log(this.view.header.search_bar.search_string);
+    //xu ly filter
+    //console.log(this.view.header.search_bar.search_string);
   }
 
   onClickAction(btn){
@@ -307,14 +353,14 @@ export class GoogleMapPage {
         , items: [
           {          name: "Lựa chọn kiểu hiển thị", type: "title"}
     
-          , { key: "type", name: "Kiểu bản đồ", type: "select", value: google.maps.MapTypeId.ROADMAP, options: [
+          , { key: "type", name: "Kiểu bản đồ", type: "select", value: this.mapSettings.type, options: [
                 { name: "Hành chính", value: google.maps.MapTypeId.ROADMAP }
                 , { name: "Địa hình", value: google.maps.MapTypeId.TERRAIN }
                 , { name: "Vệ tinh", value: google.maps.MapTypeId.HYBRID }
               ] 
             }
-          , { key: "zoom", name: "Mức hiển thị", type: "range", icon: "globe", value: 15, min: 1, max: 20 }
-          , { key: "auto_tracking", name: "Tự động tracking?", value: this.isRuningInterval, icon: "navigate", type: "toggle" }
+          , { key: "zoom", name: "Mức hiển thị", type: "range", icon: "globe", value: this.mapSettings.zoom, min: 1, max: 20 }
+          , { key: "auto_tracking", name: "Tự động tracking?", value: this.mapSettings.auto_tracking, icon: "navigate", type: "toggle" }
           , 
           { 
               type: "button"
@@ -339,6 +385,8 @@ export class GoogleMapPage {
   //thoi gian interval
   startStopInterval() {
     this.isRuningInterval = !this.isRuningInterval;
+    this.mapSettings.auto_tracking = this.isRuningInterval;
+
     this.view.fix.actions[0].color=this.isRuningInterval?"danger":"secondary";
     if (this.isRuningInterval){
         this.autoGetLocation();
@@ -355,9 +403,14 @@ export class GoogleMapPage {
 
   callbackFunction = function(res){
     return new Promise((resolve, reject) => {
-      this.map.setMapTypeId(res.data.type);
-      this.map.setZoom(res.data.zoom);
-      if (res.data.auto_tracking){
+      
+      this.mapSettings.type = res.data.type;
+      this.mapSettings.zoom = res.data.zoom;
+      this.mapSettings.auto_tracking = res.data.auto_tracking;
+
+      this.map.setMapTypeId(this.mapSettings.type);
+      this.map.setZoom(this.mapSettings.zoom);
+      if (this.mapSettings.auto_tracking){
         if (!this.isRuningInterval){
           this.isRuningInterval = true;
           this.view.fix.actions[0].color="danger";
