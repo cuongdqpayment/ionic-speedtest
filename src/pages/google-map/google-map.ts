@@ -274,6 +274,9 @@ export class GoogleMapPage {
   showLocation(loc){
     let loclatLng = {lat:loc.lat,lng:loc.lng};
     latLng = new google.maps.LatLng(loc.lat, loc.lng);
+    
+    //neu KC oldLocation va newLocation >=100m 
+    //ma tu dong tim dia chi thi - tim dia chi va view dia chi cho nguoi dung
 
     if (this.isMapLoaded){
       //curMarker.setPosition(loclatLng);
@@ -281,7 +284,10 @@ export class GoogleMapPage {
       curCircle.setCenter(loclatLng);
       curCircle.setRadius(loc.accuracy);
       //dua ban do ve vi tri trung tam
-      this.map.setCenter(latLng);
+      if (this.mapSettings.auto_tracking) {
+        
+        this.map.setCenter(latLng);
+      }
     }
 
   }
