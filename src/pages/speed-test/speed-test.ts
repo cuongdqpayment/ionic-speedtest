@@ -498,7 +498,6 @@ export class SpeedTestPage {
     };
 
     let settings = {
-      parent: this, //bind this for call
       callback: this.callbackSettings,
       step: 'form-user-info',
       form: data
@@ -510,7 +509,7 @@ export class SpeedTestPage {
   /**
    * Cau truc cua ham callback phai chuan nhu nay
    */
-  callbackSettings = function (that, res) {
+  callbackSettings = function (res) {
     //console.log(res);
     if (res.data) this.dynamicList.is_table = res.data.is_table;
     if (res.data && res.data.server) this.server = this.serverList[res.data.server];
@@ -531,6 +530,9 @@ export class SpeedTestPage {
 
   callBack = function (reset?: boolean) {
     if (reset) this.resetForm();
+    return new Promise((resolve, reject) => {
+      resolve({ next: "CLOSE" });
+    })
   }.bind(this);
 
   hideShowTab() {
