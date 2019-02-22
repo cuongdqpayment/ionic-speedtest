@@ -112,8 +112,8 @@
 		<!-- range adjust -->
 		<ion-item class="input-item" *ngIf="it.type == 'range'">
 			<ion-range min="{{it.min}}" max="{{it.max}}" pin="true" [(ngModel)]="it.value" color="primary">
-				<ion-icon range-left small name="contrast"></ion-icon>
-				<ion-icon range-right name="contrast"></ion-icon>
+				<ion-icon range-left small name="{{it.icon}}"></ion-icon>
+				<ion-icon range-right name="{{it.icon}}"></ion-icon>
 			</ion-range>
 		</ion-item>
 

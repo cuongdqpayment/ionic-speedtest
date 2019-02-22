@@ -194,10 +194,7 @@ export class SpeedTestPage {
 
     this.isRuning = !this.isRuning;
 
-    if (!this.isRuning) {
-      //this.I("startStopBtn").className = "";
-      //dung test
-    } else {
+    if (this.isRuning) {
       //lay vi tri de ghi ket qua
       //this.I("startStopBtn").className = "running";
       //bat dau chay
@@ -294,6 +291,7 @@ export class SpeedTestPage {
   /**
    * '_I_U' | '_I_P_D_U'
    * @param test_order 
+   * Hàm này chạy tuần tự từng đoạn
    */
   runTestLoop(test_order: string) {
     const delay = 500;

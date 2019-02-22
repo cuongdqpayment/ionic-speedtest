@@ -15,7 +15,7 @@ export class DynamicFormWebPage {
     , items: [
       {        name: "Thông tin cá nhân avatar", hint: "Avatar", type: "avatar", url: "https://www.w3schools.com/howto/img_forest.jpg" }
       , { id: 1, name: "Check hay không chọn?", type: "check", value: true }
-      , { id: 2, name: "Thanh Trượt", type: "range", value: 50, min: 0, max: 100 }
+      , { id: 2, name: "Thanh Trượt", type: "range", icon:"contrast", value: 50, min: 0, max: 100 }
       , { id: 3, name: "Chọn hay không chọn Toggle?", icon: "plane", type: "toggle" }
       , { id: 4, name: "Chọn radio cái nào", type: "radio", icon: "plane", value: 2, options: [{ name: "Tùy chọn 1", value: 1 }, { name: "Tùy chọn 2", value: 2 }] }
       , { id: 5, name: "Chọn 1 cái nào", type: "select", value: 2, options: [{ name: "Tùy chọn 1", value: 1 }, { name: "Tùy chọn 2", value: 2 }] }
@@ -267,7 +267,7 @@ export class DynamicFormWebPage {
         //if (this.navCtrl.length() > 1) this.navCtrl.pop();      //goback 1 step
       } else if (btn.next == 'CALLBACK') {
         if (this.callback) {
-          this.callback(this.parent,btn.next_data)
+          this.callback(btn.next_data,this.parent)
             .then(nextStep => this.next(nextStep));
         } else {
           try{this.navCtrl.pop()}catch(e){}

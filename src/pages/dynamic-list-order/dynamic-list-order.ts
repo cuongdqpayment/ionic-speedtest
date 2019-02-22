@@ -254,7 +254,7 @@ export class DynamicListOrderPage {
         try { this.navCtrl.pop() } catch (e) { }
       } else if (btn.next == 'ADD' || btn.next == 'EDIT' || btn.next == 'PDF' || btn.next == 'LIST' ) {
         if (this.callback) {
-          this.callback(this.parent, btn.next_data)
+          this.callback(btn.next_data, this.parent)
             .then(nextStep => this.next(nextStep));
         }
       } else if (btn.next == 'NEXT' && btn.next_data && btn.next_data.data) {

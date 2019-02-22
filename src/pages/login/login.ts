@@ -147,17 +147,17 @@ export class LoginPage {
       });
   }
 
-  callbackUserInfo(that, res?: { step?: string, button?: any, data?: any, error?: any }) {
+  callbackUserInfo = function (res?: { step?: string, button?: any, data?: any, error?: any }) {
     console.log('Gọi cái gì đây',res);
     return new Promise((resolve, reject) => {
       if (res.button&&res.button.command==="EXIT"){
-        that.auth.deleteToken();
-        that.ionViewDidLoad_Login();
+        this.auth.deleteToken();
+        this.ionViewDidLoad_Login();
       }
       resolve();
     });
 
-  }
+  }.bind(this);
 
   ionViewDidLoad_Login() {
     //console.log('3. ionViewDidLoad Home');
@@ -194,25 +194,20 @@ export class LoginPage {
 
   /**
    *  ham goi lai gui ket qua new button next
-   * 
-   * @param that chinh la this cua parent callback
    * @param res 
    */
-  callbackFunction(that, res?: { step?: string, data?: any, error?: any }) {
+  callbackFunction = function (res?: { step?: string, data?: any, error?: any }) {
 
     return new Promise((resolve, reject) => {
 
-      // console.log('parent:', that);
-      // console.log('this:', this);
-
       if (res && res.error && res.error.error) {
         //console.log('callback error:', res.error.error);
-        that.presentAlert('Lỗi:<br>' + JSON.stringify(res.error.error.error));
+        this.presentAlert('Lỗi:<br>' + JSON.stringify(res.error.error.error));
         resolve();
       } else if (res && res.step === 'form-phone' && res.data) {
         // console.log('forward data:', res.data.database_out);
         if (res.data.database_out && res.data.database_out.status === 0) {
-          that.presentAlert('Chú ý:<br>' + JSON.stringify(res.data.database_out.message));
+          this.presentAlert('Chú ý:<br>' + JSON.stringify(res.data.database_out.message));
         }
         //gui nhu mot button forward
         resolve({
@@ -239,25 +234,25 @@ export class LoginPage {
         //ktra token co user, image thi pass new ko thi gui ...
         //console.log('token verified:', res.data.token);
         // neu nhu gai quyet xong
-        let loading = that.loadingCtrl.create({
+        let loading = this.loadingCtrl.create({
           content: 'Đang xử kiểm tra từ máy chủ Tài nguyên....'
         });
         loading.present();
 
-        that.resources.authorizeFromResource(res.data.token)
+        this.resources.authorizeFromResource(res.data.token)
           .then(login => {
             //console.log('data', login);
             if (login.status
               && login.user_info
               && login.token
             ) {
-              that.apiStorageService.saveToken(res.data.token);
+              this.apiStorageService.saveToken(res.data.token);
               //da login thanh cong, kiem tra token 
-              that.callLoginOk(login.user_info);
-              //that.checkTokenLogin();
+              this.callLoginOk(login.user_info);
+              //this.checkTokenLogin();
 
             } else {
-              that.presentAlert('Dữ liệu xác thực không đúng <br>' + JSON.stringify(login))
+              this.presentAlert('Dữ liệu xác thực không đúng <br>' + JSON.stringify(login))
             }
 
             loading.dismiss();
@@ -265,7 +260,7 @@ export class LoginPage {
           })
           .catch(err => {
             console.log('err', err);
-            that.presentAlert('Lỗi xác thực - authorizeFromResource')
+            this.presentAlert('Lỗi xác thực - authorizeFromResource')
             loading.dismiss();
             resolve();
           })
@@ -274,7 +269,7 @@ export class LoginPage {
       }
 
     });
-  }
+  }.bind(this);
 
   openModal(data) {
     let modal = this.modalCtrl.create(DynamicFormMobilePage, data);

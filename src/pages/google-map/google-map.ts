@@ -1,12 +1,15 @@
 import { Component, ViewChild, ElementRef } from '@angular/core';
-import { NavController, LoadingController, ToastController } from 'ionic-angular';
+import { NavController, LoadingController, ToastController, ModalController } from 'ionic-angular';
 import { Geolocation } from '@ionic-native/geolocation';
+import { DynamicFormWebPage } from '../dynamic-form-web/dynamic-form-web';
 
 declare var google;
 let latLng;
 let infoWindow;
 let curCircle;
 let curCircleIcon;
+
+var interval;
 
 @Component({
   selector: 'page-google-map',
@@ -25,38 +28,37 @@ export class GoogleMapPage {
   shouldShowCancel: boolean = false;
 
   locationTracking: any;
+
+  //run auto tracking
+  isRuningInterval:boolean = false;
   
-
-  header = {
-    title:"Ban do"
-    ,search_bar:{hint:"tim gi",search_string:""}
-    ,buttons:[
-      {color:"primary", icon:"add", next:"ADD"}
-      , {color:"primary", icon:"contacts", next:"FRIENDS"}
-      , {color:"primary", icon:"notifications", next:"NOTIFY"
-        , alerts:[
-            "cuong.dq"
-            ]
-        }
-      , {color:"royal", icon:"cog", next:"SETTINGS"}
-    ]
-
-
-  }
-
-  commands = {
+  view = {
+    header: {
+      title:"Ban do"
+      ,search_bar:{hint:"tim gi",search_string:""}
+      ,buttons:[
+         {color:"primary", icon:"notifications", next:"NOTIFY"
+          , alerts:[
+              "cuong.dq"
+              ]
+          }
+        , {color:"bg-blue", icon:"cog", next:"SETTINGS"}
+      ]
+    }
+    ,
     fix:{
       right:true        //left/center/right
       , bottom:true    //top/middle/bottom
       , mini:true
       , actions:[
-        {color:"light", icon:"locate", next:"CENTER"}
+         {color:"secondary", icon:"navigate", next:"TRACKING"}
+        ,{color:"light", icon:"locate", next:"CENTER"}
       ]
     }
     ,
     dynamic:{
         left:true       //left/center/right
-      , middle:true     //top/middle/bottom
+      , bottom:true     //top/middle/bottom
       , mini:undefined  //true/undefined
       //icon:"md-share"//"arrow-dropright"//"arrow-dropdown"//"arrow-dropup"//"arrow-dropleft"
       , controler:{color:"danger", icon:"md-share"}   
@@ -100,10 +102,18 @@ export class GoogleMapPage {
     }
   }
 
+
+  mapSettings = {
+    zoom: 15
+    ,type: google.maps.MapTypeId.ROADMAP
+    ,auto_tracking:false
+  }
+
   constructor(private navCtrl: NavController
-              ,private loadingCtrl: LoadingController
-              ,private geoLocation: Geolocation
-              ,private toastCtrl: ToastController
+              , private modalCtrl: ModalController
+              , private loadingCtrl: LoadingController
+              , private geoLocation: Geolocation
+              , private toastCtrl: ToastController
     ) {}
 
   ngOnInit() {
@@ -144,8 +154,8 @@ export class GoogleMapPage {
 
     let mapOptions = {
       center: latLng,
-      zoom: 15,
-      mapTypeId: google.maps.MapTypeId.ROADMAP,
+      zoom: this.mapSettings.zoom,
+      mapTypeId: this.mapSettings.type,
       disableDefaultUI: true,
       styles: mapStyles
     };
@@ -204,6 +214,12 @@ export class GoogleMapPage {
                           });
     }).catch((err) => {
       this.isLocOK = false;
+      
+      this.toastCtrl.create({
+        message: "getCurrentPosition() err: " + err.code + " - " + err.message,
+        duration: 5000
+      }).present();
+
     });
     this.startTracking();
   }
@@ -233,6 +249,10 @@ export class GoogleMapPage {
         },
         err => {
               this.isLocOK = false;
+              this.toastCtrl.create({
+                message: "watchPosition() err: " + err.code + " - " + err.message,
+                duration: 5000
+              }).present();
             }
         )
   }
@@ -267,15 +287,95 @@ export class GoogleMapPage {
   }
 
   onInput(e){
-    console.log(this.header.search_bar.search_string);
+    console.log(this.view.header.search_bar.search_string);
   }
 
   onClickAction(btn){
     //console.log('click:',btn);
     if (btn.next==="CENTER"){
       this.getLocation();
-      this.map.setCenter(latLng);
+    }
+    
+    if (btn.next==="TRACKING"){
+      this.startStopInterval();
+    }
+
+    if (btn.next ==="SETTINGS"){
+
+      let formSetting = {
+        title: "Settings"
+        , items: [
+          {          name: "Lựa chọn kiểu hiển thị", type: "title"}
+    
+          , { key: "type", name: "Kiểu bản đồ", type: "select", value: google.maps.MapTypeId.ROADMAP, options: [
+                { name: "Hành chính", value: google.maps.MapTypeId.ROADMAP }
+                , { name: "Địa hình", value: google.maps.MapTypeId.TERRAIN }
+                , { name: "Vệ tinh", value: google.maps.MapTypeId.HYBRID }
+              ] 
+            }
+          , { key: "zoom", name: "Mức hiển thị", type: "range", icon: "globe", value: 15, min: 1, max: 20 }
+          , { key: "auto_tracking", name: "Tự động tracking?", value: this.isRuningInterval, icon: "navigate", type: "toggle" }
+          , 
+          { 
+              type: "button"
+            , options: [
+              { name: "Bỏ qua", next: "CLOSE" }
+              , { name: "Chọn", next: "CALLBACK"}
+            ]
+          }]
+      }
+
+
+      let form = {
+        callback: this.callbackFunction,
+        step: 'map-settings',
+        form: formSetting
+      };
+      this.openModal(form);
+    }
+
+  }
+
+  //thoi gian interval
+  startStopInterval() {
+    this.isRuningInterval = !this.isRuningInterval;
+    this.view.fix.actions[0].color=this.isRuningInterval?"danger":"secondary";
+    if (this.isRuningInterval){
+        this.autoGetLocation();
+    }else{
+      clearInterval(interval);
     }
   }
 
+  autoGetLocation(){
+    interval = setInterval(function () {
+      this.getLocation() //
+    }.bind(this), 3000);   //cu 3000ms thi lay vi tri mot lan
+  }
+
+  callbackFunction = function(res){
+    return new Promise((resolve, reject) => {
+      this.map.setMapTypeId(res.data.type);
+      this.map.setZoom(res.data.zoom);
+      if (res.data.auto_tracking){
+        if (!this.isRuningInterval){
+          this.isRuningInterval = true;
+          this.view.fix.actions[0].color="danger";
+          this.autoGetLocation();
+        }
+      }else{
+        if (this.isRuningInterval){
+          this.isRuningInterval = false;
+          this.view.fix.actions[0].color="secondary";
+          clearInterval(interval);
+        }
+      }
+      resolve({next:"CLOSE"});
+    })
+  }.bind(this);
+
+  openModal(data) {
+    let modal = this.modalCtrl.create(DynamicFormWebPage, data);
+    modal.present();
+  }
 }
