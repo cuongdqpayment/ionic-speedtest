@@ -196,7 +196,7 @@ export class GoogleMapPage {
   }
 
   //lấy vị trí hiện tại và theo dõi vị trí nếu có thay đổi
-  getLocation() {
+  getLocation(isCenter?:boolean) {
     this.stopTracking();
     this.geoLocation.getCurrentPosition({
       enableHighAccuracy: true,
@@ -214,7 +214,7 @@ export class GoogleMapPage {
           heading: pos.coords.heading,
           timestamp:pos.timestamp,
           time_tracking: new Date().getTime()
-        });
+        }, isCenter);
       } else {
         this.isLocOK = true;
       }
@@ -271,10 +271,10 @@ export class GoogleMapPage {
       try { this.locationTracking.unsubscribe() } catch (e) { };
   }
 
-  showLocation(loc){
+  showLocation(loc:any,isCenter?:boolean){
     let loclatLng = {lat:loc.lat,lng:loc.lng};
     latLng = new google.maps.LatLng(loc.lat, loc.lng);
-    
+
     //neu KC oldLocation va newLocation >=100m 
     //ma tu dong tim dia chi thi - tim dia chi va view dia chi cho nguoi dung
 
@@ -284,7 +284,7 @@ export class GoogleMapPage {
       curCircle.setCenter(loclatLng);
       curCircle.setRadius(loc.accuracy);
       //dua ban do ve vi tri trung tam
-      if (this.mapSettings.auto_tracking) {
+      if (this.mapSettings.auto_tracking || isCenter) {
         
         this.map.setCenter(latLng);
       }
@@ -345,7 +345,7 @@ export class GoogleMapPage {
   onClickAction(btn){
     //console.log('click:',btn);
     if (btn.next==="CENTER"){
-      this.getLocation();
+      this.getLocation(true);
     }
     
     if (btn.next==="TRACKING"){
