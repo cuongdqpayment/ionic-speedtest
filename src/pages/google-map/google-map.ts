@@ -530,10 +530,12 @@ export class GoogleMapPage {
       if (loc.result.distance>0.01){
         this.trackingPoints.push(loc); //neu khoang cach >10m thi luu lai
         this.livePoints.push(newLatlng);
+        trackingPath.getPath().push(latLng);
       }
     }else{
       this.trackingPoints.push(loc); //luu bang 1
-      this.livePoints.push(newLatlng);
+      this.livePoints.push(newLatlng); //cai nay chua dung lam gi
+      trackingPath.getPath().push(latLng);
     }
     
 
@@ -580,7 +582,7 @@ export class GoogleMapPage {
       this.livePoints.forEach((el)=>{
         path.push(new google.maps.LatLng(el.lat,el.lng))
         //console.log('path',path);
-    });
+      });
       trackingPath.setMap(this.map);
     }
     
