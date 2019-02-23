@@ -10,6 +10,7 @@ let latLng;
 let infoWindow;
 let curCircle;
 let curCircleIcon;
+let trackingPath;
 
 var interval;
 
@@ -105,6 +106,44 @@ export class GoogleMapPage {
     }
   }
 
+  actionsIdle = [
+                  {
+                    side:"top",
+                    actions: [
+                      {color:"bg-blue", icon:"contact", next:"NOTHING"}  
+                    ,{color:"light", icon:"globe", next:"NOTHING"}
+                      ,{color:"secondary", name:"Trên", next:"NOTHING"}
+                    ]
+                  }
+                  ,
+                  {
+                    side:"right",
+                    actions: [
+                      {color:"light", icon:"people", next:"NOTHING"}
+                      ,{color:"danger", name:"Phải", next:"NOTHING"}
+                    ]
+                  }
+                ];
+
+  actionsCenter = [
+    {
+      side:"top",
+      actions: [
+        {color:"danger", name:"Reset", next:"RESET"}
+      ]
+    }
+    ,
+    {
+      side:"right",
+      actions: [
+        {color:"secondary", icon:"share-alt", url: ApiStorageService.mapServer + "/share-point", next:"SHARE"}
+        ,{color:"danger", icon:"send", url: ApiStorageService.mapServer + "/live-user", next:"LIVE"}
+        ,{color:"light", icon:"archive", next:"SAVE"}
+      ]
+    }
+  ];
+
+
 
   mapSettings = {
     zoom: 15
@@ -113,6 +152,7 @@ export class GoogleMapPage {
   }
 
   trackingPoints = [];
+  livePoints = [];
 
   constructor(private navCtrl: NavController
               , private modalCtrl: ModalController
@@ -128,11 +168,27 @@ export class GoogleMapPage {
   }
 
   ionViewDidLoad() {
-    this.resetMap();
+    this.loadMap();
   }
 
   resetMap() {
-    this.loadMap();
+    //clear path live
+    trackingPath.setMap(null);
+
+    //reset xem toa do dia chi
+    this.isShowCenter = false;
+    this.view.fix.actions.find(x=>x.next==="CENTER").color = "primary";
+    this.clearDrag();
+
+    //reset timer interval
+    this.isRuningInterval = false;
+    this.mapSettings.auto_tracking = this.isRuningInterval;
+    this.view.fix.actions.find(x=>x.next==="LOCATE").color= "light";
+    clearInterval(interval);
+    
+    //....
+
+    
   }
 
   //load bảng đồ google map như web đã làm
@@ -192,6 +248,15 @@ export class GoogleMapPage {
       map: this.map,
       center: latLng,
       radius: 50
+    });
+
+
+    trackingPath = new google.maps.Polyline({
+      path: this.livePoints,
+      geodesic: true,
+      strokeColor: '#00ff00',
+      strokeOpacity: 0.8,
+      strokeWeight: 2
     });
 
     this.isMapLoaded = true;
@@ -376,16 +441,7 @@ export class GoogleMapPage {
     }
 
     //thay doi nut hanh dong
-    this.view.dynamic.directions = [
-                {
-                  side:"right",
-                  actions: [
-                    {color:"secondary", icon:"share-alt", url: ApiStorageService.mapServer + "/share-point", next:"SHARE"}
-                    ,{color:"danger", icon:"send", url: ApiStorageService.mapServer + "/live-user", next:"LIVE"}
-                    ,{color:"light", icon:"archive", next:"SAVE"}
-                  ]
-                }
-              ];
+    this.view.dynamic.directions = this.actionsCenter;
   }
 
   mapDragend() {
@@ -419,24 +475,7 @@ export class GoogleMapPage {
    */
   clearDrag() {
       google.maps.event.clearListeners(this.map, 'dragend');
-      this.view.dynamic.directions = [
-        {
-          side:"top",
-          actions: [
-            {color:"bg-blue", icon:"contact", next:"NOTHING"}  
-           ,{color:"light", icon:"globe", next:"NOTHING"}
-            ,{color:"secondary", name:"Trên", next:"NOTHING"}
-          ]
-        }
-        ,
-        {
-          side:"right",
-          actions: [
-            {color:"light", icon:"people", next:"NOTHING"}
-            ,{color:"danger", name:"Phải", next:"NOTHING"}
-          ]
-        }
-      ];
+      this.view.dynamic.directions = this.actionsIdle;
   }
   // end drag
   ///////////////////////////////////
@@ -474,13 +513,59 @@ export class GoogleMapPage {
   }
 
   /////////////////////////////
+
+   /**
+   * 
+   * @param loc 
+   * @param isCenter
+   * tinh toc do di chuyen  
+   */
+  showLocation(loc:any,isCenter?:boolean){
+    let newLatlng = {lat:loc.lat,lng:loc.lng};
+    latLng = new google.maps.LatLng(loc.lat, loc.lng);
+    
+    if (this.trackingPoints.length>0){
+      let old = this.trackingPoints[this.trackingPoints.length-1];
+      loc.result = this.apiMap.getSpeed(old,loc);
+      this.view.fix.actions.find(x=>x.next==="SPEED").name=loc.result.speed+"-"+loc.result.speed1;
+      if (loc.result.distance>0.01){
+        this.trackingPoints.push(loc); //neu khoang cach >10m thi luu lai
+        this.livePoints.push(newLatlng);
+      }
+    }else{
+      this.trackingPoints.push(loc); //luu bang 1
+      this.livePoints.push(newLatlng);
+    }
+    
+
+    //neu KC oldLocation va newLocation >=100m 
+    //ma tu dong tim dia chi thi - tim dia chi va view dia chi cho nguoi dung
+
+    if (this.isMapLoaded){
+      //curMarker.setPosition(newLatlng);
+      curCircleIcon.setCenter(newLatlng);
+      curCircle.setCenter(newLatlng);
+      curCircle.setRadius(loc.accuracy);
+      //dua ban do ve vi tri trung tam
+      if (this.mapSettings.auto_tracking || isCenter) {
+        this.map.setCenter(latLng);
+      }
+    }
+
+  }
+
   //thuc hien cac nut lenh theo khau lenh
   onClickAction(btn){
     //console.log('click:',btn);
+    if (btn.next==="RESET"){
+      this.resetMap();
+    }
+    
     if (btn.next==="CENTER"){
       this.startStopShowCenter();
     }
     
+
     if (btn.next==="TRACKING"){
       this.startStopInterval();
     }
@@ -491,18 +576,7 @@ export class GoogleMapPage {
 
     if (btn.next==="SPEED"){
       //show tracking point
-      let points = [];
-      this.trackingPoints.forEach(el=>{
-        points.push({ lat: el.lat, lng: el.lng})
-      })
-      var flightPath = new google.maps.Polyline({
-        path: points,
-        geodesic: true,
-        strokeColor: '#00ff00',
-        strokeOpacity: 0.8,
-        strokeWeight: 2
-      });
-      flightPath.setMap(this.map);
+      trackingPath.setMap(this.map);
     }
     
 
@@ -540,45 +614,6 @@ export class GoogleMapPage {
       };
       this.openModal(form);
     }
-  }
-
-
-  /**
-   * 
-   * @param loc 
-   * @param isCenter
-   * tinh toc do di chuyen  
-   */
-  showLocation(loc:any,isCenter?:boolean){
-    
-    if (this.trackingPoints.length>0){
-      let old = this.trackingPoints[this.trackingPoints.length-1];
-      loc.result = this.apiMap.getSpeed(old,loc);
-      this.view.fix.actions.find(x=>x.next==="SPEED").name=loc.result.speed+"-"+loc.result.speed1;
-      if (loc.result.distance>0.01){
-        this.trackingPoints.push(loc); //neu khoang cach >10m thi luu lai
-      }
-    }else{
-      this.trackingPoints.push(loc); //luu bang 1
-    }
-    
-    let newLatlng = {lat:loc.lat,lng:loc.lng};
-    latLng = new google.maps.LatLng(loc.lat, loc.lng);
-
-    //neu KC oldLocation va newLocation >=100m 
-    //ma tu dong tim dia chi thi - tim dia chi va view dia chi cho nguoi dung
-
-    if (this.isMapLoaded){
-      //curMarker.setPosition(newLatlng);
-      curCircleIcon.setCenter(newLatlng);
-      curCircle.setCenter(newLatlng);
-      curCircle.setRadius(loc.accuracy);
-      //dua ban do ve vi tri trung tam
-      if (this.mapSettings.auto_tracking || isCenter) {
-        this.map.setCenter(latLng);
-      }
-    }
-
   }
 
 }
