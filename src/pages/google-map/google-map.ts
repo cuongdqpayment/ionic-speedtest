@@ -173,7 +173,7 @@ export class GoogleMapPage {
 
   resetMap() {
     //clear path live
-    trackingPath.setMap(null);
+    if (this.isMapLoaded) trackingPath.setMap(null);
 
     //reset xem toa do dia chi
     this.isShowCenter = false;
@@ -252,7 +252,6 @@ export class GoogleMapPage {
 
 
     trackingPath = new google.maps.Polyline({
-      path: this.livePoints,
       geodesic: true,
       strokeColor: '#00ff00',
       strokeOpacity: 0.8,
@@ -560,7 +559,7 @@ export class GoogleMapPage {
     if (btn.next==="RESET"){
       this.resetMap();
     }
-    
+
     if (btn.next==="CENTER"){
       this.startStopShowCenter();
     }
@@ -576,9 +575,21 @@ export class GoogleMapPage {
 
     if (btn.next==="SPEED"){
       //show tracking point
+      let path = trackingPath.getPath();
+      //console.log('path',path);
+      this.livePoints.forEach((el)=>{
+        path.push(new google.maps.LatLng(el.lat,el.lng))
+        //console.log('path',path);
+    });
       trackingPath.setMap(this.map);
     }
     
+    if (btn.next==="SAVE"){
+      //
+      console.log('co toa do, co dia chi..',this.view.header.search_bar.search_result)
+      //gan toa do nay cho cai gi??
+      
+    }
 
     if (btn.next ==="SETTINGS"){
 
@@ -612,8 +623,9 @@ export class GoogleMapPage {
         step: 'map-settings',
         form: formSetting
       };
-      this.openModal(form);
+      this.openModal(form);      
     }
+
   }
 
 }
