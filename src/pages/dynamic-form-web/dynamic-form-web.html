@@ -111,7 +111,7 @@
 					<ion-item class="input-item" *ngIf="it.type == 'toggle'">
 						<ion-icon name="{{it.icon}}" item-start color="primary"></ion-icon>
 						<ion-label color="primary">{{it.name?it.name:it.hint}}</ion-label>
-						<ion-toggle color="secondary" [(ngModel)]="it.value"></ion-toggle>
+						<ion-toggle color="{{it.color}}" [(ngModel)]="it.value"></ion-toggle>
 					</ion-item>
 
 					<!-- range adjust -->

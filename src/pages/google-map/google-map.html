@@ -27,7 +27,7 @@
   <div #map id="map"></div>
   <!--cac object sau se hien thi len truoc-->
   <div *ngIf="isShowCenter">
-    <div [ngClass]="classFloatInfo">{{view.header.search_bar.search_result}}</div>
+    <div [ngClass]="classFloatInfo">{{view.header.search_bar.search_result?.address}}</div>
     <div class="h-line"></div>
     <div class="v-line"></div>
     <ion-icon name="pin" [ngClass]="className"></ion-icon>
@@ -38,7 +38,7 @@
     <button [attr.mini]="view.dynamic.mini" ion-fab color="{{view.dynamic.controler.color}}">
       <ion-icon name="{{view.dynamic.controler.icon}}"></ion-icon>
     </button>
-    <ion-fab-list *ngFor="let direct of view.dynamic.directions" attr.side="{{direct.side}}">
+    <ion-fab-list *ngFor="let direct of view.dynamic?.directions" attr.side="{{direct.side}}">
       <button *ngFor="let btn of direct.actions" ion-fab color="{{btn.color}}" (click)="onClickAction(btn)">
         <ion-icon *ngIf="btn.icon" name="{{btn.icon}}"></ion-icon>
         <span *ngIf="btn.name">{{btn.name}}</span>

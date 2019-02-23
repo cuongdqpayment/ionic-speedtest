@@ -3,6 +3,7 @@ import { NavController, LoadingController, ToastController, ModalController } fr
 import { Geolocation } from '@ionic-native/geolocation';
 import { DynamicFormWebPage } from '../dynamic-form-web/dynamic-form-web';
 import { ApiMapService } from '../../services/apiMapService';
+import { ApiStorageService } from '../../services/apiStorageService';
 
 declare var google;
 let latLng;
@@ -34,10 +35,10 @@ export class GoogleMapPage {
   //run auto tracking
   isRuningInterval:boolean = false;
   
-  view = {
+  view:any = {
     header: {
       title:"Map"
-      ,search_bar:{hint:"Tìm địa chỉ hoặc tọa độ", search_string:"", search_result:""}
+      ,search_bar:{hint:"Tìm địa chỉ hoặc tọa độ", search_string:"", search_result:{}}
       ,buttons:[
          {color:"primary", icon:"notifications", next:"NOTIFY"
           , alerts:[
@@ -53,8 +54,8 @@ export class GoogleMapPage {
       , bottom:true    //top/middle/bottom
       , mini:true
       , actions:[
-         {color:"secondary", icon:"navigate", next:"TRACKING"}
-        ,{color:"light", icon:"locate", next:"CENTER"}
+        {color:"primary", icon:"navigate", next:"CENTER"}
+        ,{color:"light", icon:"locate", next:"LOCATE"}
       ]
     }
     ,
@@ -300,12 +301,8 @@ export class GoogleMapPage {
   }
 
   searchEnter(){
-    //xu ly tim kiem
-    console.log(this.view.header.search_bar.search_string);
     this.apiMap.getLatlngFromAddress(this.view.header.search_bar.search_string)
     .then(data=>{
-      //tim thay dia chi lat,lng
-      //setCenter and show Center marker
       //share ? popup temporary, ???
       if (data.status === 'OK' && data.results && data.results.length>0){
         let addresses = []
@@ -314,13 +311,15 @@ export class GoogleMapPage {
         });
         //console.log('data',addresses);
         if (addresses.length>=1){
-          this.view.header.search_bar.search_result = addresses[0].address;
+          this.view.header.search_bar
+          .search_result = {
+                          lat: addresses[0].lat,
+                          lng: addresses[0].lng,
+                          address: addresses[0].address
+                        }
           this.map.setCenter(new google.maps.LatLng(addresses[0].lat, addresses[0].lng));
-          this.isShowCenter = true;
-
-          if (addresses.length>1){
-            //popup cua so len cho user chon
-          }
+          
+          this.showCenterMode();
 
         }
       }
@@ -343,34 +342,168 @@ export class GoogleMapPage {
     //console.log(this.view.header.search_bar.search_string);
   }
 
+  //thoi gian interval
+  startStopInterval() {
+    this.isRuningInterval = !this.isRuningInterval;
+    this.mapSettings.auto_tracking = this.isRuningInterval;
+
+    this.view.fix.actions.find(x=>x.next==="LOCATE").color=this.isRuningInterval?"danger":"light";
+    if (this.isRuningInterval){
+        this.autoGetLocation();
+    }else{
+      clearInterval(interval);
+    }
+  }
+
+  autoGetLocation(){
+    interval = setInterval(function () {
+      this.getLocation() //
+    }.bind(this), 3000);   //cu 3000ms thi lay vi tri mot lan
+  }
+
+
+  ///////////////////////////////////
+  //drag & drop
+
+  startStopShowCenter(){
+    this.isShowCenter = !this.isShowCenter;
+    this.view.fix.actions.find(x=>x.next==="CENTER").color = this.isShowCenter?"danger":"primary";
+    if (this.isShowCenter){
+      this.showCenterMode();
+    } else{
+      this.clearDrag();
+    }
+  }
+
+  /**
+   * 
+   * @param isEnd 
+   * diem cuoi hay diem dau
+   */
+  showCenterMode(isEnd?:boolean) {
+    
+    google.maps.event.addListener(this.map, 'dragend', () => this.mapDragend());
+  
+    if (!isEnd) {
+      this.className = "icon-center size-md icon-blue";
+      this.classFloatInfo = "text-center size-sm icon-green text-blur";
+    } else {
+      this.className = "icon-center size-md icon-red";
+      this.classFloatInfo = "text-center size-sm icon-red text-blur";
+    }
+
+    //thay doi nut hanh dong
+    this.view.dynamic.directions = [
+                {
+                  side:"right",
+                  actions: [
+                    {color:"secondary", icon:"share-alt", url: ApiStorageService.mapServer + "/share-point", next:"SHARE"}
+                    ,{color:"danger", icon:"send", url: ApiStorageService.mapServer + "/live-user", next:"LIVE"}
+                    ,{color:"light", icon:"archive", next:"SAVE"}
+                  ]
+                }
+              ];
+  }
+
+  mapDragend() {
+    if (this.map.getCenter()) {
+      this.view.header.search_bar.search_result = {
+        lat: this.map.getCenter().lat(),
+        lng: this.map.getCenter().lng(),
+        address: "searching..."
+      }
+
+      this.apiMap.getAddressFromLatlng(this.view.header.search_bar.search_result.lat + "," + this.view.header.search_bar.search_result.lng)
+        .then(data => {
+          if (data.status === 'OK' && data.results && data.results.length>0){
+            this.view.header.search_bar.search_result.address = data.results[0].formatted_address;
+          }
+        })
+        .catch(err => {
+          this.toastCtrl.create({
+            message: "Err getAddressFromLatlng: " + JSON.stringify(err),
+            duration: 5000,
+            position: 'bottom'
+          }).present();
+        })
+        ;
+    }
+  }
+
+  clearDrag() {
+      google.maps.event.clearListeners(this.map, 'dragend');
+  }
+  // end drag
+  ///////////////////////////////////
+
+
+  callbackFunction = function(res){
+    return new Promise((resolve, reject) => {
+      
+      this.mapSettings.type = res.data.type;
+      this.mapSettings.zoom = res.data.zoom;
+      this.mapSettings.auto_tracking = res.data.auto_tracking;
+
+      this.map.setMapTypeId(this.mapSettings.type);
+      this.map.setZoom(this.mapSettings.zoom);
+      if (this.mapSettings.auto_tracking){
+        if (!this.isRuningInterval){
+          this.isRuningInterval = true;
+          this.view.fix.actions.find(x=>x.next==="LOCATE").color="danger";
+          this.autoGetLocation();
+        }
+      }else{
+        if (this.isRuningInterval){
+          this.isRuningInterval = false;
+          this.view.fix.actions.find(x=>x.next==="LOCATE").color="light";
+          clearInterval(interval);
+        }
+      }
+      resolve({next:"CLOSE"});
+    })
+  }.bind(this);
+
+  openModal(data) {
+    let modal = this.modalCtrl.create(DynamicFormWebPage, data);
+    modal.present();
+  }
+
+  /////////////////////////////
+  //thuc hien cac nut lenh theo khau lenh
   onClickAction(btn){
     //console.log('click:',btn);
     if (btn.next==="CENTER"){
-      this.getLocation(true);
+      this.startStopShowCenter();
     }
     
     if (btn.next==="TRACKING"){
       this.startStopInterval();
     }
+    
+    if (btn.next==="LOCATE"){
+      this.getLocation(true);
+    }
+    
 
     if (btn.next ==="SETTINGS"){
 
       let formSetting = {
         title: "Settings"
         , items: [
-          {          name: "Lựa chọn kiểu hiển thị", type: "title"}
+          {  name: "Lựa chọn kiểu hiển thị", color:"primary", type: "title"}
     
-          , { key: "type", name: "Kiểu bản đồ", type: "select", value: this.mapSettings.type, options: [
+          , { key: "type", name: "Kiểu bản đồ", color:"primary", type: "select", value: this.mapSettings.type, options: [
                 { name: "Hành chính", value: google.maps.MapTypeId.ROADMAP }
                 , { name: "Địa hình", value: google.maps.MapTypeId.TERRAIN }
                 , { name: "Vệ tinh", value: google.maps.MapTypeId.HYBRID }
               ] 
             }
-          , { key: "zoom", name: "Mức hiển thị", type: "range", icon: "globe", value: this.mapSettings.zoom, min: 1, max: 20 }
-          , { key: "auto_tracking", name: "Tự động tracking?", value: this.mapSettings.auto_tracking, icon: "navigate", type: "toggle" }
+          , { key: "zoom", name: "Mức hiển thị", color:"primary", type: "range", icon: "globe", value: this.mapSettings.zoom, min: 1, max: 20 }
+          , { key: "auto_tracking", name: "Tự động tracking?", color:"danger", value: this.mapSettings.auto_tracking, icon: "locate", type: "toggle" }
           , 
           { 
               type: "button"
+            ,  color:"primary"
             , options: [
               { name: "Bỏ qua", next: "CLOSE" }
               , { name: "Chọn", next: "CALLBACK"}
@@ -387,55 +520,5 @@ export class GoogleMapPage {
       this.openModal(form);
     }
 
-  }
-
-  //thoi gian interval
-  startStopInterval() {
-    this.isRuningInterval = !this.isRuningInterval;
-    this.mapSettings.auto_tracking = this.isRuningInterval;
-
-    this.view.fix.actions[0].color=this.isRuningInterval?"danger":"secondary";
-    if (this.isRuningInterval){
-        this.autoGetLocation();
-    }else{
-      clearInterval(interval);
-    }
-  }
-
-  autoGetLocation(){
-    interval = setInterval(function () {
-      this.getLocation() //
-    }.bind(this), 3000);   //cu 3000ms thi lay vi tri mot lan
-  }
-
-  callbackFunction = function(res){
-    return new Promise((resolve, reject) => {
-      
-      this.mapSettings.type = res.data.type;
-      this.mapSettings.zoom = res.data.zoom;
-      this.mapSettings.auto_tracking = res.data.auto_tracking;
-
-      this.map.setMapTypeId(this.mapSettings.type);
-      this.map.setZoom(this.mapSettings.zoom);
-      if (this.mapSettings.auto_tracking){
-        if (!this.isRuningInterval){
-          this.isRuningInterval = true;
-          this.view.fix.actions[0].color="danger";
-          this.autoGetLocation();
-        }
-      }else{
-        if (this.isRuningInterval){
-          this.isRuningInterval = false;
-          this.view.fix.actions[0].color="secondary";
-          clearInterval(interval);
-        }
-      }
-      resolve({next:"CLOSE"});
-    })
-  }.bind(this);
-
-  openModal(data) {
-    let modal = this.modalCtrl.create(DynamicFormWebPage, data);
-    modal.present();
   }
 }

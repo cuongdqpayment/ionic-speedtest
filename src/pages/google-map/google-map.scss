@@ -46,28 +46,28 @@ page-google-map {
 		text-align: center;
 		top: 37%;  //vi tri trung tam
 		left: 50%; //vi tri trung tam
-		transform: translate(-50%, -52%); //vi tri trung tam so voi le phai va day
+		transform: translate(-50%, -63%); //vi tri trung tam so voi le phai va day
 	}
 
 	.text-blur {
-		opacity: 0.8;              //lam mo chu va nen 60%
-        filter: alpha(opacity=80); /* For IE8 and earlier */
+		opacity: 0.9;              //lam mo chu va nen 60%
+        filter: alpha(opacity=90); /* For IE8 and earlier */
 	}
 
 	.v-line {
 		position: absolute;
 		border-left: 2px dashed green;
-		top: 46%;
+		top: 47%;
 		left: 50%;
 		height: 37px;
+		transform: translate(-50%, -53%);
+	  }
+	.h-line {
+		position: absolute;
+		border-bottom: 1px dashed green;
+		top: 42%;
+		left: 50%;
+		width: 120px;
 		transform: translate(-50%, -52%);
 	  }
-	/* .h-line {
-		position: absolute;
-		border-left: 2px solid green;
-		top: 32%;
-		left: 42%;
-		height: 100px;
-		transform: rotate(90deg) translate(-50%, -25%);
-	  } */
 }
