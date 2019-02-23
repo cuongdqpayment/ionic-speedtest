@@ -194,7 +194,6 @@ export class DynamicListOrderPage {
   }
 
   onClickHeader(btn){
-    console.log(btn);
     this.processCommand(btn);
   }
 

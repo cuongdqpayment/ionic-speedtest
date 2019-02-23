@@ -4,6 +4,7 @@ import { Geolocation } from '@ionic-native/geolocation';
 import { DynamicFormWebPage } from '../dynamic-form-web/dynamic-form-web';
 import { ApiMapService } from '../../services/apiMapService';
 import { ApiStorageService } from '../../services/apiStorageService';
+import { DynamicListOrderPage } from '../dynamic-list-order/dynamic-list-order';
 
 declare var google;
 let latLng;
@@ -110,9 +111,7 @@ export class GoogleMapPage {
                   {
                     side:"top",
                     actions: [
-                      {color:"bg-blue", icon:"contact", next:"NOTHING"}  
-                    ,{color:"light", icon:"globe", next:"NOTHING"}
-                      ,{color:"secondary", name:"Trên", next:"NOTHING"}
+                      {color:"bg-blue", name:"Xem", next:"VIEW"}  
                     ]
                   }
                   ,
@@ -168,6 +167,7 @@ export class GoogleMapPage {
 
   ionViewDidLoad() {
     this.loadMap();
+    this.resetMap();
   }
 
   resetMap() {
@@ -263,38 +263,56 @@ export class GoogleMapPage {
   }
 
   //lấy vị trí hiện tại và theo dõi vị trí nếu có thay đổi
+  /**
+   * truong hop thoi gian qua tre hon ma chua co location moi thi
+   * moi cho phep, con moi qua thi khong thuc hien
+   * @param isCenter 
+   */
   getLocation(isCenter?:boolean) {
-    this.stopTracking();
-    this.geoLocation.getCurrentPosition({
-      enableHighAccuracy: true,
-      timeout: 10000,
-      maximumAge: 7000
-    }).then((pos) => {
-      if (pos.coords) {
-        this.isLocOK = true;
-        this.showLocation({ lat:pos.coords.latitude,
-          lng:pos.coords.longitude,
-          accuracy: pos.coords.accuracy,
-          speed: pos.coords.speed,
-          altitude: pos.coords.altitude,
-          altitudeAccuracy: pos.coords.altitudeAccuracy,
-          heading: pos.coords.heading,
-          timestamp:pos.timestamp,
-          time_tracking: new Date().getTime()
-        }, isCenter);
-      } else {
-        this.isLocOK = true;
-      }
-    }).catch((err) => {
-      this.isLocOK = false;
-      
-      this.toastCtrl.create({
-        message: "getCurrentPosition() err: " + err.code + " - " + err.message,
-        duration: 5000
-      }).present();
 
-    });
-    this.startTracking();
+    const TIMEOUT = 5000; //5 giay ma vi tri khong co moi thi moi lam moi 
+    let isTimeOut = true;
+    if (this.trackingPoints.length>0){
+      let old = this.trackingPoints[this.trackingPoints.length-1];
+      if (new Date().getTime() - old.time_tracking < TIMEOUT) isTimeOut = false;
+    }
+
+    if (isCenter || isTimeOut){
+      this.stopTracking();
+
+      //if (isCenter){
+        this.geoLocation.getCurrentPosition({
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 7000
+        }).then((pos) => {
+          if (pos.coords) {
+            this.isLocOK = true;
+            this.showLocation({ lat:pos.coords.latitude,
+              lng:pos.coords.longitude,
+              accuracy: pos.coords.accuracy,
+              speed: pos.coords.speed,
+              altitude: pos.coords.altitude,
+              altitudeAccuracy: pos.coords.altitudeAccuracy,
+              heading: pos.coords.heading,
+              timestamp:pos.timestamp,
+              time_tracking: new Date().getTime()
+            }, isCenter);
+          } else {
+            this.isLocOK = true;
+          }
+        }).catch((err) => {
+          this.isLocOK = false;
+          
+          this.toastCtrl.create({
+            message: "getCurrentPosition() err: " + err.code + " - " + err.message,
+            duration: 5000
+          }).present();
+        });
+      //}
+
+      this.startTracking();
+    }
   }
 
   //Theo dõi thay đổi vị trí
@@ -505,8 +523,20 @@ export class GoogleMapPage {
     })
   }.bind(this);
 
+
+  callbackTrackingView = function(res){
+    return new Promise((resolve, reject) => {
+      resolve({next:"CLOSE"});
+    })
+  }.bind(this);
+
   openModal(data) {
     let modal = this.modalCtrl.create(DynamicFormWebPage, data);
+    modal.present();
+  }
+
+  openModalAny(data,page) {
+    let modal = this.modalCtrl.create(page, data);
     modal.present();
   }
 
@@ -526,11 +556,13 @@ export class GoogleMapPage {
       let old = this.trackingPoints[this.trackingPoints.length-1];
       loc.result = this.apiMap.getSpeed(old,loc);
       this.view.fix.actions.find(x=>x.next==="SPEED").name=loc.result.speed+"-"+loc.result.speed1;
-      if (loc.result.distance>0.01){
+      
+      //if (loc.result.distance>0.01){
         this.trackingPoints.push(loc); //neu khoang cach >10m thi luu lai
         /* this.livePoints.push(newLatlng); */
         trackingPath.getPath().push(latLng);
-      }
+      //}
+
     }else{
       this.trackingPoints.push(loc); //luu bang 1
       /* this.livePoints.push(newLatlng); */ //cai nay chua dung lam gi
@@ -551,6 +583,58 @@ export class GoogleMapPage {
         this.map.setCenter(latLng);
       }
     }
+
+  }
+
+
+  showTrackingPoints(){
+    let items = [];
+    this.trackingPoints.forEach(el=>{
+        items.push({
+            subtitle:el.lat+","+el.lng
+            ,strong: el.result?el.result.distance + " - " + el.result.angle:""
+            ,p: el.result?el.result.dtimestamp + " - " + el.result.dtime_tracking:""
+            ,span: el.result?el.result.old_accuracy + " - " + el.result.new_accuracy:""
+            ,note: el.result?el.result.speed + '-' + el.result.speed1:""
+            ,command:{ name: "Chi tiết", color:"secondary", icon:"create", next:"EXIT"}
+        })
+    })
+
+
+    let listResults: any = {
+      title: "Thông tin tracking"
+      , search_bar: {hint: "Tìm cái gì đó"} 
+      //, order: {edit:"Sắp xếp", done:"Xong"}
+      , is_table: true
+      , switch: {table:"Bảng", item:"Liệt kê"}
+      , buttons: [
+          {color:"primary", icon:"close", next:"CLOSE"}
+        ]
+      ,header: {
+                title:"Tọa độ"
+                ,strong:"Khoảng cách - góc"
+                ,p:"Thời gian gps - thực" 
+                ,span:"Sai số cũ - mới"
+                ,label:"Ghi chú"
+                ,note:"Tốc độ"
+                }
+      ,footer: {
+                title:"Tọa độ"
+                ,strong:"Khoảng cách - góc"
+                ,p:"Thời gian gps - thực" 
+                ,span:"Sai số cũ - mới"
+                ,label:"Ghi chú"
+                ,note:"Tốc độ"
+                }
+      ,items: items
+    };
+
+    let form = {
+      callback: this.callbackTrackingView,
+      step: 'view-trackings',
+      list: listResults
+    };
+    this.openModalAny(form,DynamicListOrderPage);   
 
   }
 
@@ -576,16 +660,13 @@ export class GoogleMapPage {
     }
 
     if (btn.next==="SPEED"){
-      //show tracking point
-      /* let path = trackingPath.getPath();
-      //console.log('path',path);
-      this.livePoints.forEach((el)=>{
-        path.push(new google.maps.LatLng(el.lat,el.lng))
-        //console.log('path',path);
-      }); */
       trackingPath.setMap(this.map);
     }
     
+    if (btn.next==="VIEW"){
+      this.showTrackingPoints();
+    }
+
     if (btn.next==="SAVE"){
       //
       console.log('co toa do, co dia chi..',this.view.header.search_bar.search_result)
@@ -625,7 +706,7 @@ export class GoogleMapPage {
         step: 'map-settings',
         form: formSetting
       };
-      this.openModal(form);      
+      this.openModalAny(form,DynamicFormWebPage);      
     }
 
   }

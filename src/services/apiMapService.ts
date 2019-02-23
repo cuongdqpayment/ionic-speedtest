@@ -142,8 +142,9 @@ export class ApiMapService {
         let speed = 0;
         let speed1 = 0;
         if (old_accuracy<500 && new_accuracy<500){
-            if (newLoc.timestamp && old.timestamp)
+            if (newLoc.timestamp && old.timestamp && newLoc.timestamp > old.timestamp)
                 speed = Math.round(distance/dtimestamp*1000*60*60);
+                
             speed1 = Math.round(distance/dtime_tracking*1000*60*60);
         } 
 
