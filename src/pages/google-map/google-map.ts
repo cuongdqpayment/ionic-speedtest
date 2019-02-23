@@ -54,7 +54,7 @@ export class GoogleMapPage {
       , bottom:true    //top/middle/bottom
       , mini:true
       , actions:[
-        {color:"secondary", name:"60", next:"NOTHING"}
+        {color:"secondary", name:"60", next:"SPEED"}
         ,{color:"primary", icon:"navigate", next:"CENTER"}
         ,{color:"light", icon:"locate", next:"LOCATE"}
       ]
@@ -70,10 +70,17 @@ export class GoogleMapPage {
         {
           side:"top",
           actions: [
-            {color:"bg-blue", icon:"cog", next:"SEARCH"}  
-            //icon/name
-            ,{color:"light", icon:"globe", next:"SEARCH"}
-            ,{color:"secondary", name:"Trên", next:"SEARCH"}
+            {color:"bg-blue", icon:"contact", next:"NOTHING"}  
+           ,{color:"light", icon:"globe", next:"NOTHING"}
+            ,{color:"secondary", name:"Trên", next:"NOTHING"}
+          ]
+        }
+        ,
+        {
+          side:"right",
+          actions: [
+            {color:"light", icon:"people", next:"NOTHING"}
+            ,{color:"danger", name:"Phải", next:"NOTHING"}
           ]
         }
         ,
@@ -94,14 +101,6 @@ export class GoogleMapPage {
             ,{color:"dark", name:"Trái", next:"SEARCH"}
           ]
         }
-        ,
-        {
-          side:"right",
-          actions: [
-            {color:"light", icon:"globe", next:"SEARCH"}
-            ,{color:"danger", name:"Phải", next:"SEARCH"}
-          ]
-        }
       ]
     }
   }
@@ -112,6 +111,8 @@ export class GoogleMapPage {
     ,type: google.maps.MapTypeId.ROADMAP
     ,auto_tracking:false
   }
+
+  trackingPoints = [];
 
   constructor(private navCtrl: NavController
               , private modalCtrl: ModalController
@@ -272,27 +273,6 @@ export class GoogleMapPage {
 
   stopTracking() {
       try { this.locationTracking.unsubscribe() } catch (e) { };
-  }
-
-  showLocation(loc:any,isCenter?:boolean){
-    let loclatLng = {lat:loc.lat,lng:loc.lng};
-    latLng = new google.maps.LatLng(loc.lat, loc.lng);
-
-    //neu KC oldLocation va newLocation >=100m 
-    //ma tu dong tim dia chi thi - tim dia chi va view dia chi cho nguoi dung
-
-    if (this.isMapLoaded){
-      //curMarker.setPosition(loclatLng);
-      curCircleIcon.setCenter(loclatLng);
-      curCircle.setCenter(loclatLng);
-      curCircle.setRadius(loc.accuracy);
-      //dua ban do ve vi tri trung tam
-      if (this.mapSettings.auto_tracking || isCenter) {
-        
-        this.map.setCenter(latLng);
-      }
-    }
-
   }
 
   //Su dung search
@@ -508,6 +488,22 @@ export class GoogleMapPage {
     if (btn.next==="LOCATE"){
       this.getLocation(true);
     }
+
+    if (btn.next==="SPEED"){
+      //show tracking point
+      let points = [];
+      this.trackingPoints.forEach(el=>{
+        points.push({ lat: el.lat, lng: el.lng})
+      })
+      var flightPath = new google.maps.Polyline({
+        path: points,
+        geodesic: true,
+        strokeColor: '#00ff00',
+        strokeOpacity: 0.8,
+        strokeWeight: 2
+      });
+      flightPath.setMap(this.map);
+    }
     
 
     if (btn.next ==="SETTINGS"){
@@ -544,6 +540,45 @@ export class GoogleMapPage {
       };
       this.openModal(form);
     }
+  }
+
+
+  /**
+   * 
+   * @param loc 
+   * @param isCenter
+   * tinh toc do di chuyen  
+   */
+  showLocation(loc:any,isCenter?:boolean){
+    
+    if (this.trackingPoints.length>0){
+      let old = this.trackingPoints[this.trackingPoints.length-1];
+      loc.result = this.apiMap.getSpeed(old,loc);
+      this.view.fix.actions.find(x=>x.next==="SPEED").name=loc.result.speed+"-"+loc.result.speed1;
+      if (loc.result.distance>0.01){
+        this.trackingPoints.push(loc); //neu khoang cach >10m thi luu lai
+      }
+    }else{
+      this.trackingPoints.push(loc); //luu bang 1
+    }
+    
+    let newLatlng = {lat:loc.lat,lng:loc.lng};
+    latLng = new google.maps.LatLng(loc.lat, loc.lng);
+
+    //neu KC oldLocation va newLocation >=100m 
+    //ma tu dong tim dia chi thi - tim dia chi va view dia chi cho nguoi dung
+
+    if (this.isMapLoaded){
+      //curMarker.setPosition(newLatlng);
+      curCircleIcon.setCenter(newLatlng);
+      curCircle.setCenter(newLatlng);
+      curCircle.setRadius(loc.accuracy);
+      //dua ban do ve vi tri trung tam
+      if (this.mapSettings.auto_tracking || isCenter) {
+        this.map.setCenter(latLng);
+      }
+    }
 
   }
+
 }
