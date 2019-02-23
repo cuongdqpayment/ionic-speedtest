@@ -54,7 +54,8 @@ export class GoogleMapPage {
       , bottom:true    //top/middle/bottom
       , mini:true
       , actions:[
-        {color:"primary", icon:"navigate", next:"CENTER"}
+        {color:"secondary", name:"60", next:"NOTHING"}
+        ,{color:"primary", icon:"navigate", next:"CENTER"}
         ,{color:"light", icon:"locate", next:"LOCATE"}
       ]
     }
@@ -382,6 +383,8 @@ export class GoogleMapPage {
    */
   showCenterMode(isEnd?:boolean) {
     
+    this.mapDragend();
+
     google.maps.event.addListener(this.map, 'dragend', () => this.mapDragend());
   
     if (!isEnd) {
@@ -430,8 +433,30 @@ export class GoogleMapPage {
     }
   }
 
+  /**
+   * khong cho hien thi diem, tuc khong co nut chia se
+   * chi con cac chuc nang khac thoi
+   */
   clearDrag() {
       google.maps.event.clearListeners(this.map, 'dragend');
+      this.view.dynamic.directions = [
+        {
+          side:"top",
+          actions: [
+            {color:"bg-blue", icon:"contact", next:"NOTHING"}  
+           ,{color:"light", icon:"globe", next:"NOTHING"}
+            ,{color:"secondary", name:"Trên", next:"NOTHING"}
+          ]
+        }
+        ,
+        {
+          side:"right",
+          actions: [
+            {color:"light", icon:"people", next:"NOTHING"}
+            ,{color:"danger", name:"Phải", next:"NOTHING"}
+          ]
+        }
+      ];
   }
   // end drag
   ///////////////////////////////////
