@@ -152,8 +152,7 @@ export class GoogleMapPage {
   }
 
   trackingPoints = [];
-  livePoints = [];
-
+  
   constructor(private navCtrl: NavController
               , private modalCtrl: ModalController
               , private loadingCtrl: LoadingController
@@ -529,12 +528,12 @@ export class GoogleMapPage {
       this.view.fix.actions.find(x=>x.next==="SPEED").name=loc.result.speed+"-"+loc.result.speed1;
       if (loc.result.distance>0.01){
         this.trackingPoints.push(loc); //neu khoang cach >10m thi luu lai
-        this.livePoints.push(newLatlng);
+        /* this.livePoints.push(newLatlng); */
         trackingPath.getPath().push(latLng);
       }
     }else{
       this.trackingPoints.push(loc); //luu bang 1
-      this.livePoints.push(newLatlng); //cai nay chua dung lam gi
+      /* this.livePoints.push(newLatlng); */ //cai nay chua dung lam gi
       trackingPath.getPath().push(latLng);
     }
     
@@ -556,10 +555,11 @@ export class GoogleMapPage {
   }
 
   //thuc hien cac nut lenh theo khau lenh
-  onClickAction(btn){
+  onClickAction(btn,fab){
     //console.log('click:',btn);
     if (btn.next==="RESET"){
       this.resetMap();
+      if (fab) fab.close();
     }
 
     if (btn.next==="CENTER"){
@@ -577,12 +577,12 @@ export class GoogleMapPage {
 
     if (btn.next==="SPEED"){
       //show tracking point
-      let path = trackingPath.getPath();
+      /* let path = trackingPath.getPath();
       //console.log('path',path);
       this.livePoints.forEach((el)=>{
         path.push(new google.maps.LatLng(el.lat,el.lng))
         //console.log('path',path);
-      });
+      }); */
       trackingPath.setMap(this.map);
     }
     

@@ -34,12 +34,12 @@
   </div>
   
   <!--nut trung tam de lua chon vi tri-->
-  <ion-fab *ngIf="view.dynamic" [attr.middle]="view.dynamic.middle" [attr.center]="view.dynamic.center" [attr.left]="view.dynamic.left" [attr.right]="view.dynamic.right" [attr.bottom]="view.dynamic.bottom" [attr.top]="view.dynamic.top">
+  <ion-fab #fab *ngIf="view.dynamic" [attr.middle]="view.dynamic.middle" [attr.center]="view.dynamic.center" [attr.left]="view.dynamic.left" [attr.right]="view.dynamic.right" [attr.bottom]="view.dynamic.bottom" [attr.top]="view.dynamic.top">
     <button [attr.mini]="view.dynamic.mini" ion-fab color="{{view.dynamic.controler.color}}">
       <ion-icon name="{{view.dynamic.controler.icon}}"></ion-icon>
     </button>
     <ion-fab-list *ngFor="let direct of view.dynamic?.directions" attr.side="{{direct.side}}">
-      <button *ngFor="let btn of direct.actions" ion-fab color="{{btn.color}}" (click)="onClickAction(btn)">
+      <button *ngFor="let btn of direct.actions" ion-fab color="{{btn.color}}" (click)="onClickAction(btn,fab)">
         <ion-icon *ngIf="btn.icon" name="{{btn.icon}}"></ion-icon>
         <span *ngIf="btn.name">{{btn.name}}</span>
       </button>
