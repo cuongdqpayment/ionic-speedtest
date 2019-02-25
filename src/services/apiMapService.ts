@@ -7,12 +7,25 @@ import { ApiStorageService } from './apiStorageService';
 export class ApiMapService {
     GOOGLE_API_KEY = 'AIzaSyDBxMizhomgbDZ9ljbf9-mY_Omuo0heCig';
     WEATHER_API_KEY = '22bc862e9465e98d1c74b7351cab36ef';
+    GOOGLE_POINTS_ENDCODER_DEFAULT = 1E5;
     /* 
     urlLatLng ='https://maps.googleapis.com/maps/api/geocode/json?latlng=16.0652695,108.2010651&key=AIzaSyDBxMizhomgbDZ9ljbf9-mY_Omuo0heCig';
     urlAddress='https://maps.googleapis.com/maps/api/geocode/json?address=30%20be%20van%20dan,%20da%20nang&key=AIzaSyDBxMizhomgbDZ9ljbf9-mY_Omuo0heCig';
     urlRoute='https://maps.googleapis.com/maps/api/directions/json?origin=30%20Be%20van%20dan,%20da%20nang,%20viet%20nam&destination=263%20nguyen%20van%20linh,%20da%20nang&key=AIzaSyDBxMizhomgbDZ9ljbf9-mY_Omuo0heCig';
     urlWeather='https://api.openweathermap.org/data/2.5/weather?id=1905468&APPID=22bc862e9465e98d1c74b7351cab36ef&units=metric';
     */
+
+    /* // Converts from degrees to radians.
+    Math.radians = function(degrees) {
+        return degrees * Math.PI / 180;
+    };
+   
+    // Converts from radians to degrees.
+    Math.degrees = function(radians) {
+        return radians * 180 / Math.PI;
+    }; */
+
+  
     constructor(private httpClient: HttpClient) {}
 
     getWeatherApi(cityId: number) {
@@ -85,10 +98,11 @@ export class ApiMapService {
 
     }
 
-
-
-    //chuyen doi chuoi polyline thanh cac toa do diem
-    // source: http://doublespringlabs.blogspot.com.br/2012/11/decoding-polylines-from-google-maps.html
+    /**
+     * chuyen doi chuoi polyline thanh cac toa do diem
+     * source: http://doublespringlabs.blogspot.com.br/2012/11/decoding-polylines-from-google-maps.html
+     * @param encoded 
+     */
     decodePolyline(encoded) {
         // array that holds the points
         var points = []
@@ -116,6 +130,77 @@ export class ApiMapService {
             points.push({ lat: (lat / 1E5), lng: (lng / 1E5) })
         }
         return points
+    }
+
+    /**
+     * Cac ham de encode list latlng thanh chuoi points
+     * https://jeromejaglale.com/doc/javascript/google_static_maps_polyline_encoding
+     * @param coordinate
+     * @return
+     */
+    floor1e5(coordinate) {
+        return Math.floor(coordinate * this.GOOGLE_POINTS_ENDCODER_DEFAULT);
+    }
+
+    encodeSignedNumber(num:number) {
+        let sgn_num = num << 1;
+        if (num < 0) {
+            sgn_num = ~(sgn_num);
+        }
+        return (this.encodeNumber(sgn_num));
+    }
+
+    encodeNumber(num:number) {
+
+        let encodeString = "";
+
+        while (num >= 0x20) {
+            let nextValue = (0x20 | (num & 0x1f)) + 63;
+            encodeString +=String.fromCharCode(nextValue);
+            num >>= 5;
+        }
+
+        num += 63;
+        encodeString +=String.fromCharCode(num);
+
+        return encodeString;
+    }
+
+    /**
+     * Thuc hien ma hoa mot chan duong da tracking gui len mang cho de dang
+     * @param latLngs
+     * @return
+     */
+    encodePoints(latLngs) {
+        if (latLngs==null) return null;
+
+        let encodedPoints = "";
+
+        let plat = 0;
+        let plng = 0;
+        let counter = 0;
+
+        let listSize = latLngs.size();
+
+        let latLng;
+
+        for (let i = 0; i < listSize; i++) {
+            counter++;
+            latLng = latLngs.get(i);
+
+            let late5 = this.floor1e5(latLng.lat);
+            let lnge5 = this.floor1e5(latLng.lng);
+
+            let dlat = late5 - plat;
+            let dlng = lnge5 - plng;
+
+            plat = late5;
+            plng = lnge5;
+
+            encodedPoints +=this.encodeSignedNumber(dlat);
+            encodedPoints +=this.encodeSignedNumber(dlng);
+        }
+        return encodedPoints;
     }
 
 
@@ -220,4 +305,27 @@ export class ApiMapService {
         if (theta < 0) theta = 360 + theta; // range [0, 360)
         return theta;
     }
+
+
+    /**
+     * Khi di chuyen ma toa do khong phu hop thi gia lap mot toa do theo huong di chuyen truoc do
+     *
+     * @param lat
+     * @param lng
+     * @param distance khoảng cách điểm đến là bao nhiêu (m)
+     * @param bearing  góc di chuyển tính bằng độ (degree)
+     * @return {lat,lng}
+     * 
+     */
+    nextPoint(lat:number, lng:number, distance:number, bearing:number) {
+        let radius = 6371000; //ban kinh trai dat tinh bang m
+        let δ = distance / radius;
+        let θ = bearing * Math.PI / 180;
+        let φ1 = lat * Math.PI / 180;
+        let λ1 = lng * Math.PI / 180;
+        let φ2 = Math.asin((Math.sin(φ1) * Math.cos(δ)) + ((Math.cos(φ1) * Math.sin(δ)) * Math.cos(θ)));
+        let λ2 = ((3 * Math.PI + (λ1 + Math.atan2((Math.sin(θ) * Math.sin(δ)) * Math.cos(φ1), Math.cos(δ) - (Math.sin(φ1) * Math.sin(φ2))))) % (2 * Math.PI)) - Math.PI;
+        return {lat: φ2 * 180 / Math.PI, lng: λ2 * 180 / Math.PI};
+    }
+
 }
