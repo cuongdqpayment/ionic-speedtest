@@ -381,6 +381,7 @@ export class GoogleMapPage {
                         }
           this.map.setCenter(new google.maps.LatLng(addresses[0].lat, addresses[0].lng));
           
+          this.isShowCenter = true;
           this.showCenterMode();
 
         }
