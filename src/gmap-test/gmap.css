@@ -1,0 +1,329 @@
+#map {position:absolute;top:0%;left:0%;width:99%;height:98%;background-color:blue;border:7px solid #336}
+#tipDiv{position:absolute;visibility:hidden;left:0;top:0;z-index:10000;background-color:#dee7f7;border:1px solid #336;padding:4px;color:#000;font-size:11px;line-height:1.2;}
+#popupDiv{position:absolute;visibility:hidden;left:0;top:0;z-index:1000;border:3px solid #336;width:150px;padding:2px;color:#9F5000;font-size:15px;line-height:1.2;}
+.menubutton{top:30;left:80;position:absolute;z-index:99}
+.dragclass{top:0;left:130;height:10;width:300;position:absolute;cursor:hand;z-index:1000;background-color:#9F5000;border:2px solid #233}
+.dragtable{cursor:none;background-color:#EAF5FD;width:100%;}
+.popmenu{BORDER-RIGHT:black 2px solid;BORDER-TOP:black 2px solid;font-size:10px;Z-INDEX:1000;VISIBILITY:hidden;BORDER-LEFT:black 2px solid;WIDTH:165px;CURSOR:default;LINE-HEIGHT:20px;BORDER-BOTTOM:black 2px solid;FONT-FAMILY:Verdana;POSITION:absolute;BACKGROUND-COLOR:menu}
+.popitem{PADDING-RIGHT:10px;PADDING-LEFT:10px;color:#000080;font-size:10px}
+
+
+BODY {
+	SCROLLBAR-FACE-COLOR: #8cb6d4; SCROLLBAR-HIGHLIGHT-COLOR: #ffffff; SCROLLBAR-SHADOW-COLOR: #dee3e7; SCROLLBAR-ARROW-COLOR: #ffffff; SCROLLBAR-TRACK-COLOR: #eaf5fd; SCROLLBAR-DARKSHADOW-COLOR: #98aab1; BACKGROUND-COLOR: #a0c2d8
+}
+FONT {
+	FONT-FAMILY: Verdana, Arial, Helvetica, sans-serif
+}
+TH {
+	FONT-FAMILY: Verdana, Arial, Helvetica, sans-serif
+}
+TD {
+	FONT-FAMILY: Verdana, Arial, Helvetica, sans-serif
+}
+P {
+	FONT-FAMILY: Verdana, Arial, Helvetica, sans-serif
+}
+TH {
+	FONT-SIZE: 11px; COLOR: #000000
+}
+TD {
+	FONT-SIZE: 11px; COLOR: #000000
+}
+P {
+	FONT-SIZE: 11px; COLOR: #000000
+}
+A:link {
+	COLOR: #006699
+}
+A:active {
+	COLOR: #006699
+}
+A:visited {
+	COLOR: #006699
+}
+A:hover {
+	COLOR: #28cbf4; TEXT-DECORATION: none
+}
+HR {
+	BORDER-RIGHT: #cbe6f9 0px solid; BORDER-TOP: #cbe6f9 1px solid; BORDER-LEFT: #cbe6f9 0px solid; BORDER-BOTTOM: #cbe6f9 0px solid; HEIGHT: 0px
+}
+
+.bodyline {
+	BORDER-RIGHT: #aebdc4 1px solid; BORDER-TOP: #aebdc4 1px solid; BORDER-LEFT: #aebdc4 1px solid; BORDER-BOTTOM: #aebdc4 1px solid; BACKGROUND-COLOR: #ffffff
+}
+.forumline {
+	BORDER-RIGHT: #a7b9d1 2px solid; BORDER-TOP: #a7b9d1 2px solid; BORDER-LEFT: #a7b9d1 2px solid; BORDER-BOTTOM: #a7b9d1 2px solid; BACKGROUND-COLOR: #ffffff
+}
+.forumline1 {
+	BORDER-RIGHT: #b8d7ed 1px solid; BORDER-TOP: #b8d7ed 1px solid; BORDER-LEFT: #b8d7ed 1px solid; BORDER-BOTTOM: #b8d7ed 1px solid
+}
+TD.row1 {
+	BACKGROUND-COLOR: #eaf5fd
+}
+TD.row2 {
+	BACKGROUND-COLOR: #dbebf6
+}
+TD.row3 {
+	BACKGROUND-COLOR: #cbe6f9
+}
+TD.cat {
+	BORDER-TOP-WIDTH: 0px; BORDER-LEFT-WIDTH: 0px; BORDER-BOTTOM-WIDTH: 0px; HEIGHT: 29px; BORDER-RIGHT-WIDTH: 0px
+}
+TD.catHead {
+	BORDER-TOP-WIDTH: 0px; BORDER-LEFT-WIDTH: 0px; BORDER-BOTTOM-WIDTH: 0px; HEIGHT: 29px; BORDER-RIGHT-WIDTH: 0px
+}
+TD.catBottom {
+	BORDER-TOP-WIDTH: 0px; BORDER-LEFT-WIDTH: 0px; BORDER-BOTTOM-WIDTH: 0px; HEIGHT: 29px; BORDER-RIGHT-WIDTH: 0px
+}
+TD.row3Right {
+	BORDER-RIGHT: #ffffff solid; BORDER-TOP: #ffffff solid; BORDER-LEFT: #ffffff solid; BORDER-BOTTOM: #ffffff solid; BACKGROUND-COLOR: #cbe6f9
+}
+TD.spaceRow {
+	BORDER-RIGHT: #ffffff solid; BORDER-TOP: #ffffff solid; BORDER-LEFT: #ffffff solid; BORDER-BOTTOM: #ffffff solid; BACKGROUND-COLOR: #cbe6f9
+}
+TH.thHead {
+	BORDER-RIGHT: #ffffff solid; BORDER-TOP: #ffffff solid; FONT-WEIGHT: bold; BORDER-LEFT: #ffffff solid; BORDER-BOTTOM: #ffffff solid; HEIGHT: 28px
+}
+TH.thSides {
+	BORDER-RIGHT: #ffffff solid; BORDER-TOP: #ffffff solid; FONT-WEIGHT: bold; BORDER-LEFT: #ffffff solid; BORDER-BOTTOM: #ffffff solid; HEIGHT: 28px
+}
+TH.thTop {
+	BORDER-RIGHT: #ffffff solid; BORDER-TOP: #ffffff solid; FONT-WEIGHT: bold; BORDER-LEFT: #ffffff solid; BORDER-BOTTOM: #ffffff solid; HEIGHT: 28px
+}
+TH.thLeft {
+	BORDER-RIGHT: #ffffff solid; BORDER-TOP: #ffffff solid; FONT-WEIGHT: bold; BORDER-LEFT: #ffffff solid; BORDER-BOTTOM: #ffffff solid; HEIGHT: 28px
+}
+TH.thRight {
+	BORDER-RIGHT: #ffffff solid; BORDER-TOP: #ffffff solid; FONT-WEIGHT: bold; BORDER-LEFT: #ffffff solid; BORDER-BOTTOM: #ffffff solid; HEIGHT: 28px
+}
+TH.thBottom {
+	BORDER-RIGHT: #ffffff solid; BORDER-TOP: #ffffff solid; FONT-WEIGHT: bold; BORDER-LEFT: #ffffff solid; BORDER-BOTTOM: #ffffff solid; HEIGHT: 28px
+}
+TH.thCornerL {
+	BORDER-RIGHT: #ffffff solid; BORDER-TOP: #ffffff solid; FONT-WEIGHT: bold; BORDER-LEFT: #ffffff solid; BORDER-BOTTOM: #ffffff solid; HEIGHT: 28px
+}
+TH.thCornerR {
+	BORDER-RIGHT: #ffffff solid; BORDER-TOP: #ffffff solid; FONT-WEIGHT: bold; BORDER-LEFT: #ffffff solid; BORDER-BOTTOM: #ffffff solid; HEIGHT: 28px
+}
+TH.thHead {
+	BORDER-TOP-WIDTH: 1px; BORDER-LEFT-WIDTH: 1px; FONT-SIZE: 12px; BORDER-BOTTOM-WIDTH: 0px; BORDER-RIGHT-WIDTH: 1px
+}
+TD.catHead {
+	BORDER-TOP-WIDTH: 1px; BORDER-LEFT-WIDTH: 1px; FONT-SIZE: 12px; BORDER-BOTTOM-WIDTH: 0px; BORDER-RIGHT-WIDTH: 1px
+}
+TH.thSides {
+	BORDER-TOP-WIDTH: 0px; BORDER-LEFT-WIDTH: 1px; BORDER-BOTTOM-WIDTH: 0px; BORDER-RIGHT-WIDTH: 1px
+}
+TD.catSides {
+	BORDER-TOP-WIDTH: 0px; BORDER-LEFT-WIDTH: 1px; BORDER-BOTTOM-WIDTH: 0px; BORDER-RIGHT-WIDTH: 1px
+}
+TD.spaceRow {
+	BORDER-TOP-WIDTH: 0px; BORDER-LEFT-WIDTH: 1px; BORDER-BOTTOM-WIDTH: 0px; BORDER-RIGHT-WIDTH: 1px
+}
+TH.thRight {
+	BORDER-TOP-WIDTH: 0px; BORDER-LEFT-WIDTH: 0px; BORDER-BOTTOM-WIDTH: 0px; BORDER-RIGHT-WIDTH: 1px
+}
+TD.catRight {
+	BORDER-TOP-WIDTH: 0px; BORDER-LEFT-WIDTH: 0px; BORDER-BOTTOM-WIDTH: 0px; BORDER-RIGHT-WIDTH: 1px
+}
+TD.row3Right {
+	BORDER-TOP-WIDTH: 0px; BORDER-LEFT-WIDTH: 0px; BORDER-BOTTOM-WIDTH: 0px; BORDER-RIGHT-WIDTH: 1px
+}
+TH.thLeft {
+	BORDER-TOP-WIDTH: 0px; BORDER-LEFT-WIDTH: 1px; BORDER-BOTTOM-WIDTH: 0px; BORDER-RIGHT-WIDTH: 0px
+}
+TD.catLeft {
+	BORDER-TOP-WIDTH: 0px; BORDER-LEFT-WIDTH: 1px; BORDER-BOTTOM-WIDTH: 0px; BORDER-RIGHT-WIDTH: 0px
+}
+TH.thBottom {
+	BORDER-TOP-WIDTH: 0px; BORDER-LEFT-WIDTH: 1px; BORDER-BOTTOM-WIDTH: 1px; BORDER-RIGHT-WIDTH: 1px
+}
+TD.catBottom {
+	BORDER-TOP-WIDTH: 0px; BORDER-LEFT-WIDTH: 1px; BORDER-BOTTOM-WIDTH: 1px; BORDER-RIGHT-WIDTH: 1px
+}
+TH.thTop {
+	BORDER-TOP-WIDTH: 1px; BORDER-LEFT-WIDTH: 0px; BORDER-BOTTOM-WIDTH: 0px; BORDER-RIGHT-WIDTH: 0px
+}
+TH.thCornerL {
+	BORDER-TOP-WIDTH: 1px; BORDER-LEFT-WIDTH: 1px; BORDER-BOTTOM-WIDTH: 0px; BORDER-RIGHT-WIDTH: 0px
+}
+TH.thCornerR {
+	BORDER-TOP-WIDTH: 1px; BORDER-LEFT-WIDTH: 0px; BORDER-BOTTOM-WIDTH: 0px; BORDER-RIGHT-WIDTH: 1px
+}
+.maintitle {
+	FONT-WEIGHT: bold; FONT-SIZE: 18px; COLOR: #000000; LINE-HEIGHT: 120%; FONT-FAMILY: Verdana, Arial, Helvetica, sans-serif; TEXT-DECORATION: none
+}
+H1 {
+	FONT-WEIGHT: bold; FONT-SIZE: 18px; COLOR: #000000; LINE-HEIGHT: 120%; FONT-FAMILY: Verdana, Arial, Helvetica, sans-serif; TEXT-DECORATION: none
+}
+H2 {
+	FONT-WEIGHT: bold; FONT-SIZE: 18px; COLOR: #000000; LINE-HEIGHT: 120%; FONT-FAMILY: Verdana, Arial, Helvetica, sans-serif; TEXT-DECORATION: none
+}
+.gen {
+	FONT-SIZE: 11px
+}
+.genmed {
+	FONT-SIZE: 11px
+}
+.gensmall {
+	FONT-SIZE: 10px
+}
+.gen {
+	COLOR: #000000
+}
+.genmed {
+	COLOR: #000000
+}
+.gensmall {
+	COLOR: #000000
+}
+A.gen {
+	COLOR: #006699; TEXT-DECORATION: none
+}
+A.genmed {
+	COLOR: #006699; TEXT-DECORATION: none
+}
+A.gensmall {
+	COLOR: #006699; TEXT-DECORATION: none
+}
+A.gen:hover {
+	COLOR: #28cbf4; TEXT-DECORATION: none
+}
+A.genmed:hover {
+	COLOR: #28cbf4; TEXT-DECORATION: none
+}
+A.gensmall:hover {
+	COLOR: #28cbf4; TEXT-DECORATION: none
+}
+.mainmenu {
+	FONT-SIZE: 11px; COLOR: #000000
+}
+A.mainmenu {
+	COLOR: #006699; TEXT-DECORATION: none
+}
+A.mainmenu:hover {
+	COLOR: #28cbf4; TEXT-DECORATION: none
+}
+.cattitle {
+	FONT-WEIGHT: bold; FONT-SIZE: 11px; COLOR: #006699; LETTER-SPACING: 1px
+}
+A.cattitle:link {
+	COLOR: #4a6e8a; TEXT-DECORATION: none
+}
+A.cattitle:visited {
+	COLOR: #4a6e8a; TEXT-DECORATION: none
+}
+A.cattitle:hover {
+	TEXT-DECORATION: none
+}
+.forumlink {
+	FONT-WEIGHT: bold; FONT-SIZE: 12px; COLOR: #006699
+}
+A.forumlink {
+	COLOR: #006699; TEXT-DECORATION: none
+}
+A.forumlink:hover {
+	COLOR: #28cbf4; TEXT-DECORATION: none
+}
+.nav {
+	FONT-WEIGHT: bold; FONT-SIZE: 11px; COLOR: #000000
+}
+A.nav {
+	COLOR: #006699; TEXT-DECORATION: none
+}
+A.nav:hover {
+	COLOR: #28cbf4; TEXT-DECORATION: none
+}
+.topictitle {
+	FONT-WEIGHT: bold; FONT-SIZE: 11px; COLOR: #000000
+}
+A.topictitle:link {
+	COLOR: #006699; TEXT-DECORATION: none
+}
+A.topictitle:visited {
+	COLOR: #5493b4; TEXT-DECORATION: none
+}
+A.topictitle:hover {
+	COLOR: #28cbf4; TEXT-DECORATION: none
+}
+.name {
+	FONT-SIZE: 11px; COLOR: #000000
+}
+.postdetails {
+	FONT-SIZE: 10px; COLOR: #000000
+}
+.error {
+	FONT-SIZE: 11px; COLOR: #006699
+}
+.postbody {
+	FONT-SIZE: 12px; LINE-HEIGHT: 18px
+}
+A.postlink:link {
+	COLOR: #006699; TEXT-DECORATION: none
+}
+A.postlink:visited {
+	COLOR: #5493b4; TEXT-DECORATION: none
+}
+A.postlink:hover {
+	COLOR: #dd6900; TEXT-DECORATION: none
+}
+.code {
+	BORDER-RIGHT: #91c6eb 1px solid; BORDER-TOP: #91c6eb 1px solid; FONT-SIZE: 11px; BORDER-LEFT: #91c6eb 1px solid; COLOR: #14719c; BORDER-BOTTOM: #91c6eb 1px solid; FONT-FAMILY: Courier, 'Courier New', sans-serif; BACKGROUND-COLOR: #fafafa
+}
+.quote {
+	BORDER-RIGHT: #91c6eb 1px solid; BORDER-TOP: #91c6eb 1px solid; FONT-SIZE: 11px; BORDER-LEFT: #91c6eb 1px solid; COLOR: #14719c; LINE-HEIGHT: 125%; BORDER-BOTTOM: #91c6eb 1px solid; FONT-FAMILY: Verdana, Arial, Helvetica, sans-serif; BACKGROUND-COLOR: #fafafa
+}
+.copyright {
+	FONT-SIZE: 10px; COLOR: #006699; FONT-FAMILY: Verdana, Arial, Helvetica, sans-serif; LETTER-SPACING: -1px
+}
+A.copyright {
+	COLOR: #006699; TEXT-DECORATION: none
+}
+A.copyright:hover {
+	COLOR: #000000; TEXT-DECORATION: none
+}
+INPUT {
+	BORDER-LEFT-COLOR: #000000; BORDER-BOTTOM-COLOR: #000000; FONT: 11px Verdana, Arial, Helvetica, sans-serif; COLOR: #000000; BORDER-TOP-COLOR: #000000; BORDER-RIGHT-COLOR: #000000
+}
+TEXTAREA {
+	BORDER-LEFT-COLOR: #000000; BORDER-BOTTOM-COLOR: #000000; FONT: 11px Verdana, Arial, Helvetica, sans-serif; COLOR: #000000; BORDER-TOP-COLOR: #000000; BORDER-RIGHT-COLOR: #000000
+}
+SELECT {
+	BORDER-LEFT-COLOR: #000000; BORDER-BOTTOM-COLOR: #000000; FONT: 11px Verdana, Arial, Helvetica, sans-serif; COLOR: #000000; BORDER-TOP-COLOR: #000000; BORDER-RIGHT-COLOR: #000000
+}
+INPUT {
+	TEXT-INDENT: 2px
+}
+INPUT.post {
+	BACKGROUND-COLOR: #ffffff
+}
+TEXTAREA.post {
+	BACKGROUND-COLOR: #ffffff
+}
+SELECT {
+	BACKGROUND-COLOR: #ffffff
+}
+INPUT.button {
+	FONT-SIZE: 11px; COLOR: #000000; FONT-FAMILY: Verdana, Arial, Helvetica, sans-serif; BACKGROUND-COLOR: #efefef
+}
+INPUT.mainoption {
+	FONT-WEIGHT: bold; BACKGROUND-COLOR: #fafafa
+}
+INPUT.liteoption {
+	FONT-WEIGHT: normal; BACKGROUND-COLOR: #fafafa
+}
+.helpline {
+	BORDER-TOP-STYLE: none; BORDER-RIGHT-STYLE: none; BORDER-LEFT-STYLE: none; BACKGROUND-COLOR: #efefef; BORDER-BOTTOM-STYLE: none
+}
+.admin {
+	FONT-SIZE: 10px; COLOR: #006699; FONT-FAMILY: Verdana, Arial, Helvetica, sans-serif; LETTER-SPACING: -1px
+}
+.inlineimg {
+	VERTICAL-ALIGN: middle
+}
+.commentpreview {
+	OVERFLOW-X: hidden; OVERFLOW: auto; ; HEIGHT: expression(this.scrollHeight > 400? "400px" : "auto"); max-height: 400px
+}
+TR.title1 {
+	BACKGROUND-COLOR: #5493B4; COLOR: #ffff00
+}
