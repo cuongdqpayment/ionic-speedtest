@@ -591,10 +591,10 @@ export class GoogleMapPage {
     let items = [];
     this.trackingPoints.forEach(el=>{
         items.push({
-            subtitle:el.lat+","+el.lng
-            ,strong: el.result?el.result.distance + " - " + el.result.angle:""
-            ,p: el.result?el.result.dtimestamp + " - " + el.result.dtime_tracking:""
-            ,span: el.result?el.result.old_accuracy + " - " + el.result.new_accuracy:""
+            subtitle: el.lat.toFixed(4) + " , " + el.lng.toFixed(2)
+            ,strong: el.result?Math.round(el.result.distance*1000) + " : " + Math.round(el.result.angle):""
+            ,p: el.result?Math.round(el.result.dtimestamp) + " : " + Math.round(el.result.dtime_tracking):""
+            ,span: el.result?Math.round(el.result.old_accuracy) + " : " + Math.round(el.result.new_accuracy):""
             ,note: el.result?el.result.speed + '-' + el.result.speed1:""
             ,command:{ name: "Chi tiết", color:"secondary", icon:"create", next:"EXIT"}
         })
