@@ -16,7 +16,7 @@
 <script type="text/javascript" src="https://maps.google.com/maps/api/js?v=3.exp&sensor=false&libraries=drawing&key=AIzaSyBO4Jb4II4Luda_FJVEIwRGWftXPlbWB2o"></script>
 <SCRIPT type="text/javascript" src="tool_tip_1.0.js"></SCRIPT>
 <SCRIPT type="text/javascript" src="gmap_v4_objects.js"></SCRIPT>
-<SCRIPT type="text/javascript" src="gmap_v4_marker_cluster.js"></SCRIPT>
+<!-- <SCRIPT type="text/javascript" src="gmap_v4_marker_cluster.js"></SCRIPT> -->
 	
 <script src="jquery.min.js"></script>
 </head>
@@ -84,164 +84,7 @@ var today_1 = (day) + "/" + (month)+ "/"+ now.getFullYear();
 <div id="jQpopupPN"><div class="view-container-jQ-pn"></div></div>
 <!-- div cho ban do-->
 <script type="text/javascript">
-	VMS_pmenu.initSearchWindow();
-/////////////////////////////////////
-// cac ham lien quan den AJAX chon Menu trung tam, tinh, huyen
-function updateProvinceList(data){
-		data = eval(data);
-		$("#province").empty();
-		/* for (i=0;i<data.length;i++) {
-			$("#province").append("<option value='"+data[i][0]+"' "+(data[i][0]=="<%=province%>"?"selected":"")+">"+data[i][1]+"</option>");
-		} */
-		VMS_map.isBusy=false;
-}
-function refreshCenter() {
-	if (VMS_map.isBusy){
-		alert("Các tiến trình bản đồ đang bận. Xin vui lòng đợi trong giây lát hoặc refresh lại trang này.");
-	}else{
-		VMS_map.isBusy=true;
-		$.ajax({
-            url: "google_map_shop_detail_refresh_province.jsp",
-            type: "POST",
-            cache: false,
-            data: "center="+$("#center").val(),
-            success: function(obj){
-				updateProvinceList(obj);
-            },
-            error: function (){
-                alert("Có lỗi xảy ra khi gọi google_map_shop_detail_refresh_province.jsp!");
-            }
-        });
-   	}
-}
-function updateDistrictList(data){
-		data = eval(data);
-		$("#district").empty();
-		/* for (i=0;i<data.length;i++) {
-			$("#district").append("<option value='"+data[i][0]+"' "+(data[i][0]=="<%=district%>"?"selected":"")+">"+data[i][1]+"</option>");
-		} */
-		VMS_map.isBusy=false;
- }
-function refreshProvinces() {
-	if (VMS_map.isBusy){
-		alert("Các tiến trình bản đồ đang bận. Xin vui lòng đợi trong giây lát hoặc refresh lại trang này.");
-	}else{
-		//Cap nhap danh muc quan/huyen
-		VMS_map.isBusy=true;
-		$.ajax({
-            url: "google_map_shop_detail_refresh_district.jsp",
-            type: "POST",
-            cache: false,
-            data: "province="+$("#province").val()+"&center="+$("#center").val(),
-            success: function(obj){
-				updateDistrictList(obj);
-            },
-            error: function (){
-                alert("Có lỗi xảy ra khi gọi google_map_shop_detail_refresh_district.jsp!");
-            }
-		});
 
-       //focus chuyen ban do den tinh thanh
-      if (!VMS_timer.busy){
-      	VMS_map.isBusy=true;
-        $.ajax({
-            url: "google_map_shop_detail_get_province.jsp",
-            type: "POST",
-            cache: false,
-            data: "center="+$("#center").val()+"&province="+$("#province").val(),
-            success: function(obj){
-				focusProvinceOnMap(obj);
-            },
-            error: function (){
-                alert("Có lỗi xảy ra khi gọi google_map_shop_detail_get_province.jsp!");
-            }
-        });
-  	}else{
-  			alert("Bộ định thời đang xử lý. Xin vui lòng chờ đợi hiển thị điểm trên bản đồ xong");
-  	}
-  }
-}
-function focusProvinceOnMap(data){
-	//thuc hien chuyen ban do ve vi tri duoc chon
-	if (VMS_pmenu.isClean)VMS_map.clean();
-	//lay cac thong tin option ve zoom de ve bang do
-	var obj=eval(data).shift();
-	if (obj.length>5){
-		if (VMS_pmenu.isClean) VMS_map.map.setCenter(new google.maps.LatLng(obj[0],obj[1]),10);// map.setCenter(new google.maps.LatLng(obj[0],obj[1]),10);
-		else VMS_map.map.setCenter(new google.maps.LatLng(obj[0],obj[1]));
-		VMS_map.mapArea(obj[2],obj[0],obj[1],map_default.r+0.02/*+0.15*/,30,1,4,obj[3]); //ID,lat,lon,rộng của vùng,độ mịn, độ lớn của đường, số thứ tự màu,type
-																				 	 //ID,la,lo,img,tooltip,type=-1=dragable
-		VMS_map.mapLatLng(obj[2],obj[0],obj[1],map_default.getimg(5),obj[5],obj[3]); //ID,la,lo,img,tooltip,type=tinh,huyen,shop_type
-	}
-	VMS_map.isBusy=false;
-}
-function focusDistrictOnMap(data){
-		//thuc hien chuyen ban do ve vi tri duoc chon
-		// ve vu hien thi cua quan huyen
-		if (VMS_pmenu.isClean)VMS_map.clean();
-		//lay cac thong tin option ve zoom de ve bang do
-		var obj=eval(data).shift();
-		if (obj.length>5){
-			if (VMS_pmenu.isClean) VMS_map.map.setCenter(new google.maps.LatLng(obj[0],obj[1]),15);
-			else VMS_map.map.setCenter(new google.maps.LatLng(obj[0],obj[1]));
-			VMS_map.mapArea(obj[2],obj[0],obj[1],map_default.r+0.01/*+0.025*/,60,1,3,obj[3]); //ID,lat,lon,rộng của vùng,độ mịn, độ lớn của đường, số thứ tự màu
-			VMS_map.mapLatLng(obj[2],obj[0],obj[1],map_default.getimg(6),obj[5],obj[3]);
-		}
-		VMS_map.isBusy=false;
-    };
-function refreshDistricts() {
-	if (VMS_map.isBusy){
-		alert("Các tiến trình bản đồ đang bận. Xin vui lòng đợi trong giây lát hoặc refresh lại trang này.");
-	}else{
-		VMS_map.isBusy=true;
-		//focus ban do den huyen
-		$.ajax({
-            url: "google_map_shop_detail_get_district.jsp",
-            type: "POST",
-            cache: false,
-            data: "center="+$("#center").val()+"&province="+$("#province").val()+"&district="+$("#district").val(),
-            success: function(obj){
-				focusDistrictOnMap(obj);
-            },
-            error: function (){
-                alert("Có lỗi xảy ra khi gọi google_map_shop_detail_get_location.jsp!");
-            }
-        });
-	}
-}
-function showShopbyDistrictOnMap(data,distid){
-		VMS_timer.push(eval(data));
-		VMS_timer.fcall=function(obj){
-			if (obj){
-				VMS_map.mapLatLng(distid+"$"+obj[2],obj[0],obj[1],map_default.getshop(obj[3]),obj[5],obj[3]);
-				if (VMS_map.latlngs[distid]) VMS_map.createLink(distid+"$"+obj[2],new google.maps.LatLng(obj[0],obj[1]),VMS_map.latlngs[distid].getPosition(),"#00FFFF",1);
-			}else{
-				//if (eval(data).length>10) 
-				alert("Đã vẽ xong "+eval(data).length+" điểm\nTại: "+distid);
-			}
-			//kiem tra xong timeout?
-		};
-		VMS_timer.delay=1; //tra ve gia tri ban dau		
-		VMS_timer.start();
-		VMS_map.isBusy=false;
-}
-function showShopbyPrecinctOnMap(data,precinct){
-		VMS_timer.push(eval(data));
-		VMS_timer.fcall=function(obj){
-			if (obj){
-				VMS_map.mapLatLng(precinct+"$"+obj[2],obj[0],obj[1],map_default.getshop(obj[3]),obj[5],obj[3]);
-				if (VMS_map.latlngs[precinct]) VMS_map.createLink(precinct+"$"+obj[2],new google.maps.LatLng(obj[0],obj[1]),VMS_map.latlngs[precinct].getPosition(),"#00FFFF",1);
-			}else{
-				//if (eval(data).length>10) 
-				alert("Đã vẽ xong "+eval(data).length+" điểm\nTại: "+precinct);
-			}
-			//kiem tra xong timeout?
-		};
-		VMS_timer.delay=1; //tra ve gia tri ban dau		
-		VMS_timer.start();
-		VMS_map.isBusy=false;
-}
-//////////////////////////////////////	
 var tOption="<table cellpadding='1' cellspacing='0' width='100%' border='1' style='border-collapse: collapse' bordercolor='#7AA7A7'>";
 	tOption+="<tr><td width='30%'><select name='center' id='center' style='width:70px' onChange='refreshCenter();'><option value='all'>--Chọn TT--</option><option value='1'>TT1</option><option value='2'>TT2</option><option value='3'>TT3</option><option value='4'>TT4</option><option value='5'>TT5</option><option value='6'>TT6</option></select></td>";
 	tOption+="<td width='30%'><select name='province' id='province' style='width:70px' onChange='refreshProvinces();'><option value='all'>--Chọn tỉnh--</option><option value='DNA'>Thành Phố Đà Nẵng</option></select></td>";
@@ -255,105 +98,12 @@ var tOption="<table cellpadding='1' cellspacing='0' width='100%' border='1' styl
 </script>
 <div id="map">Đang lấy bản đồ từ Internet</div>
 <div class="menubutton" name="menubutton" id="menubutton" style="width:10px;height:10px">
-<a href="javascript:menubutton(1)" onmousemove="javascript:doTip(1)" onmouseout="javascript:hideTip()"><img border="0" src="../icons/1.png"></a>
-<a href="javascript:menubutton(2)" onmousemove="javascript:doTip(2)" onmouseout="javascript:hideTip()"><img border="0" src="../icons/2.png"></a>
-<a href="javascript:menubutton(3)" onmousemove="javascript:doTip(3)" onmouseout="javascript:hideTip()"><img border="0" src="../icons/3.png"></a>
-<a href="javascript:menubutton(4)" onmousemove="javascript:doTip(4)" onmouseout="javascript:hideTip()"><img border="0" src="../icons/4.png"></a>
-<a href="javascript:menubutton(5)" onmousemove="javascript:doTip(5)" onmouseout="javascript:hideTip()"><img border="0" src="../icons/5.png"></a>
+<a href="javascript:menubutton(4)" onmousemove="javascript:doTip(4)" onmouseout="javascript:hideTip()"><img border="0" width="32px" height="32px" src="https://www.burns-360.com/wp-content/uploads/2018/09/Sample-Icon.png"></a>
 </div>
 </body>
 </html>
 <script type="text/javascript">
 var markerCluster;
-function showSiteVMS(data,cen){
-	VMS_timer.push(eval(data));
-	VMS_timer.delay=1; //tra ve gia tri ban dau
-	VMS_timer.fcall=function(o){
-		if (o){
-			VMS_map.mapSite(o[2],o[0],o[1],map_default.getimg(o[3]));
-		}else{
-			//finish
-			//alert ('xong day');
-			//gan vao marker cluster de hien thi
-			markerCluster = new MarkerClusterer(VMS_map.map, VMS_map.sites);
-			//alert ('So luong ne = ' + VMS_map.sites.length);
-		}
-	};
-	VMS_timer.start();
-}
-function view100Site(){
-	var la=VMS_map.map.getCenter().lat();
-	var lo=VMS_map.map.getCenter().lng();
-	var lev=VMS_map.map.getZoom();
-	//alert('test');
-	$.ajax({
-        url: "gmap_sql/qlm_gmap_sql_get_100site.jsp?la="+la
-        	//"google_map_imei_3g_device_get_site.jsp?la="+la
-        	+"&lo="+lo
-        	+"&lev="+lev
-        	+"&LATmove="+map_default.LATmove
-        	+"&LONmove="+map_default.LONmove,
-        type: 'POST',
-        cache: false,
-        success: function(o){
-			showSiteVMS(o,VMS_map.map.getCenter());
-        },
-        error: function (){
-            alert('Có lỗi xảy ra khi gọi gmap_sql/qlm_gmap_sql_get_100site!');
-        }
-    });
-}
-function showAlarm(data,center){
-	if(data)if(data.length>10)VMS_map.clean();
-	VMS_timer.push(eval(data));
-	VMS_timer.delay=1; //tra ve gia tri ban dau
-	VMS_timer.fcall=function(o){
-		if (o){
-			if (o[3]>0){
-				VMS_map.mapSite(o[2],o[0],o[1],map_default.getimg(o[4]));
-				VMS_map.mapAlarm(o[2],o[0],o[1],map_default.r+0.003,10,2,o[3]); ////sid,lat,lon,r,j,width,color
-			}
-			else{
-				VMS_map.mapSite(o[2],o[0],o[1],map_default.getimg(o[4]));
-				VMS_map.mapAlarmRemove(o[2]);
-			}
-		}
-	};
-	VMS_timer.start();
-}
-function viewAlarmOnline(){
-	
-	map_default.isauto = !map_default.isauto;
-	if (map_default.isauto){
-		VMS_timer.scheduleDelay=120000; //2 phut refresh trang 1 lan
-		VMS_timer.stop=false;
-		VMS_timer.fschedule=function(){
-							//ham nay se chay dinh ky khi schedule duoc bat tu dong de chay
-							var la=VMS_map.map.getCenter().lat();
-							var lo=VMS_map.map.getCenter().lng();
-							var lev=VMS_map.map.getZoom();
-							$.ajax({
-						        url: "map_ajax_get_alarms_online.jsp?la="+la
-						        	+"&lo="+lo
-						        	+"&LATmove="+map_default.LATmove
-						        	+"&LONmove="+map_default.LONmove,
-						        type: 'POST',
-						        cache: false,
-						        success: function(o){
-									showAlarm(o,VMS_map.map.getCenter());
-						        },
-						        error: function (){
-						            alert('Có lỗi xảy ra khi gọi map_ajax_get_alarms.jsp!');
-						        }
-						    });
-						};
-		VMS_timer.scheduleStart();
-	}else{
-		VMS_timer.stop=true;
-		VMS_timer.fschedule = null;
-	}
-}
-
 //////////////////////////////////////////////////////////////////
 /// draw mode by cuong.dq 2017
 var all_overlays = [];
@@ -618,7 +368,7 @@ function viewDrawOnline(){
 	}
 }
 function showPolygonInfo(o){
-	alert(''+o);
+	//alert(''+o);
 }
 function getPolyInfo(t,sh){
 		$.ajax({url: "gmap_sql/gmap_v4_get_poly.jsp?type="+t+"&arr="+sh,
@@ -951,7 +701,7 @@ function doSavePointDrag(data,id){
 
 			}
 		}else{
-			alert(data+"\n"+id);
+			//alert(data+"\n"+id);
 		}
 	}
 }
@@ -1286,7 +1036,7 @@ function doSearchbyAddress(address){
 	function(results, status) {
 			if (status == google.maps.GeocoderStatus.OK) {
 				if (results[1]) {
-			        alert('Tìm thấy địa chỉ:'+results[1].formatted_address); // dia chi tim duoc day ne
+			        //alert('Tìm thấy địa chỉ:'+results[1].formatted_address); // dia chi tim duoc day ne
 			        
 			        var marker1 = new google.maps.Marker({  icon: map_default.getimg(0),
 											        draggable:false,  //Không cho phép kéo điểm này
@@ -1297,7 +1047,7 @@ function doSearchbyAddress(address){
 	      			map.setCenter(results[0].geometry.location);
 			        
 		        } else if (results[0]) {
-		        	alert('Tìm thấy tọa độ:'+results[0].geometry.location); // dia chi tim duoc day ne
+		        	//alert('Tìm thấy tọa độ:'+results[0].geometry.location); // dia chi tim duoc day ne
 		        	
 			        var marker1 = new google.maps.Marker({  icon: map_default.getimg(0),
 											        draggable:false,  //Không cho phép kéo điểm này
