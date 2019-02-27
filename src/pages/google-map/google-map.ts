@@ -8,10 +8,10 @@ import { DynamicListOrderPage } from '../dynamic-list-order/dynamic-list-order';
 
 declare var google;
 let latLng;
-let infoWindow;
 let curCircle;
 let curCircleIcon;
 let trackingPath;
+let car;
 
 var interval;
 
@@ -224,6 +224,21 @@ export class GoogleMapPage {
     //lenh nay se load map lan dau tien luon nhe
     this.map = new google.maps.Map(this.mapElement.nativeElement, mapOptions);
 
+
+    car = new google.maps.Marker({ 
+                icon: {
+                        path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW, //ApiMapService.moveLocations.car,
+                        scale: 5, //6, 0.7
+                        strokeColor: ApiMapService.moveLocations.light,
+                        strokeWeight: 1,
+                        fillColor: ApiMapService.moveLocations.green,
+                        fillOpacity: 0.8,
+                        rotation: 0
+                      },
+                  position: latLng,
+                  map: this.map
+              });
+
     
     curCircleIcon = new google.maps.Circle({
       strokeColor: '#ff0000',
@@ -280,7 +295,6 @@ export class GoogleMapPage {
     if (isCenter || isTimeOut){
       this.stopTracking();
 
-      //if (isCenter){
         this.geoLocation.getCurrentPosition({
           enableHighAccuracy: true,
           timeout: 10000,
@@ -309,8 +323,7 @@ export class GoogleMapPage {
             duration: 5000
           }).present();
         });
-      //}
-
+      
       this.startTracking();
     }
   }
@@ -551,34 +564,47 @@ export class GoogleMapPage {
    */
   showLocation(loc:any,isCenter?:boolean){
     let newLatlng = {lat:loc.lat,lng:loc.lng};
-    latLng = new google.maps.LatLng(loc.lat, loc.lng);
     
     if (this.trackingPoints.length>0){
       let old = this.trackingPoints[this.trackingPoints.length-1];
       loc.result = this.apiMap.getSpeed(old,loc);
       this.view.fix.actions.find(x=>x.next==="SPEED").name=loc.result.speed+"-"+loc.result.speed1;
-      
-      //if (loc.result.distance>0.01){
-        this.trackingPoints.push(loc); //neu khoang cach >10m thi luu lai
-        /* this.livePoints.push(newLatlng); */
-        trackingPath.getPath().push(latLng);
-      //}
-
+      if (loc.result.speed>0) {
+        this.trackingPoints.push(loc);
+      }
+      latLng = new google.maps.LatLng(loc.result.next_point.lat, loc.result.next_point.lng);
+      trackingPath.getPath().push(latLng);
     }else{
       this.trackingPoints.push(loc); //luu bang 1
-      /* this.livePoints.push(newLatlng); */ //cai nay chua dung lam gi
+      latLng = new google.maps.LatLng(loc.lat, loc.lng);
       trackingPath.getPath().push(latLng);
     }
     
-
     //neu KC oldLocation va newLocation >=100m 
     //ma tu dong tim dia chi thi - tim dia chi va view dia chi cho nguoi dung
 
     if (this.isMapLoaded){
-      //curMarker.setPosition(newLatlng);
       curCircleIcon.setCenter(newLatlng);
       curCircle.setCenter(newLatlng);
       curCircle.setRadius(loc.accuracy);
+
+      car.setIcon({
+        path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW, //ApiMapService.moveLocations.car,
+        scale: 5, //6, 0.7
+        strokeColor: ApiMapService.moveLocations.light,
+        strokeWeight: 1,
+        fillColor: ApiMapService.moveLocations.red,
+        fillOpacity: 0.8,
+        rotation: loc.result&&loc.result.angle?loc.result.angle:0
+      });
+
+      car.setPosition(latLng);
+      
+      /* setTimeout(()=>{
+        
+      }, 200); */
+      
+
       //dua ban do ve vi tri trung tam
       if (this.mapSettings.auto_tracking || isCenter) {
         this.map.setCenter(latLng);
@@ -586,6 +612,21 @@ export class GoogleMapPage {
     }
 
   }
+
+  /* moveSmoothly = function(){
+    position[0] += deltaLat;
+    position[1] += deltaLng;
+    
+    var latlng = new google.maps.LatLng(position[0], position[1]);
+    
+    taxi.setTitle("("+position[0]+","+position[1]+")");
+    
+    taxi.setPosition(latlng);
+    if(ii!=numDeltas){
+        ii++;
+        setTimeout(moveSmoothly, delaysmoothly);
+    }
+  } */
 
 
   showTrackingPoints(){
