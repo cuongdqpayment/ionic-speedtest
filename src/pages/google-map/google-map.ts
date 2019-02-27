@@ -8,8 +8,10 @@ import { DynamicListOrderPage } from '../dynamic-list-order/dynamic-list-order';
 
 declare var google;
 let latLng;
-let curCircle;
-let curCircleIcon;
+let circle;
+let direction;
+let accuracy;
+
 let trackingPath;
 let car;
 
@@ -224,36 +226,22 @@ export class GoogleMapPage {
     //lenh nay se load map lan dau tien luon nhe
     this.map = new google.maps.Map(this.mapElement.nativeElement, mapOptions);
 
-
-    car = new google.maps.Marker({ 
+    
+    circle = new google.maps.Marker({ 
                 icon: {
-                        path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW, //ApiMapService.moveLocations.car,
-                        scale: 5, //6, 0.7
-                        strokeColor: ApiMapService.moveLocations.light,
-                        strokeWeight: 1,
-                        fillColor: ApiMapService.moveLocations.green,
+                        path: google.maps.SymbolPath.CIRCLE,
+                        scale: 10, //6, 0.7
+                        strokeColor: ApiMapService.moveLocations.white,
+                        strokeWeight: 3,
+                        fillColor: ApiMapService.moveLocations.blue,
                         fillOpacity: 0.8,
                         rotation: 0
                       },
                   position: latLng,
                   map: this.map
               });
-
     
-    curCircleIcon = new google.maps.Circle({
-      strokeColor: '#ff0000',
-      strokeOpacity: 3,
-      strokeWeight: 5,
-      fillColor: '#296ce8',
-      fillOpacity: 1,
-      map: this.map,
-      center: latLng,
-      radius: 20
-    });
-
-
-    //danh dau vung hien tai sai so
-    curCircle = new google.maps.Circle({
+    accuracy = new google.maps.Circle({
       strokeColor: '#caeaf9',
       strokeOpacity: 0.5,
       strokeWeight: 1,
@@ -262,6 +250,34 @@ export class GoogleMapPage {
       map: this.map,
       center: latLng,
       radius: 50
+    });
+
+    direction = new google.maps.Marker({ 
+      icon: {
+              path: google.maps.SymbolPath.FORWARD_OPEN_ARROW, 
+              scale: 4,
+              strokeColor: ApiMapService.moveLocations.light,
+              strokeWeight: 1,
+              fillColor: ApiMapService.moveLocations.brown,
+              fillOpacity: 0.8,
+              rotation: 0
+            },
+        position: latLng,
+        map: this.map
+    });
+
+    car = new google.maps.Marker({ 
+      icon: {
+              path: ApiMapService.moveLocations.car,
+              scale: 0.6,
+              strokeColor: ApiMapService.moveLocations.light,
+              strokeWeight: 1,
+              fillColor: ApiMapService.moveLocations.yellow,
+              fillOpacity: 0.8,
+              rotation: 0
+            },
+        position: latLng,
+        map: this.map
     });
 
 
@@ -564,14 +580,16 @@ export class GoogleMapPage {
    */
   showLocation(loc:any,isCenter?:boolean){
     let newLatlng = {lat:loc.lat,lng:loc.lng};
+    let newGLatLng = new google.maps.LatLng(loc.lat,loc.lng);
     
     if (this.trackingPoints.length>0){
       let old = this.trackingPoints[this.trackingPoints.length-1];
       loc.result = this.apiMap.getSpeed(old,loc);
-      this.view.fix.actions.find(x=>x.next==="SPEED").name=loc.result.speed+"-"+loc.result.speed1;
+      this.view.fix.actions.find(x=>x.next==="SPEED").name=loc.result.speed1;
       if (loc.result.speed>0) {
-        this.trackingPoints.push(loc);
+
       }
+      this.trackingPoints.push(loc);
       latLng = new google.maps.LatLng(loc.result.next_point.lat, loc.result.next_point.lng);
       trackingPath.getPath().push(latLng);
     }else{
@@ -584,16 +602,27 @@ export class GoogleMapPage {
     //ma tu dong tim dia chi thi - tim dia chi va view dia chi cho nguoi dung
 
     if (this.isMapLoaded){
-      curCircleIcon.setCenter(newLatlng);
-      curCircle.setCenter(newLatlng);
-      curCircle.setRadius(loc.accuracy);
+      circle.setPosition(newGLatLng);
+      direction.setIcon({
+        path: google.maps.SymbolPath.FORWARD_OPEN_ARROW, 
+        scale: 3,
+        strokeColor: ApiMapService.moveLocations.white,
+        strokeWeight: 1,
+        fillColor: ApiMapService.moveLocations.brown,
+        fillOpacity: 0.8,
+        rotation: loc.result&&loc.result.angle?loc.result.angle:0
+      });
+      direction.setPosition(newGLatLng);
+      accuracy.setCenter(newLatlng);
+      accuracy.setRadius(loc.accuracy);
 
+      
       car.setIcon({
-        path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW, //ApiMapService.moveLocations.car,
-        scale: 5, //6, 0.7
+        path: ApiMapService.moveLocations.car,
+        scale: 0.6,
         strokeColor: ApiMapService.moveLocations.light,
         strokeWeight: 1,
-        fillColor: ApiMapService.moveLocations.red,
+        fillColor: ApiMapService.moveLocations.yellow,
         fillOpacity: 0.8,
         rotation: loc.result&&loc.result.angle?loc.result.angle:0
       });
