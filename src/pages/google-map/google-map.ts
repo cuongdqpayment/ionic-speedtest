@@ -586,9 +586,6 @@ export class GoogleMapPage {
       let old = this.trackingPoints[this.trackingPoints.length-1];
       loc.result = this.apiMap.getSpeed(old,loc);
       this.view.fix.actions.find(x=>x.next==="SPEED").name=loc.result.speed1;
-      if (loc.result.speed>0) {
-
-      }
       this.trackingPoints.push(loc);
       latLng = new google.maps.LatLng(loc.result.next_point.lat, loc.result.next_point.lng);
       trackingPath.getPath().push(latLng);
@@ -611,6 +608,7 @@ export class GoogleMapPage {
         fillColor: ApiMapService.moveLocations.brown,
         fillOpacity: 0.8,
         rotation: loc.result&&loc.result.angle?loc.result.angle:0
+        ,anchor: new google.maps.Point(0,8)
       });
       direction.setPosition(newGLatLng);
       accuracy.setCenter(newLatlng);
@@ -625,14 +623,11 @@ export class GoogleMapPage {
         fillColor: ApiMapService.moveLocations.yellow,
         fillOpacity: 0.8,
         rotation: loc.result&&loc.result.angle?loc.result.angle:0
+        ,anchor:new google.maps.Point(16,32)
       });
 
       car.setPosition(latLng);
-      
-      /* setTimeout(()=>{
-        
-      }, 200); */
-      
+  
 
       //dua ban do ve vi tri trung tam
       if (this.mapSettings.auto_tracking || isCenter) {
