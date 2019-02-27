@@ -585,7 +585,7 @@ export class GoogleMapPage {
     if (this.trackingPoints.length>0){
       let old = this.trackingPoints[this.trackingPoints.length-1];
       loc.result = this.apiMap.getSpeed(old,loc);
-      this.view.fix.actions.find(x=>x.next==="SPEED").name=loc.result.speed1;
+      this.view.fix.actions.find(x=>x.next==="SPEED").name = ''+loc.result.speed1;
       this.trackingPoints.push(loc);
       latLng = new google.maps.LatLng(loc.result.next_point.lat, loc.result.next_point.lng);
       trackingPath.getPath().push(latLng);
