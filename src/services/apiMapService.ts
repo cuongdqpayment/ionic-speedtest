@@ -244,7 +244,7 @@ export class ApiMapService {
         let speed1 = 0; //toc do gia lap neu vi tri khong chinh xac
         let next_point = {lat:newLoc.lat, lng:newLoc.lng};
 
-        if (old_accuracy === new_accuracy && new_accuracy<20){
+        if (old_accuracy === new_accuracy && new_accuracy<200){
             if (newLoc.timestamp&&old.timestamp&&newLoc.timestamp>old.timestamp) speed = Math.round(distance/dtimestamp*1000*60*60);
             speed1 = speed;
         } else {
