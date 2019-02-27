@@ -244,11 +244,12 @@ export class ApiMapService {
         let speed1 = 0; //toc do gia lap neu vi tri khong chinh xac
         let next_point = {lat:newLoc.lat, lng:newLoc.lng};
 
-        if (old_accuracy === new_accuracy && new_accuracy<200){
+        if (old_accuracy === new_accuracy && new_accuracy<50){
             if (newLoc.timestamp&&old.timestamp&&newLoc.timestamp>old.timestamp) speed = Math.round(distance/dtimestamp*1000*60*60);
             speed1 = speed;
         } else {
             speed1 = old.result&&old.result.speed1?old.result.speed1:0; //dang di chuyen toc do cu, 
+            angle = old.result&&old.result.angle?old.result.angle:angle;
             next_point = this.nextPoint(old.lat,old.lng,speed1*dtime_tracking/60/60,angle)
             //next_point = this.nextPoint(old.lat,old.lng,80*dtime_tracking/60/60,270)
         }
