@@ -10,14 +10,14 @@ ionic cordova run android --device
 #2. get file: <app>\platforms\android\app\build\outputs\apk\release\app-release-unsigned.apk
 # copy to ./build to sign
 
-#3. use keytool create key pair for sign for 4year = 365*4+1
+#3. use keytool create key pair for sign 4year=365*4+1:
 # keytool -genkey -v -keystore ./build/speedtest-app-key.keystore -alias speedtest-app-alias -keyalg RSA -keysize 2048 -validity 1461
 # get file ./build/cng-release-key.keystore with pass when type
 
 #4. sign apk file:
 # jarsigner -verbose -sigalg SHA1withRSA -digestalg SHA1 -keystore ./build/speedtest-app-key.keystore ./build/speedtest-app-unsigned.apk speedtest-app-alias
 
-#5. align file apk: 
-# zipalign -v 4 speedtest-app-unsigned.apk speedtest-app.apk
+#5. align file apk: kiem tra echo $ANDROID_HOME cd den build-tools...
+#  /Users/cuongdq/Library/Android/sdk/build-tools/28.0.3/zipalign -v 4 ./build/speedtest-app-unsigned.apk ./build/speedtest-app.apk
 
 #6. upload into playstore
