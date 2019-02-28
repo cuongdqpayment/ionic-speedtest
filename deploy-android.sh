@@ -10,8 +10,8 @@ ionic cordova run android --device
 #2. get file: <app>\platforms\android\app\build\outputs\apk\release\app-release-unsigned.apk
 # copy to ./build to sign
 
-#3. use keytool create key pair for sign:
-# keytool -genkey -v -keystore ./build/speedtest-app-key.keystore -alias speedtest-app-alias -keyalg RSA -keysize 2048 -validity 10000
+#3. use keytool create key pair for sign for 4year = 365*4+1
+# keytool -genkey -v -keystore ./build/speedtest-app-key.keystore -alias speedtest-app-alias -keyalg RSA -keysize 2048 -validity 1461
 # get file ./build/cng-release-key.keystore with pass when type
 
 #4. sign apk file:
