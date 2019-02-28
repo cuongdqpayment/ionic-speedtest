@@ -1,4 +1,4 @@
-git init
+#git init
 git add .
 git commit -m "cuongdq push by sh"
 #git remote -v
