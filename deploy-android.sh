@@ -2,10 +2,10 @@
 #ionic cordova platform remove android
 #ionic cordova platform add android --save
 #ionic cordova build android --prod --release
-ionic cordova run android --device
+# onic cordova run android --device
 
 #1. build --> release android 24.0 chay tren may win
-# ionic cordova build android --prod --release
+ionic cordova build android --prod --release
 
 #2. -->get file: <app>\platforms\android\app\build\outputs\apk\release\app-release-unsigned.apk
 # -->copy to ./build to sign --> remame to: ./build/speedtest-app-unsigned.apk
