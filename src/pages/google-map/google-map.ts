@@ -589,19 +589,20 @@ export class GoogleMapPage {
       
       //chi giu lai 10 diem tnh toc do trung binh
       //tinh kc da xoa ghi lai
-      if (this.trackingPoints.length>10) this.trackingPoints.shift();
+      if (this.trackingPoints.length>50) this.trackingPoints.shift();
 
       this.trackingPoints.push(loc);
       latLng = new google.maps.LatLng(loc.result.next_point.lat, loc.result.next_point.lng);
       trackingPath.getPath().push(latLng);
+
     }else{
       this.trackingPoints.push(loc); //luu bang 1
       latLng = new google.maps.LatLng(loc.lat, loc.lng);
       trackingPath.getPath().push(latLng);
+
     }
     
-    //neu KC oldLocation va newLocation >=100m 
-    //ma tu dong tim dia chi thi - tim dia chi va view dia chi cho nguoi dung
+    
 
     if (this.isMapLoaded){
       circle.setPosition(newGLatLng);
@@ -633,10 +634,10 @@ export class GoogleMapPage {
 
       car.setPosition(latLng);
   
-
       //dua ban do ve vi tri trung tam
       if (this.mapSettings.auto_tracking || isCenter) {
         this.map.setCenter(latLng);
+        //LAY DIA CHI NEU 
       }
     }
 

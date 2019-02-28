@@ -253,10 +253,13 @@ export class ApiMapService {
             this.countNoLoc = 0;
         } else{
             this.countNoLoc++;
-            if (this.countNoLoc<5&&newLoc.timestamp>old.timestamp&&newLoc.lat!==old.lat&&newLoc.lng!==old.lng){
-                speed1 = old.result&&old.result.speed1?old.result.speed1:0; //dang di chuyen toc do cu, 
+            if (this.countNoLoc<5&&newLoc.timestamp>old.timestamp&&newLoc.lat!==old.lat&&newLoc.lng!==old.lng&&speed1*dtime_tracking/60/60<50){
+                //neu vi tri moi sai so nhieu qua, hoac chuyen doi va thoi gian vi tri moi co, toa do 
+                speed1 = old.result&&old.result.speed1?old.result.speed1:0;
                 angle = old.result&&old.result.angle?old.result.angle:angle;
                 next_point = this.nextPoint(old.lat,old.lng,speed1*dtime_tracking/60/60,angle)
+            }else{
+                next_point = {lat:old.lat, lng:old.lng};
             }
         }
 
