@@ -8,6 +8,9 @@ export class ApiMapService {
     GOOGLE_API_KEY = 'AIzaSyDBxMizhomgbDZ9ljbf9-mY_Omuo0heCig';
     WEATHER_API_KEY = '22bc862e9465e98d1c74b7351cab36ef';
     GOOGLE_POINTS_ENDCODER_DEFAULT = 1E5;
+
+    countNoLoc:number = 0;
+
     public static moveLocations = {
         line: 'M -2,-2 2,2 M 2,-2 -2,2',
         car: 'M 5.60,4.30 C 9.29,-0.23 21.91,-0.11 24.98,5.14 26.41,7.60 26.00,13.99 26.00,17.00 26.00,17.00 30.00,17.00 30.00,17.00 30.00,17.00 30.00,20.00 30.00,20.00 30.00,20.00 26.00,20.00 26.00,20.00 26.00,20.00 26.00,40.00 26.00,40.00 25.98,42.34 26.21,45.49 24.40,47.26 21.59,50.02 7.35,49.95 5.02,46.57 3.87,44.89 4.01,41.97 4.00,40.00 4.00,40.00 4.00,20.00 4.00,20.00 4.00,20.00 0.00,20.00 0.00,20.00 0.00,20.00 0.00,17.00 0.00,17.00 0.00,17.00 4.00,17.00 4.00,17.00 4.00,13.52 3.38,7.01 5.60,4.30 Z M 7.00,15.00 C 10.40,23.37 19.60,23.37 23.00,15.00 16.93,12.19 13.11,12.46 7.00,15.00 Z M 7.00,40.00 C 10.93,33.40 11.55,26.44 7.00,20.00 5.42,23.99 5.42,36.01 7.00,40.00 Z M 24.00,39.00 C 24.00,39.00 24.00,20.00 24.00,20.00 18.29,24.87 18.29,34.13 24.00,39.00 Z M 7.00,44.00 C 12.69,45.38 17.31,45.38 23.00,44.00 19.37,35.76 10.63,35.76 7.00,44.00 Z',
@@ -247,11 +250,14 @@ export class ApiMapService {
         if (old_accuracy === new_accuracy && new_accuracy<50){
             if (newLoc.timestamp&&old.timestamp&&newLoc.timestamp>old.timestamp) speed = Math.round(distance/dtimestamp*1000*60*60);
             speed1 = speed;
-        } else {
-            speed1 = old.result&&old.result.speed1?old.result.speed1:0; //dang di chuyen toc do cu, 
-            angle = old.result&&old.result.angle?old.result.angle:angle;
-            next_point = this.nextPoint(old.lat,old.lng,speed1*dtime_tracking/60/60,angle)
-            //next_point = this.nextPoint(old.lat,old.lng,80*dtime_tracking/60/60,270)
+            this.countNoLoc = 0;
+        } else{
+            this.countNoLoc++;
+            if (this.countNoLoc<5&&newLoc.timestamp>old.timestamp&&newLoc.lat!==old.lat&&newLoc.lng!==old.lng){
+                speed1 = old.result&&old.result.speed1?old.result.speed1:0; //dang di chuyen toc do cu, 
+                angle = old.result&&old.result.angle?old.result.angle:angle;
+                next_point = this.nextPoint(old.lat,old.lng,speed1*dtime_tracking/60/60,angle)
+            }
         }
 
         return {

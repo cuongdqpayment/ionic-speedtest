@@ -586,6 +586,11 @@ export class GoogleMapPage {
       let old = this.trackingPoints[this.trackingPoints.length-1];
       loc.result = this.apiMap.getSpeed(old,loc);
       this.view.fix.actions.find(x=>x.next==="SPEED").name = ''+loc.result.speed1;
+      
+      //chi giu lai 10 diem tnh toc do trung binh
+      //tinh kc da xoa ghi lai
+      if (this.trackingPoints.length>10) this.trackingPoints.shift();
+
       this.trackingPoints.push(loc);
       latLng = new google.maps.LatLng(loc.result.next_point.lat, loc.result.next_point.lng);
       trackingPath.getPath().push(latLng);
