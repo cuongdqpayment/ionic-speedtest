@@ -51,21 +51,21 @@
 
 					<!-- input text -->
 					<ion-item class="input-item" *ngIf="it.type == 'text'">
-						<ion-label floating color="danger" *ngIf="it.invalid">{{it.hint}}(*)</ion-label>
+						<ion-label floating color="danger" text-wrap style="text-align: justify;" *ngIf="it.invalid">{{it.hint}}(*)</ion-label>
 						<ion-icon item-left name="{{it.icon}}" *ngIf="it.icon"></ion-icon>
 						<ion-input type="{{it.input_type}}" placeholder={{it.name?it.name:it.hint}} [(ngModel)]="it.value"></ion-input>
 					</ion-item>
 
 					<!-- input text-area -->
 					<ion-item class="input-item" *ngIf="it.type == 'text_area'">
-						<ion-label floating color="danger" *ngIf="it.invalid">{{it.hint}}(*)</ion-label>
+						<ion-label floating color="danger" text-wrap style="text-align: justify;" *ngIf="it.invalid">{{it.hint}}(*)</ion-label>
 						<ion-icon item-left name="{{it.icon}}" *ngIf="it.icon"></ion-icon>
 						<ion-textarea rows="6" cols="20" placeholder={{it.name?it.name:it.hint}} [(ngModel)]="it.value"></ion-textarea>
 					</ion-item>
 
 					<!-- input password -->
 					<ion-item class="input-item" *ngIf="it.type == 'password'">
-						<ion-label floating color="danger" *ngIf="it.invalid">{{it.hint}}(*)</ion-label>
+						<ion-label floating color="danger" text-wrap style="text-align: justify;" *ngIf="it.invalid">{{it.hint}}(*)</ion-label>
 						<ion-icon item-left name="{{it.icon}}" *ngIf="it.icon"></ion-icon>
 						<ion-input [type]="password_type" placeholder={{it.name?it.name:it.hint}} [(ngModel)]="it.value"></ion-input>
 						<button ion-button clear color="dark" type="button" item-right (click)="togglePasswordMode()">
@@ -75,7 +75,7 @@
 
 					<!-- check box -->
 					<ion-item class="input-item" *ngIf="it.type == 'check'">
-						<ion-label color="primary">{{it.name?it.name:it.hint}}</ion-label>
+						<ion-label color="primary" text-wrap style="text-align: justify;">{{it.name?it.name:it.hint}}</ion-label>
 						<ion-checkbox color="primary" [(ngModel)]="it.value"></ion-checkbox>
 					</ion-item>
 
@@ -83,26 +83,27 @@
 					<ion-list *ngIf="it.type == 'radio'" radio-group [(ngModel)]="it.value">
 						<ion-list-header>
 							<ion-icon item-start name="{{it.icon}}"></ion-icon>
-							<ion-label color="dark">{{it.name?it.name:it.hint}}</ion-label>
+							<ion-label color="dark" text-wrap style="text-align: justify;">{{it.name?it.name:it.hint}}</ion-label>
 						</ion-list-header>
 						<ion-item *ngFor="let myRad of it.options">
-							<ion-label color="secondary">{{myRad.name}}</ion-label>
+							<ion-label color="secondary" text-wrap style="text-align: justify;">{{myRad.name}}</ion-label>
 							<ion-radio value="{{myRad.value}}"></ion-radio>
 						</ion-item>
 					</ion-list>
 
 					<!-- single select -->
 					<ion-item class="input-item" *ngIf="it.type == 'select'">
-						<ion-label color="primary">{{it.name?it.name:it.hint}}</ion-label>
-						<ion-select [(ngModel)]="it.value">
-							<ion-option *ngFor="let mySet of it.options" value="{{mySet.value}}">{{mySet.name}}</ion-option>
+						<ion-label color="primary" text-wrap style="text-align: justify;">{{it.name?it.name:it.hint}}</ion-label>
+						<ion-select [(ngModel)]="it.value" style="background-color: rgb(103, 112, 230); color:whitesmoke; border-radius: 1em;">
+							<ion-option *ngFor="let mySet of it.options" value="{{mySet.value}}" >{{mySet.name}}</ion-option>
 						</ion-select>
 					</ion-item>
+	
 
 					<!-- multiple select -->
 					<ion-item class="input-item" *ngIf="it.type == 'select_multiple'">
-						<ion-label color="primary">{{it.name?it.name:it.hint}}</ion-label>
-						<ion-select [(ngModel)]="it.value" multiple="true">
+						<ion-label color="primary" text-wrap style="text-align: justify;">{{it.name?it.name:it.hint}}</ion-label>
+						<ion-select [(ngModel)]="it.value" multiple="true" style="background-color: rgb(103, 112, 230); color:whitesmoke; border-radius: 1em;">
 							<ion-option *ngFor="let mySet of it.options" value="{{mySet.value}}">{{mySet.name}}</ion-option>
 						</ion-select>
 					</ion-item>
@@ -110,15 +111,24 @@
 					<!-- toggle check -->
 					<ion-item class="input-item" *ngIf="it.type == 'toggle'">
 						<ion-icon name="{{it.icon}}" item-start color="primary"></ion-icon>
-						<ion-label color="primary">{{it.name?it.name:it.hint}}</ion-label>
+						<ion-label color="primary" text-wrap style="text-align: justify;">{{it.name?it.name:it.hint}}</ion-label>
 						<ion-toggle color="{{it.color}}" [(ngModel)]="it.value"></ion-toggle>
 					</ion-item>
 
 					<!-- range adjust -->
 					<ion-item class="input-item" *ngIf="it.type == 'range'">
-						<ion-range min="{{it.min}}" max="{{it.max}}" pin="true" [(ngModel)]="it.value" color="primary">
+						<ion-range min="{{it.min}}" max="{{it.max}}" pin="true" snaps="true" [(ngModel)]="it.value" color="primary">
 							<ion-icon range-left small name="{{it.icon}}"></ion-icon>
 							<ion-icon range-right name="{{it.icon}}"></ion-icon>
+						</ion-range>
+					</ion-item>
+
+					<!-- rang title with value -->
+					<ion-item class="input-item" *ngIf="it.type == 'range-text'">
+						<ion-label color="primary" *ngIf="it.name&&it.name.length>20" text-wrap style="text-align: justify;">{{it.name}}</ion-label>
+						<ion-range min="0" max="5"  color="secondary" snaps="true" [(ngModel)]="it.value">
+							<ion-label range-left color="primary" *ngIf="it.name&&it.name.length<=20">{{it.name}}</ion-label>
+							<ion-label range-right style="background-color: darkblue; color:whitesmoke; border-radius: 0.3em;">{{it.value}} {{it.hint}}</ion-label>
 						</ion-range>
 					</ion-item>
 

@@ -37,6 +37,7 @@ import { ApiSqliteService } from '../services/apiSqliteService';
 import { ResultsPage } from '../pages/results/results';
 import { GoogleMapPage } from '../pages/google-map/google-map';
 import { ApiMapService } from '../services/apiMapService';
+import { DynamicRangePage } from '../pages/dynamic-range/dynamic-range';
 
 @NgModule({
   declarations: [
@@ -47,8 +48,9 @@ import { ApiMapService } from '../services/apiMapService';
     TabsPage,
     SpeedTestPage,
     DynamicFormWebPage,
-    DynamicListPage,
     DynamicFormMobilePage,
+    DynamicRangePage,
+    DynamicListPage,
     DynamicCardSocialPage,
     DynamicMediasPage,
     DynamicListOrderPage,
@@ -71,8 +73,9 @@ import { ApiMapService } from '../services/apiMapService';
     TabsPage,
     SpeedTestPage,
     DynamicFormWebPage,
-    DynamicListPage,
     DynamicFormMobilePage,
+    DynamicRangePage,
+    DynamicListPage,
     DynamicCardSocialPage,
     DynamicMediasPage,
     DynamicListOrderPage,
