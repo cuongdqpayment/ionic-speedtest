@@ -585,7 +585,7 @@ export class GoogleMapPage {
     if (this.trackingPoints.length>0){
       let old = this.trackingPoints[this.trackingPoints.length-1];
       loc.result = this.apiMap.getSpeed(old,loc);
-      this.view.fix.actions.find(x=>x.next==="SPEED").name = ''+loc.result.speed1;
+      this.view.fix.actions.find(x=>x.next==="SPEED").name = ''+loc.result.next_speed;
       
       //chi giu lai 10 diem tnh toc do trung binh
       //tinh kc da xoa ghi lai
@@ -628,7 +628,7 @@ export class GoogleMapPage {
         strokeWeight: 1,
         fillColor: ApiMapService.moveLocations.yellow,
         fillOpacity: 0.8,
-        rotation: loc.result&&loc.result.angle?loc.result.angle:0
+        rotation: loc.result&&loc.result.next_point&&loc.result.next_point.angle?loc.result.next_point.angle:0
         ,anchor:new google.maps.Point(16,32)
       });
 
@@ -667,7 +667,7 @@ export class GoogleMapPage {
             ,strong: el.result?Math.round(el.result.distance*1000) + " : " + Math.round(el.result.angle):""
             ,p: el.result?Math.round(el.result.dtimestamp) + " : " + Math.round(el.result.dtime_tracking):""
             ,span: el.result?Math.round(el.result.old_accuracy) + " : " + Math.round(el.result.new_accuracy):""
-            ,note: el.result?el.result.speed + '-' + el.result.speed1:""
+            ,note: el.result?el.result.speed + '-' + el.result.next_speed:""
             ,command:{ name: "Chi tiết", color:"secondary", icon:"create", next:"EXIT"}
         })
     })
