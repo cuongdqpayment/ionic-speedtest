@@ -317,7 +317,7 @@ export class ApiAuthService {
 
      postDynamicForm(url:string, json_data:Object, token?:string){
         //lay token cua phien xac thuc
-        this.reqInterceptor.setRequestToken(token?token:this.userToken?this.userToken.token:'');
+        this.reqInterceptor.setRequestToken(token&&token.length?token:this.userToken?this.userToken.token:'');
         return this.httpClient.post(url,JSON.stringify(json_data))
                 .toPromise()
                 .then(data => {

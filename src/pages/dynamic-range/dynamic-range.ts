@@ -14,7 +14,7 @@ export class DynamicRangePage {
     title: "Đánh giá chấm điểm"
     , items: [
       {          name: "Hãy Chấm điểm từng phần này", type: "title"}
-      , { type: "range", name: "I. CHỌN KIỂU THANH KÉO ICON", 
+      , { type: "range", key:"icon_1", name: "I. CHỌN KIỂU THANH KÉO ICON", 
           details:[
             {
             key:"diem_1",
@@ -35,11 +35,12 @@ export class DynamicRangePage {
             ]
           }
 
-      , { type: "range-star", name: "II. CHẤM ĐIỂM SAO+",
+      , { type: "range-star", key:"star_1", name: "II. CHẤM ĐIỂM SAO+",
           details:[
             {
             key:"diem_x",
-            name: "Chấm điểm sao",
+            //name: "Chấm điểm sao",
+            icon: "star",
             color:"star",
             value: 3, 
             min: 0, 
@@ -47,14 +48,15 @@ export class DynamicRangePage {
             ,
             {
             key:"diem_x1",
-            name: "Đánh giá điểm",
+            name: "Mặt cười",
+            icon: "happy",
             color:"star",
             value: 5, 
             min: 0, 
             max: 10}
             ]
           } 
-      , { type: "range-text", name: "III. CHỌN KIỂU KÉO TEXT",
+      , { type: "range-text", key:"text_1", name: "III. CHỌN KIỂU KÉO TEXT",
           details:[
             {
             key:"diem_3",
@@ -74,7 +76,7 @@ export class DynamicRangePage {
             max: 10}
             ]
           } 
-      , { type: "toggle", name: "IV. CHỌN HAY KHÔNG CHỌN (toggle)",
+      , { type: "toggle", key:"toggle_1", name: "IV. CHỌN HAY KHÔNG CHỌN (toggle)",
           details:[
             {
             key:"diem_3",
@@ -89,7 +91,7 @@ export class DynamicRangePage {
             value: 1}
             ]
           } 
-      , { type: "check", name: "V. CHỌN HAY KHÔNG CHỌN (CHECK)",
+      , { type: "check", key:"check_1", name: "V. CHỌN HAY KHÔNG CHỌN (CHECK)",
           details:[
             {
             key:"diem_3",
@@ -103,7 +105,7 @@ export class DynamicRangePage {
             value: 0}
             ]
           } 
-      , { type: "select", name:"VI. LỰA CHỌN THEO DÃY:",
+      , { type: "select", key:"select_1", name:"VI. LỰA CHỌN THEO DÃY:",
       details:[
         {
         key:"diem_5",
@@ -130,9 +132,8 @@ export class DynamicRangePage {
           , { name: "Exit", next: "EXIT" }
           , { name: "Close", next: "CLOSE" }
           , { name: "Back", next: "BACK"}
-          , { name: "Continue", next: "CONTINUE"}
-          , { name: "Register", next: "CALLBACK", command: "USER_LOGIN_REDIRECT" }
-          , { name: "LOGIN", next: "NEXT", command: "USER_CHECK_EXISTS", token: true }
+          , { name: "Callback", next: "CALLBACK"}
+          , { name: "Next", next: "NEXT", token: 'true' }
         ]
       }]
 };
@@ -143,8 +144,6 @@ export class DynamicRangePage {
 
   password_type: string = 'password';
   eye: string = "eye";
-
-
 
   constructor(private platform: Platform
     , private authService: ApiAuthService
@@ -199,12 +198,6 @@ export class DynamicRangePage {
     }
   }
 
-  // btn ẩn hiện mật khẩu
-  togglePasswordMode() {
-    this.eye = this.eye === 'eye' ? 'eye-off' : 'eye';
-    this.password_type = this.password_type === 'text' ? 'password' : 'text';
-  }
-
   // Xử lý sự kiện click button theo id
   onClick(btn) {
 
@@ -223,18 +216,18 @@ export class DynamicRangePage {
           element.details.some(el=>{
             valid = true;
           if (valid && el.key && el.value)  Object.defineProperty(keyResult, el.key, { value: el.value, writable: false, enumerable: true });
-          return true;
+          return false;
           })
-          results.push({idx:idx, details:keyResult});
+          results.push({idx:idx, key: element.key, details:keyResult});
         }
-        return true;        
+        return false;        
       });
     }else{
       this.next(btn);
       return;
     }
 
-    console.log('ket qua',results);
+    //console.log('ket qua length',btn.token.length);
 
     if (valid) {
 
@@ -263,7 +256,7 @@ export class DynamicRangePage {
               loading.dismiss();
             });
 
-        } else if (results.length>0) {
+        } else {
 
           let loading = this.loadingCtrl.create({
             content: 'Đang xử lý dữ liệu từ máy chủ ....'
@@ -302,31 +295,27 @@ export class DynamicRangePage {
         this.next(btn);
 
       }
-
-    } else {
-      //console.log('Form Invalid!');
-    }
-
+   } 
   }
 
   next(btn) {
-
+    //console.log(btn.next_data,this.navCtrl.length());
     if (btn) {
       if (btn.next == 'EXIT') {
         this.platform.exitApp();
       } else if (btn.next == 'RESET') {
         this.resetForm();
       } else if (btn.next == 'CLOSE') {
-        try{this.viewCtrl.dismiss(btn.next_data)}catch(e){}
+        if (this.parent) this.viewCtrl.dismiss(btn.next_data)
       } else if (btn.next == 'BACK') {
-        try{this.navCtrl.pop()}catch(e){}
+        if (this.parent) this.navCtrl.pop()
         //if (this.navCtrl.length() > 1) this.navCtrl.pop();      //goback 1 step
       } else if (btn.next == 'CALLBACK') {
         if (this.callback) {
           this.callback(btn.next_data,this.parent)
             .then(nextStep => this.next(nextStep));
         } else {
-          try{this.navCtrl.pop()}catch(e){}
+          if (this.parent) this.navCtrl.pop()
         }
       } else if (btn.next == 'NEXT' && btn.next_data && btn.next_data.data) {
         btn.next_data.callback = this.callback; //gan lai cac function object
