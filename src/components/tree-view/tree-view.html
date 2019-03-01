@@ -1,0 +1,21 @@
+<div *ngFor="let item of treeData" style="padding-left: 15px">
+
+    <ion-grid no-padding>
+        <ion-row>
+            <ion-col col-1 class="right" style="margin:auto;text-align:center">
+                <ion-icon item-start *ngIf="item.subs?.length" (click)="toggleChildren(item)" name="{{item.visible?'remove-circle':'add-circle'}}" tappable></ion-icon>
+                <ion-icon item-start *ngIf="!item.subs?.length" name="remove"></ion-icon>
+            </ion-col>
+
+            <ion-col>
+                <ion-item class="tree-input-item">
+                    <ion-label>{{item.name}}</ion-label>
+                </ion-item>
+            </ion-col>
+        </ion-row>
+    </ion-grid>
+
+    <tree-view [treeData]="item.subs" *ngIf="item.visible">
+    </tree-view>
+
+</div>

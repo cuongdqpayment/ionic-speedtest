@@ -5,11 +5,12 @@ import { SplashScreen } from '@ionic-native/splash-screen';
 import { HomePage } from '../pages/home/home';
 import { GoogleMapPage } from '../pages/google-map/google-map';
 import { DynamicRangePage } from '../pages/dynamic-range/dynamic-range';
+import { DynamicMenuPage } from '../pages/dynamic-menu/dynamic-menu';
 @Component({
   templateUrl: 'app.html'
 })
 export class MyApp {
-  rootPage:any = DynamicRangePage;
+  rootPage:any = DynamicMenuPage;
 
   constructor(platform: Platform, statusBar: StatusBar, splashScreen: SplashScreen) {
     platform.ready().then(() => {

@@ -38,10 +38,13 @@ import { ResultsPage } from '../pages/results/results';
 import { GoogleMapPage } from '../pages/google-map/google-map';
 import { ApiMapService } from '../services/apiMapService';
 import { DynamicRangePage } from '../pages/dynamic-range/dynamic-range';
+import { DynamicMenuPage } from '../pages/dynamic-menu/dynamic-menu';
+import { TreeView } from '../components/tree-view/tree-view';
 
 @NgModule({
   declarations: [
     MyApp,
+    TreeView,
     LoginPage,
     HomePage,
     ResultsPage,
@@ -50,6 +53,7 @@ import { DynamicRangePage } from '../pages/dynamic-range/dynamic-range';
     DynamicFormWebPage,
     DynamicFormMobilePage,
     DynamicRangePage,
+    DynamicMenuPage,
     DynamicListPage,
     DynamicCardSocialPage,
     DynamicMediasPage,
@@ -67,6 +71,7 @@ import { DynamicRangePage } from '../pages/dynamic-range/dynamic-range';
   bootstrap: [IonicApp],
   entryComponents: [
     MyApp,
+    TreeView,
     LoginPage,
     HomePage,
     ResultsPage,
@@ -75,6 +80,7 @@ import { DynamicRangePage } from '../pages/dynamic-range/dynamic-range';
     DynamicFormWebPage,
     DynamicFormMobilePage,
     DynamicRangePage,
+    DynamicMenuPage,
     DynamicListPage,
     DynamicCardSocialPage,
     DynamicMediasPage,
