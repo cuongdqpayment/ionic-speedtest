@@ -175,7 +175,7 @@ export class GoogleMapPage {
   resetMap() {
     //clear path live
     if (this.isMapLoaded) {
-      trackingPath.getPath().length = 0;
+      trackingPath.getPath().clear();
       trackingPath.setMap(null);
     }
 
@@ -586,12 +586,11 @@ export class GoogleMapPage {
     let newGLatLng = new google.maps.LatLng(loc.lat,loc.lng);
     
     if (this.trackingPoints.length>0){
-      let old = this.trackingPoints[this.trackingPoints.length-1];
-      loc.result = this.apiMap.getSpeed(old,loc);
+      loc.old = this.trackingPoints[this.trackingPoints.length-1];
+      loc.result = this.apiMap.getSpeed(loc.old,loc);
       this.view.fix.actions.find(x=>x.next==="SPEED").name = ''+loc.result.next_speed;
       
       //chi giu lai 10 diem tnh toc do trung binh
-      //tinh kc da xoa ghi lai
       if (this.trackingPoints.length>50) this.trackingPoints.shift();
 
       this.trackingPoints.push(loc);
@@ -605,8 +604,7 @@ export class GoogleMapPage {
 
     }
     
-    
-
+  
     if (this.isMapLoaded){
       circle.setPosition(newGLatLng);
       direction.setIcon({
@@ -640,7 +638,18 @@ export class GoogleMapPage {
       //dua ban do ve vi tri trung tam
       if (this.mapSettings.auto_tracking || isCenter) {
         this.map.setCenter(latLng);
-        //LAY DIA CHI NEU 
+        //neu yeu cau lay dia chi thi goi lay dia chi gui ve
+        //truong hop diem cu va diem moi cach nhau 50m thi moi goi dia chi
+        if (this.isShowCenter
+          &&loc.old
+          &&loc.old.result
+          &&loc.old.result.next_point
+          &&loc.result
+          &&loc.result.next_point
+          &&this.apiMap.distance(loc.old.result.next_point.lat
+                                ,loc.old.result.next_point.lng
+                                ,loc.result.next_point.lat
+                                ,loc.result.next_point.lng)>50) this.mapDragend();
       }
     }
 
