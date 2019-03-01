@@ -249,6 +249,7 @@ export class ApiMapService {
 
         if (old_accuracy<50 && new_accuracy<50){
             if (newLoc.timestamp&&old.timestamp&&newLoc.timestamp>old.timestamp) speed = Math.round(distance/dtimestamp*1000*60*60);
+            //neu trong khoang thoi gian 1 giay ma chenh lech toc do cu va moi-cu>
             next_speed = speed; //toc do moi
             this.countNoLoc = 0; //reset so lan sai so
         } else{

@@ -174,7 +174,10 @@ export class GoogleMapPage {
 
   resetMap() {
     //clear path live
-    if (this.isMapLoaded) trackingPath.setMap(null);
+    if (this.isMapLoaded) {
+      trackingPath.getPath().length = 0;
+      trackingPath.setMap(null);
+    }
 
     //reset xem toa do dia chi
     this.isShowCenter = false;
