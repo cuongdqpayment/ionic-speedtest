@@ -238,28 +238,27 @@ export class ApiMapService {
      */
     getSpeed(old,newLoc){
         let distance =  this.distance(old.lat,old.lng,newLoc.lat,newLoc.lng);
-        let angle = this.angle(old.lat,old.lng,newLoc.lat,newLoc.lng);
         let dtimestamp = newLoc.timestamp - old.timestamp;
         let dtime_tracking =  newLoc.time_tracking - old.time_tracking;
         let old_accuracy = old.accuracy;
         let new_accuracy = newLoc.accuracy;
         let speed = 0; //toc do theo di chuyen location
-        let speed1 = 0; //toc do gia lap neu vi tri khong chinh xac
-        let next_point = {lat:newLoc.lat, lng:newLoc.lng};
+        let angle = this.angle(old.lat,old.lng,newLoc.lat,newLoc.lng);
+        let next_point = {lat:newLoc.lat, lng:newLoc.lng, angle: angle}; //diem moi
+        let next_speed = old.result&&old.result.next_speed?old.result.next_speed:speed;; //lay toc do cu
 
-        if (old_accuracy === new_accuracy && new_accuracy<50){
+        if (old_accuracy<50 && new_accuracy<50){
             if (newLoc.timestamp&&old.timestamp&&newLoc.timestamp>old.timestamp) speed = Math.round(distance/dtimestamp*1000*60*60);
-            speed1 = speed;
-            this.countNoLoc = 0;
+            next_speed = speed; //toc do moi
+            this.countNoLoc = 0; //reset so lan sai so
         } else{
-            this.countNoLoc++;
-            if (this.countNoLoc<3&&new_accuracy>200&&newLoc.timestamp>old.timestamp&&newLoc.lat!==old.lat&&newLoc.lng!==old.lng&&speed1*dtime_tracking/60/60<10){
-                //neu vi tri moi sai so nhieu qua, hoac chuyen doi va thoi gian vi tri moi co, toa do 
-                speed1 = old.result&&old.result.speed1?old.result.speed1:0;
-                angle = old.result&&old.result.angle?old.result.angle:angle;
-                next_point = this.nextPoint(old.lat,old.lng,speed1*dtime_tracking/60/60,angle)
-            }else{
-                next_point = {lat:old.lat, lng:old.lng};
+            this.countNoLoc++; //so lan sai so tang len 1
+            if (old.result&&old.result.next_point){
+                angle = old.result.next_point.angle; //goc cu
+                next_point = {lat:old.result.next_point.lat, lng:old.result.next_point.lng, angle: angle}; //diem cu
+            }
+            if (this.countNoLoc<5){ //diem gia lap ke tiep neu vi tri sai so qua nhieu
+                next_point = this.nextPoint(next_point.lat,next_point.lng,next_speed*dtime_tracking/60/60,angle)
             }
         }
 
@@ -271,7 +270,7 @@ export class ApiMapService {
             , old_accuracy : old.accuracy
             , new_accuracy : newLoc.accuracy
             , speed: speed
-            , speed1: speed1
+            , next_speed: next_speed
             , next_point: next_point
         }
     }
@@ -356,7 +355,7 @@ export class ApiMapService {
         let λ1 = lng * Math.PI / 180;
         let φ2 = Math.asin((Math.sin(φ1) * Math.cos(δ)) + ((Math.cos(φ1) * Math.sin(δ)) * Math.cos(θ)));
         let λ2 = ((3 * Math.PI + (λ1 + Math.atan2((Math.sin(θ) * Math.sin(δ)) * Math.cos(φ1), Math.cos(δ) - (Math.sin(φ1) * Math.sin(φ2))))) % (2 * Math.PI)) - Math.PI;
-        return {lat: φ2 * 180 / Math.PI, lng: λ2 * 180 / Math.PI};
+        return {lat: φ2 * 180 / Math.PI, lng: λ2 * 180 / Math.PI, angle: bearing};
     }
 
 }
