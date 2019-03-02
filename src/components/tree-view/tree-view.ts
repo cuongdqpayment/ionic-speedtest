@@ -6,7 +6,8 @@ import { Component, Input, EventEmitter, Output } from '@angular/core';
 })
 export class TreeView {
     @Input() treeData: any[];
-    @Output() selected = new EventEmitter();
+    @Input() level: number = 0;
+    @Input() callback: any;
 
     constructor() { }
 
@@ -14,4 +15,16 @@ export class TreeView {
         node.visible = !node.visible;
     }
 
+    onClickExpand(node,idx,parent){
+        node.visible = !node.visible;    
+        if (this.callback) this.callback(node,idx,parent)
+    }
+
+    onClickItem(node,idx,parent){
+        if (node.click&&this.callback) this.onClickMore(node,idx,parent)
+    }
+    
+    onClickMore(node,idx,parent){
+        if (this.callback) this.callback(node,idx,parent,true)
+    }
 }

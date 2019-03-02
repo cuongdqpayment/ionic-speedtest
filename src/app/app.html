@@ -1,1 +1,25 @@
-<ion-nav [root]="rootPage"></ion-nav>
+<ion-split-pane when="md">
+    <ion-menu [content]="content">
+        <ion-header>
+            <ion-toolbar>
+
+                <ion-title>
+                    Login...
+                </ion-title>
+
+            </ion-toolbar>
+        </ion-header>
+
+        <ion-content>
+            <ion-grid>
+                <ion-row>
+                    <ion-col class="background-card gradient grid-border">
+                        <tree-view [treeData]="treeMenu" [callback]="callbackTreeMenu"></tree-view>
+                    </ion-col>
+                </ion-row>
+            </ion-grid>
+        </ion-content>
+        
+    </ion-menu>
+    <ion-nav [root]="rootPage" #content main swipeBackEnabled="false"></ion-nav>
+</ion-split-pane>

@@ -40,6 +40,7 @@ import { ApiMapService } from '../services/apiMapService';
 import { DynamicRangePage } from '../pages/dynamic-range/dynamic-range';
 import { DynamicMenuPage } from '../pages/dynamic-menu/dynamic-menu';
 import { TreeView } from '../components/tree-view/tree-view';
+import { DynamicTreePage } from '../pages/dynamic-tree/dynamic-tree';
 
 @NgModule({
   declarations: [
@@ -54,6 +55,7 @@ import { TreeView } from '../components/tree-view/tree-view';
     DynamicFormMobilePage,
     DynamicRangePage,
     DynamicMenuPage,
+    DynamicTreePage,
     DynamicListPage,
     DynamicCardSocialPage,
     DynamicMediasPage,
@@ -81,6 +83,7 @@ import { TreeView } from '../components/tree-view/tree-view';
     DynamicFormMobilePage,
     DynamicRangePage,
     DynamicMenuPage,
+    DynamicTreePage,
     DynamicListPage,
     DynamicCardSocialPage,
     DynamicMediasPage,
