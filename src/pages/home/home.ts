@@ -44,7 +44,7 @@ export class HomePage {
 
         setTimeout(() => {
           this.callForward();
-        }, 5000); //5 giay sau cho chay qua form moi
+        }, 10000); //5 giay sau cho chay qua form moi
 
       })
       .catch(err => {
@@ -112,7 +112,7 @@ export class HomePage {
         //chay web
         this.navCtrl.setRoot(TabsPage);
       }
-    }, 1000);
+    }, 5000);
 
   }
 

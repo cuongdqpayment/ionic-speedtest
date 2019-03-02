@@ -256,7 +256,7 @@ export class ApiMapService {
             this.countNoLoc++; //so lan sai so tang len 1
             if (old.result&&old.result.next_point) next_point = {lat:old.result.next_point.lat, lng:old.result.next_point.lng, angle: old.result.next_point.angle}; //diem cu
             //diem gia lap ke tiep neu vi tri sai so qua nhieu
-            if (this.countNoLoc<5)next_point=this.nextPoint(next_point.lat,next_point.lng,next_speed*dtime_tracking/60/60,old.result.next_point.angle);
+            if (old.result&&old.result.next_point&&old.result.next_point.angle&&this.countNoLoc<5)next_point=this.nextPoint(next_point.lat,next_point.lng,next_speed*dtime_tracking/60/60,old.result.next_point.angle);
         }
 
         return {

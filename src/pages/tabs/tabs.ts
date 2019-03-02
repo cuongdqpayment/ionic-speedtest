@@ -1,11 +1,10 @@
 import { Component } from '@angular/core';
-import { NavController, ModalController, Platform, AlertController, LoadingController } from 'ionic-angular';
+import { ModalController, Platform, AlertController } from 'ionic-angular';
 import { DynamicFormWebPage } from '../dynamic-form-web/dynamic-form-web';
-import { ApiResourceService } from '../../services/apiResourceServices';
 import { DynamicFormMobilePage } from '../dynamic-form-mobile/dynamic-form-mobile';
-import { LoginPage } from '../login/login';
 import { SpeedTestPage } from '../speed-test/speed-test';
 import { GoogleMapPage } from '../google-map/google-map';
+import { DynamicMenuPage } from '../dynamic-menu/dynamic-menu';
 
 @Component({
   templateUrl: 'tabs.html'
@@ -16,7 +15,7 @@ export class TabsPage {
     {
       root: SpeedTestPage,
       title: 'SpeedTest',
-      icon: 'home'
+      icon: 'speedometer'
     },
     {
       root: GoogleMapPage,
@@ -24,54 +23,16 @@ export class TabsPage {
       icon: 'globe'
     },
     {
-      root: LoginPage,
-      title: 'Login',
-      icon: 'log-in'
+      root: DynamicMenuPage,
+      title: 'Home',
+      icon: 'home'
     }
-    /* ,
-    {
-      root: DynamicFormWebPage,
-      title: 'Form web',
-      icon: 'desktop'
-    },
-    {
-      root: DynamicFormMobilePage,
-      title: 'Form mobile',
-      icon: 'phone-portrait'
-    },
-    {
-      root: DynamicMediasPage,
-      title: 'Images',
-      icon: 'images'
-    },
-    {
-      root: DynamicCardSocialPage,
-      title: 'Social',
-      icon: 'share'
-    },
-    {
-      root: DynamicListPage,
-      title: 'List Options',
-      icon: 'paper'
-    },
-    {
-      root: DynamicListOrderPage,
-      title: 'List Order',
-      icon: 'reorder'
-    },
-    {
-      root: SignaturePage,
-      title: 'Signature',
-      icon: 'create'
-    } */
   ];
 
-  constructor(private navCtrl: NavController
-            , private modalCtrl: ModalController
+  constructor(
+              private modalCtrl: ModalController
             , private platform: Platform
             , private alertCtrl: AlertController
-            , private loadingCtrl: LoadingController
-            , private resource: ApiResourceService
   ) {
     //console.log('1. constructor tabs')
   }

@@ -3,13 +3,13 @@
     <ion-grid no-padding>
         <ion-row>
             <ion-col col-1 style="margin:auto;text-align:center">
-                <ion-icon item-start *ngIf="item.subs?.length" (click)="toggleChildren(item)" [style.color]="item.visible?'darkgoldenrod':'darkblue'" name="{{item.visible?'remove-circle':'add-circle'}}" tappable></ion-icon>
-                <ion-icon item-start *ngIf="!item.subs?.length" style="color:green" name="{{item.icon}}"></ion-icon>
+                <ion-icon item-start *ngIf="item.subs?.length" (click)="toggleChildren(item)" style="font-size: 1.5em" [style.color]="item.visible?'darkgoldenrod':'darkblue'" name="{{item.visible?'remove-circle':'add-circle'}}" tappable></ion-icon>
+                <ion-icon item-start *ngIf="!item.subs?.length" style="font-size: 2em; color: green" name="{{item.icon}}"></ion-icon>
             </ion-col>
             <ion-col>
                 <ion-item class="tree-input-item" [attr.tappable]="item.click" (click)="onClickItem(item, idx, treeData)">
                     <ion-avatar item-start *ngIf="item.details?.avatar" tappable (click)="onClickMore(item, idx, treeData)"><img [src]="item.details?.avatar"></ion-avatar>
-                    <ion-label text-wrap style="text-align: justify;" [style.font-size]="item.size?item.size:'1em'">{{item.name}}</ion-label>
+                    <ion-label text-wrap [style.font-size]="item.size?item.size:'1em'">{{item.name}}</ion-label>
                     <ion-icon item-end *ngIf="item.details" name="more" tappable (click)="onClickMore(item, idx, treeData)"></ion-icon>
                     <ion-icon item-end *ngIf="item.subs?.length" [style.color]="item.visible?'darkgoldenrod':'darkblue'" name="{{item.visible?'ios-arrow-up':'ios-arrow-down'}}" tappable (click)="onClickExpand(item, idx, treeData)"></ion-icon>
                 </ion-item>

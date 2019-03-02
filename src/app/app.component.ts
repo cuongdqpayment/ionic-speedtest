@@ -1,22 +1,39 @@
-import { Component } from '@angular/core';
-import { Platform } from 'ionic-angular';
+import { Component, ViewChild } from '@angular/core';
+import { Platform, Nav, MenuController } from 'ionic-angular';
 import { StatusBar } from '@ionic-native/status-bar';
 import { SplashScreen } from '@ionic-native/splash-screen';
-import { HomePage } from '../pages/home/home';
-import { GoogleMapPage } from '../pages/google-map/google-map';
-import { DynamicRangePage } from '../pages/dynamic-range/dynamic-range';
 import { DynamicMenuPage } from '../pages/dynamic-menu/dynamic-menu';
+import { DynamicFormMobilePage } from '../pages/dynamic-form-mobile/dynamic-form-mobile';
+import { DynamicFormWebPage } from '../pages/dynamic-form-web/dynamic-form-web';
+import { DynamicRangePage } from '../pages/dynamic-range/dynamic-range';
+import { DynamicListPage } from '../pages/dynamic-list/dynamic-list';
+import { DynamicListOrderPage } from '../pages/dynamic-list-order/dynamic-list-order';
 import { DynamicTreePage } from '../pages/dynamic-tree/dynamic-tree';
+import { DynamicMediasPage } from '../pages/dynamic-medias/dynamic-medias';
+import { DynamicCardSocialPage } from '../pages/dynamic-card-social/dynamic-card-social';
+import { GoogleMapPage } from '../pages/google-map/google-map';
+import { LoginPage } from '../pages/login/login';
+import { SpeedTestPage } from '../pages/speed-test/speed-test';
+import { TabsPage } from '../pages/tabs/tabs';
+import { SignaturePage } from '../pages/signature/signature';
+import { HomePage } from '../pages/home/home';
 @Component({
   templateUrl: 'app.html'
 })
 export class MyApp {
+  @ViewChild(Nav) navCtrl: Nav;
+
   rootPage:any = DynamicMenuPage;
   
   treeMenu:any;
   callbackTreeMenu:any;
 
-  constructor(platform: Platform, statusBar: StatusBar, splashScreen: SplashScreen) {
+  constructor(
+    private menuCtrl: MenuController,
+    platform: Platform, 
+    statusBar: StatusBar, 
+    splashScreen: SplashScreen
+    ) {
     platform.ready().then(() => {
       statusBar.styleDefault();
       splashScreen.hide();
@@ -24,63 +41,143 @@ export class MyApp {
   }
 
   ngOnInit() {
-
+    
     this.callbackTreeMenu = this.callbackTree;
 
     this.treeMenu = [
         {
-          name: "1. Xem menu",
+          name: "1. Trang chủ",
           size: "1.3em",
+          click: true,
+          next: this.rootPage,
+
+          icon: "home"
+        },
+        {
+          name: "2. Các mẫu reponsive",
+          size: "1.5em",
           subs: [
             {
-              name: "1.1 Chi 1 của nhánh 1",
-              subs: [{
-                name: "1.1.1 Nhóm 1 của chi 1 nhánh 1",
-                click: true, //khai ở lá cây, click trên item, gọi hàm như click more
-              }]
-            },
-            {
-              name: "1.2 chi 2 của nhánh 1",
-              click: true, //khai ở lá cây, click trên item, gọi hàm như click more
+              name: "2.1 Các nhập liệu",
+              size: "1.3em",
+              subs: [
+              {
+                name: "2.1.1 Mẫu nhập liệu toàn màn hình dành cho di động",
+                click: true,
+                next: DynamicFormMobilePage,
+                icon: "phone-portrait"
+              }
+              ,
+              {
+                name: "2.1.2 Nhập liệu và hiển thị cho desktop & di động",
+                click: true,
+                next: DynamicFormWebPage,
+                icon: "desktop"
+              }
+              ,
+              {
+                name: "2.1.3 Mẫu nhập chọn & kéo",
+                click: true,
+                next: DynamicRangePage,
+                icon: "radio-button-on"
+              }
+            ]
             }
+            ,
+            {
+              name: "2.2 Các mẫu hiển thị danh sách",
+              size: "1.3em",
+              subs: [
+              {
+                name: "2.2.1 Mẫu danh sách quẹt nút click",
+                click: true,
+                next: DynamicListPage,
+                icon: "paper"
+              }
+              ,
+              {
+                name: "2.2.2 Mẫu danh sách bảng, liệt kê & sắp xếp lại",
+                click: true,
+                next: DynamicListOrderPage,
+                icon: "reorder"
+              }
+              ,
+              {
+                name: "2.2.3 Mẫu danh sách theo cây FamilyTree",
+                click: true,
+                next: DynamicTreePage,
+                icon: "menu"
+              }
+            ]
+            }
+            ,
+            {
+              name: "2.3 Các mẫu xử lý hình ảnh và file",
+              size: "1.3em",
+              subs: [
+              {
+                name: "2.3.1 Mẫu upload ảnh theo facebook",
+                click: true,
+                next: DynamicMediasPage,
+                icon: "images"
+              }
+              ,
+              {
+                name: "2.3.2 Mẫu hiển thị ảnh và tương tác mạng xã hội",
+                click: true,
+                next: DynamicCardSocialPage,
+                icon: "logo-facebook"
+              }
+              ,
+              {
+                name: "2.3.3 Mẫu vẽ tay lên màn hình trên nền di động",
+                click: true,
+                next: SignaturePage,
+                icon: "create"
+              }
+            ]
+            }        
           ]
         }
         ,
         {
-          name: "2. Nhánh 2",
+          name: "3. Kiểm tra tốc độ speedtest",
           size: "1.3em",
-          subs: [
-            {
-              name: "2.1 Chi 1 của nhánh 2",
-              subs: [{
-                name: "2.1.1 Nhóm 1 chi 1 nhánh 2",
-                click: true, //khai ở lá cây, click trên item, gọi hàm như click more
-                icon: "leaf"
-              }]
-            },
-            {
-              name: "2.2 Chi 2 Sáng nay (2/3), sau khi vào lăng viếng Chủ tịch Hồ Chí Minh, Chủ tịch Triều Tiên Kim Jong-un kết thúc chuyến thăm hữu nghị chính thức Việt Nam. Trên đường di chuyển rời Hà Nội, ông Kim Jong-un đã hạ kính xe vẫy tay chào người dân. Ông Kim tới ga Đồng Đăng (Lạng Sơn) để trở về nước bằng tàu hỏa. ",
-              click: true, //khai ở lá cây, click trên item, gọi hàm như click more
-              icon: "plane"
-            }
-            ,
-            {
-              name: "2.3 Chi 3 của nhánh 2",
-              subs: [{
-                name: "2.3.1 Nhóm 1 chi 3 nhánh 2",
-                click: true, //khai ở lá cây, click trên item, gọi hàm như click more
-                icon: "leaf"
-              }]
-            },
-            {
-              name: "2.4 Chi 4 của nhánh 2",
-              subs: [{
-                name: "2.4.1 Nhóm 4 chi 1 nhánh 2",
-                click: true, //khai ở lá cây, click trên item, gọi hàm như click more
-                icon: "leaf"
-              }]
-            }
-          ]
+          click: true,
+          next: SpeedTestPage,
+          icon: "speedometer"
+        }
+        ,
+        {
+          name: "4. Bản đồ dẫn đường",
+          size: "1.3em",
+          click: true,
+          next: GoogleMapPage,
+          icon: "globe"
+        }
+        ,
+        {
+          name: "5. Login",
+          size: "1.3em",
+          click: true,
+          next: LoginPage,
+          icon: "log-in"
+        }
+        ,
+        {
+          name: "6. Tabs Hiển thị động",
+          size: "1.3em",
+          click: true,
+          next: TabsPage,
+          icon: "logo-buffer"
+        }
+        ,
+        {
+          name: "7. Khởi tạo sqlite trên thiết bị di động",
+          size: "1.3em",
+          click: true,
+          next: HomePage,
+          icon: "cloud"
         }
       ]
   }
@@ -93,7 +190,11 @@ export class MyApp {
     }
 
     if (isMore){
-      console.log(item);
+      //console.log(item);
+      if (item.next) {
+        this.navCtrl.push(item.next);
+        this.menuCtrl.close();
+      }
     }
 
   }.bind(this)
