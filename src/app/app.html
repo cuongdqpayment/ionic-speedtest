@@ -11,10 +11,11 @@
                     </ion-col>
                 </ion-row>
 
+                <ion-title end *ngIf="!userInfo">Login...</ion-title>
                 <ion-buttons start *ngIf="!userInfo">
                     <button class="badge-background" ion-button icon-only color="primary" (click)="onClickLogin()">
                         <ion-icon name="log-in"></ion-icon>
-                        <ion-badge class="badge-alert" color="danger">10</ion-badge>
+                        <!-- <ion-badge class="badge-alert" color="danger">10</ion-badge> -->
                     </button>
                 </ion-buttons>
 

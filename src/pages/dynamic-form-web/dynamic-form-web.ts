@@ -261,16 +261,15 @@ export class DynamicFormWebPage {
       } else if (btn.next == 'RESET') {
         this.resetForm();
       } else if (btn.next == 'CLOSE') {
-        try{this.viewCtrl.dismiss(btn.next_data)}catch(e){}
+        if (this.parent) this.viewCtrl.dismiss(btn.next_data)
       } else if (btn.next == 'BACK') {
-        try{this.navCtrl.pop()}catch(e){}
-        //if (this.navCtrl.length() > 1) this.navCtrl.pop();      //goback 1 step
+        if (this.parent) this.navCtrl.pop()
       } else if (btn.next == 'CALLBACK') {
         if (this.callback) {
-          this.callback(btn.next_data,this.parent)
+          this.callback(btn.next_data)
             .then(nextStep => this.next(nextStep));
         } else {
-          try{this.navCtrl.pop()}catch(e){}
+          if (this.parent) this.navCtrl.pop()
         }
       } else if (btn.next == 'NEXT' && btn.next_data && btn.next_data.data) {
         btn.next_data.callback = this.callback; //gan lai cac function object

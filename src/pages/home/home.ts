@@ -34,7 +34,7 @@ export class HomePage {
     //lay tu server ve form, version phan mem phuc vu
     this.apiPublic.getMyDevice()
       .then(data => {
-        //chay o che do online
+        
         if (data.ip_info) try { data.ip_info = JSON.parse(data.ip_info); } catch (e) { }
         this.app.device_details = [];
         this.app.device_details.push({ name: "Your device:", value: data.device });
@@ -44,14 +44,14 @@ export class HomePage {
 
         setTimeout(() => {
           this.callForward();
-        }, 10000); //5 giay sau cho chay qua form moi
+        }, 5000); //5 giay sau cho chay qua form moi
 
       })
       .catch(err => {
         //chay o che do offline
         setTimeout(() => {
           this.callForward();
-        }, 3000); //5 giay sau cho chay qua form moi
+        }, 1000); //5 giay sau cho chay qua form moi
       })
 
   }

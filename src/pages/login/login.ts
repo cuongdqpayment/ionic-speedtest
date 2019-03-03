@@ -1,11 +1,12 @@
 import { Component } from '@angular/core';
-import { NavController, ModalController, Platform, LoadingController, AlertController } from 'ionic-angular';
+import { NavController, ModalController, Platform, LoadingController, AlertController, Events } from 'ionic-angular';
 
 import { DynamicFormMobilePage } from '../dynamic-form-mobile/dynamic-form-mobile';
 import { ApiHttpPublicService } from '../../services/apiHttpPublicServices';
 import { DynamicFormWebPage } from '../dynamic-form-web/dynamic-form-web';
 import { ApiStorageService } from '../../services/apiStorageService';
 import { ApiAuthService } from '../../services/apiAuthService';
+import { ApiResourceService } from '../../services/apiResourceServices';
 
 @Component({
   selector: 'page-login',
@@ -18,6 +19,8 @@ export class LoginPage {
     , private pubService: ApiHttpPublicService
     , private auth: ApiAuthService
     , private apiStorageService: ApiStorageService
+    , private resources: ApiResourceService //goi trong callback
+    , private events: Events    //goi trong callback
     , private platform: Platform
     , private modalCtrl: ModalController
     , private loadingCtrl: LoadingController
@@ -145,11 +148,12 @@ export class LoginPage {
   }
 
   callbackUserInfo = function (res?: { step?: string, button?: any, data?: any, error?: any }) {
-    console.log('Gọi cái gì đây',res);
+    //console.log('Goi logout',res);
     return new Promise((resolve, reject) => {
       if (res.button&&res.button.command==="EXIT"){
         this.auth.deleteToken();
         this.ionViewDidLoad_Login();
+        this.events.publish('user-log-out-ok');
       }
       resolve();
     });
@@ -194,7 +198,7 @@ export class LoginPage {
    * @param res 
    */
   callbackFunction = function (res?: { step?: string, data?: any, error?: any }) {
-
+    
     return new Promise((resolve, reject) => {
 
       if (res && res.error && res.error.error) {
@@ -247,6 +251,7 @@ export class LoginPage {
               //da login thanh cong, kiem tra token 
               this.callLoginOk(login.user_info);
               //this.checkTokenLogin();
+              this.events.publish('user-log-in-ok');
 
             } else {
               this.presentAlert('Dữ liệu xác thực không đúng <br>' + JSON.stringify(login))

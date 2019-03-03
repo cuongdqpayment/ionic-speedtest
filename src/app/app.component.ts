@@ -1,5 +1,5 @@
 import { Component, ViewChild } from '@angular/core';
-import { Platform, Nav, MenuController, ModalController } from 'ionic-angular';
+import { Platform, Nav, MenuController, ModalController, Events } from 'ionic-angular';
 import { StatusBar } from '@ionic-native/status-bar';
 import { SplashScreen } from '@ionic-native/splash-screen';
 import { DynamicMenuPage } from '../pages/dynamic-menu/dynamic-menu';
@@ -17,6 +17,8 @@ import { SpeedTestPage } from '../pages/speed-test/speed-test';
 import { TabsPage } from '../pages/tabs/tabs';
 import { SignaturePage } from '../pages/signature/signature';
 import { HomePage } from '../pages/home/home';
+import { ApiStorageService } from '../services/apiStorageService';
+import { ApiAuthService } from '../services/apiAuthService';
 @Component({
   templateUrl: 'app.html'
 })
@@ -29,19 +31,22 @@ export class MyApp {
   callbackTreeMenu:any;
 
 
-  userInfo:any = {
+  userInfo:any; /* = {
     username:'903500888'
     ,name: "Đoàn Quốc Cường"
     ,nickname: "Cuongdq"
     ,url_background:'assets/imgs/img_forest.jpg'
     ,url_image:'http://www.foman.vn/Upload/tin-tuc/cham-soc-khach-hang/Xay-Dung-Hinh-Anh-Ca-Nhan.jpg'
-  }
+  } */
 
   ;
 
   constructor(
-    private menuCtrl: MenuController,
+    private menuCtrl: MenuController, //goi trong callback
     private modalCtrl: ModalController,
+    private apiStorageService: ApiStorageService,
+    private auth: ApiAuthService,
+    private events: Events,
     platform: Platform, 
     statusBar: StatusBar, 
     splashScreen: SplashScreen
@@ -177,21 +182,62 @@ export class MyApp {
         }
         ,
         {
-          name: "6. Tabs Hiển thị động",
-          size: "1.3em",
-          click: true,
-          next: TabsPage,
-          icon: "logo-buffer"
-        }
-        ,
-        {
-          name: "7. Khởi tạo sqlite trên thiết bị di động",
+          name: "6.Home & Tabs speedtest",
           size: "1.3em",
           click: true,
           next: HomePage,
-          icon: "cloud"
+          icon: "logo-buffer"
         }
       ]
+
+      this.ionViewDidLoad_main();
+      
+  }
+
+  ionViewDidLoad_main() {
+    //console.log('3. ionViewDidLoad Home');
+    
+    this.checkTokenLogin();
+    //dang ky dich vu kiem tra user login ok
+    
+    this.events.subscribe('user-log-in-ok', (() => {
+      this.checkTokenLogin();
+      console.log('user-log-in-ok');
+    }));
+    
+    this.events.subscribe('user-log-out-ok', (() => {
+      this.checkTokenLogin();
+      console.log('user-log-out-ok');
+    }));
+
+  }
+
+  checkTokenLogin(){
+
+    if (this.apiStorageService.getToken()) {
+      this.auth.authorize
+        (this.apiStorageService.getToken())
+        .then(status => {
+          this.auth.getServerPublicRSAKey()
+            .then(pk => {
+              this.userInfo = this.auth.getUserInfo();
+              //Tiêm token cho các phiên làm việc lấy số liệu cần xác thực
+              if (this.userInfo) this.auth.injectToken(); 
+              this.userInfo.url_background = this.userInfo.url_background?this.userInfo.url_background:'assets/imgs/img_forest.jpg'
+              this.userInfo.url_image = this.userInfo.url_image?this.userInfo.url_image:'http://www.foman.vn/Upload/tin-tuc/cham-soc-khach-hang/Xay-Dung-Hinh-Anh-Ca-Nhan.jpg'
+            })
+            .catch(err => {
+              throw err;
+            });
+        })
+        .catch(err => {
+          this.auth.deleteToken();
+        });
+    } else {
+      this.userInfo = undefined;
+    }
+
+    
   }
 
   callbackTree = function(item, idx, parent, isMore:boolean){
@@ -213,11 +259,11 @@ export class MyApp {
 
 
   onClickUserAvatar(){
-    this.openModal(LoginPage);
+    this.navCtrl.push(LoginPage);
   }
 
   onClickLogin(){
-    this.openModal(LoginPage);
+    this.navCtrl.push(LoginPage);
   }
 
   onClickHeader(btn){
