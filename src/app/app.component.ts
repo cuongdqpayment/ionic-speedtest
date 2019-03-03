@@ -1,5 +1,5 @@
 import { Component, ViewChild } from '@angular/core';
-import { Platform, Nav, MenuController } from 'ionic-angular';
+import { Platform, Nav, MenuController, ModalController } from 'ionic-angular';
 import { StatusBar } from '@ionic-native/status-bar';
 import { SplashScreen } from '@ionic-native/splash-screen';
 import { DynamicMenuPage } from '../pages/dynamic-menu/dynamic-menu';
@@ -28,8 +28,20 @@ export class MyApp {
   treeMenu:any;
   callbackTreeMenu:any;
 
+
+  userInfo:any = {
+    username:'903500888'
+    ,name: "Đoàn Quốc Cường"
+    ,nickname: "Cuongdq"
+    ,url_background:'assets/imgs/img_forest.jpg'
+    ,url_image:'http://www.foman.vn/Upload/tin-tuc/cham-soc-khach-hang/Xay-Dung-Hinh-Anh-Ca-Nhan.jpg'
+  }
+
+  ;
+
   constructor(
     private menuCtrl: MenuController,
+    private modalCtrl: ModalController,
     platform: Platform, 
     statusBar: StatusBar, 
     splashScreen: SplashScreen
@@ -199,6 +211,15 @@ export class MyApp {
 
   }.bind(this)
 
+
+  onClickUserAvatar(){
+    this.openModal(LoginPage);
+  }
+
+  onClickLogin(){
+    this.openModal(LoginPage);
+  }
+
   onClickHeader(btn){
     if (btn.next==="EXPAND")this.treeMenu.forEach(el=>this.expandCollapseAll(el,true))
     if (btn.next==="COLLAPSE")this.treeMenu.forEach(el=>this.expandCollapseAll(el,false))
@@ -211,6 +232,11 @@ export class MyApp {
         this.expandCollapseAll(el1,isExpand)
       })
     }
+  }
+
+  openModal(form,data?:any) {
+    let modal = this.modalCtrl.create(form, data);
+    modal.present();
   }
 }
 

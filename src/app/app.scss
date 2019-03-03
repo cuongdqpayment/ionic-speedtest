@@ -43,3 +43,93 @@
     border-radius: 0.5em;
     border: solid 0.1em #FFFFFF;
 }
+
+.padding-col{
+    padding: 2px;
+}
+
+.card-background-header {
+    position: relative;
+    text-align: left;
+}
+
+
+@media (min-width:0px){
+    .background-image-header{
+        background-size: cover;
+        min-height: 100px;
+    }
+    .card-background-header .avatar-header {
+        position: absolute;
+        top: 10px;
+        left: 5px;
+        width: 80px;
+        height: 80px;
+        font-weight: bold;
+        color: #fff;
+        border-radius: 50%;
+        border: 5px solid white;
+    }
+    .card-background-header .card-title-header {
+        position: absolute;
+        top: 30%;
+        left: 33%;
+        font-size: 1.5em;
+        width: 67%;
+        font-weight: bold;
+        color: #fff;
+    }
+}
+@media (min-width:420px){
+    .background-image-header{
+        background-size: cover;
+        min-height: 160px;
+    }
+    .card-background-header .avatar-header {
+        position: absolute;
+        top: 30px;
+        left: 5px;
+        width: 100px;
+        height: 100px;
+        font-weight: bold;
+        color: #fff;
+        border-radius: 50%;
+        border: 5px solid white;
+    }
+    .card-background-header .card-title-header {
+        position: absolute;
+        top: 35%;
+        left: 38%;
+        font-size: 1.5em;
+        width: 62%;
+        font-weight: bold;
+        color: #fff;
+    }
+}
+@media (min-width:720px){
+    .background-image-header{
+        background-size: cover;
+        min-height: 200px;
+    }
+    .card-background-header .avatar-header {
+        position: absolute;
+        top: 40px;
+        left: 5px;
+        width: 120px;
+        height: 120px;
+        font-weight: bold;
+        color: #fff;
+        border-radius: 50%;
+        border: 5px solid white;
+        box-shadow: 0 1px 10px whitesmoke;
+    }
+    .card-background-header .card-title-header {
+        position: absolute;
+        top: 30%;
+        left: 130px;
+        font-size: 1.8em;
+        width: 60%;
+        font-weight: bold;
+        color: #fff;
+    }
+}	

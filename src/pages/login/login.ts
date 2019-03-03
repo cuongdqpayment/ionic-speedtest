@@ -4,9 +4,7 @@ import { NavController, ModalController, Platform, LoadingController, AlertContr
 import { DynamicFormMobilePage } from '../dynamic-form-mobile/dynamic-form-mobile';
 import { ApiHttpPublicService } from '../../services/apiHttpPublicServices';
 import { DynamicFormWebPage } from '../dynamic-form-web/dynamic-form-web';
-import { TabsPage } from '../tabs/tabs';
 import { ApiStorageService } from '../../services/apiStorageService';
-import { ApiResourceService } from '../../services/apiResourceServices';
 import { ApiAuthService } from '../../services/apiAuthService';
 
 @Component({
@@ -19,7 +17,6 @@ export class LoginPage {
     private navCtrl: NavController
     , private pubService: ApiHttpPublicService
     , private auth: ApiAuthService
-    , private resources: ApiResourceService
     , private apiStorageService: ApiStorageService
     , private platform: Platform
     , private modalCtrl: ModalController
