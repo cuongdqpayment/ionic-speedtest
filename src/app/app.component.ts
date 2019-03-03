@@ -202,12 +202,12 @@ export class MyApp {
     
     this.events.subscribe('user-log-in-ok', (() => {
       this.checkTokenLogin();
-      console.log('user-log-in-ok');
+      //console.log('user-log-in-ok');
     }));
     
     this.events.subscribe('user-log-out-ok', (() => {
       this.checkTokenLogin();
-      console.log('user-log-out-ok');
+      //console.log('user-log-out-ok');
     }));
 
   }
@@ -260,10 +260,12 @@ export class MyApp {
 
   onClickUserAvatar(){
     this.navCtrl.push(LoginPage);
+    this.menuCtrl.close();
   }
 
   onClickLogin(){
     this.navCtrl.push(LoginPage);
+    this.menuCtrl.close();
   }
 
   onClickHeader(btn){
