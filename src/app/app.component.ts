@@ -14,7 +14,6 @@ import { DynamicCardSocialPage } from '../pages/dynamic-card-social/dynamic-card
 import { GoogleMapPage } from '../pages/google-map/google-map';
 import { LoginPage } from '../pages/login/login';
 import { SpeedTestPage } from '../pages/speed-test/speed-test';
-import { TabsPage } from '../pages/tabs/tabs';
 import { SignaturePage } from '../pages/signature/signature';
 import { HomePage } from '../pages/home/home';
 import { ApiStorageService } from '../services/apiStorageService';
@@ -69,31 +68,40 @@ export class MyApp {
           next: this.rootPage,
 
           icon: "home"
-        },
+        }
+        ,
         {
-          name: "2. Các mẫu reponsive",
-          size: "1.5em",
+          name: "2. Home & Tabs speedtest",
+          size: "1.3em",
+          click: true,
+          next: HomePage,
+          icon: "speedometer"
+        }
+        ,
+        {
+          name: "3. Các mẫu reponsive",
+          size: "1.3em",
           subs: [
             {
-              name: "2.1 Các nhập liệu",
+              name: "3.1 Các nhập liệu",
               size: "1.3em",
               subs: [
               {
-                name: "2.1.1 Mẫu nhập liệu toàn màn hình dành cho di động",
+                name: "3.1.1 Mẫu nhập liệu toàn màn hình dành cho di động",
                 click: true,
                 next: DynamicFormMobilePage,
                 icon: "phone-portrait"
               }
               ,
               {
-                name: "2.1.2 Nhập liệu và hiển thị cho desktop & di động",
+                name: "3.1.2 Nhập liệu và hiển thị cho desktop & di động",
                 click: true,
                 next: DynamicFormWebPage,
                 icon: "desktop"
               }
               ,
               {
-                name: "2.1.3 Mẫu nhập chọn & kéo",
+                name: "3.1.3 Mẫu nhập chọn & kéo",
                 click: true,
                 next: DynamicRangePage,
                 icon: "radio-button-on"
@@ -102,25 +110,25 @@ export class MyApp {
             }
             ,
             {
-              name: "2.2 Các mẫu hiển thị danh sách",
+              name: "3.2 Các mẫu hiển thị danh sách",
               size: "1.3em",
               subs: [
               {
-                name: "2.2.1 Mẫu danh sách quẹt nút click",
+                name: "3.2.1 Mẫu danh sách quẹt nút click",
                 click: true,
                 next: DynamicListPage,
                 icon: "paper"
               }
               ,
               {
-                name: "2.2.2 Mẫu danh sách bảng, liệt kê & sắp xếp lại",
+                name: "3.2.2 Mẫu danh sách bảng, liệt kê & sắp xếp lại",
                 click: true,
                 next: DynamicListOrderPage,
                 icon: "reorder"
               }
               ,
               {
-                name: "2.2.3 Mẫu danh sách theo cây FamilyTree",
+                name: "3.2.3 Mẫu danh sách theo cây FamilyTree",
                 click: true,
                 next: DynamicTreePage,
                 icon: "menu"
@@ -129,25 +137,25 @@ export class MyApp {
             }
             ,
             {
-              name: "2.3 Các mẫu xử lý hình ảnh và file",
+              name: "3.3 Các mẫu xử lý hình ảnh và file",
               size: "1.3em",
               subs: [
               {
-                name: "2.3.1 Mẫu upload ảnh theo facebook",
+                name: "3.3.1 Mẫu upload ảnh theo facebook",
                 click: true,
                 next: DynamicMediasPage,
                 icon: "images"
               }
               ,
               {
-                name: "2.3.2 Mẫu hiển thị ảnh và tương tác mạng xã hội",
+                name: "3.3.2 Mẫu hiển thị ảnh và tương tác mạng xã hội",
                 click: true,
                 next: DynamicCardSocialPage,
                 icon: "logo-facebook"
               }
               ,
               {
-                name: "2.3.3 Mẫu vẽ tay lên màn hình trên nền di động",
+                name: "3.3.3 Mẫu vẽ tay lên màn hình trên nền di động",
                 click: true,
                 next: SignaturePage,
                 icon: "create"
@@ -155,14 +163,6 @@ export class MyApp {
             ]
             }        
           ]
-        }
-        ,
-        {
-          name: "3. Kiểm tra tốc độ speedtest",
-          size: "1.3em",
-          click: true,
-          next: SpeedTestPage,
-          icon: "speedometer"
         }
         ,
         {
@@ -179,14 +179,6 @@ export class MyApp {
           click: true,
           next: LoginPage,
           icon: "log-in"
-        }
-        ,
-        {
-          name: "6.Home & Tabs speedtest",
-          size: "1.3em",
-          click: true,
-          next: HomePage,
-          icon: "logo-buffer"
         }
       ]
 

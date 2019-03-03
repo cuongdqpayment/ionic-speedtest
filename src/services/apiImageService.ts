@@ -12,10 +12,8 @@ const orientation_standard = {
 @Injectable()
 export class ApiImageService {
 
-
-
     constructor() { }
-    
+        
     //dua vao doi tuong file image
     //tra ve doi tuong file image co kich co nho hon
     resizeImage(filename: string, file: any, newSize: number) {
@@ -136,4 +134,5 @@ export class ApiImageService {
 
         });
     }
+
 }

@@ -24,6 +24,7 @@ export class DynamicCardSocialPage {
         , {color:"royal", icon:"cog", next:"SETTINGS"}
       ]
     , items: [
+      //1.
       {   short_detail:{
               avatar: "assets/imgs/ca_nau.jpg"
               ,h1:"Cuong.dq"
@@ -111,10 +112,9 @@ export class DynamicCardSocialPage {
               ,comment: {name:"COMMENT", color:"primary", icon: "chatbubbles", next:"COMMENT"}
               ,share: {name:"SHARE", color:"primary", icon: "share-alt", next:"SHARE"}
           }
-
       }
+      //2.
       , { short_details:{
-
           }
           ,medias: [
               {image:"assets/imgs/img_forest.jpg",title:"1 Ảnh",subtitle:"Tác giả Đoàn Quốc Cường"}
@@ -138,6 +138,7 @@ export class DynamicCardSocialPage {
               ,share: {name:"Chia sẻ", color:"primary", icon: "share-alt", next:"SHARE"}
           }
       }
+      //3.
       , { short_details:{
 
           }
@@ -162,6 +163,7 @@ export class DynamicCardSocialPage {
               ,share: {name:"Chia sẻ", color:"primary", icon: "share-alt", next:"SHARE"}
           }
       }
+      //4.
       , { short_details:{
 
           }
@@ -182,6 +184,7 @@ export class DynamicCardSocialPage {
               ,share: {name:"Chia sẻ", color:"primary", icon: "share-alt", next:"SHARE"}
           }
       }
+      //5.
       , { short_details:{
 
           }

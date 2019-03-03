@@ -6,7 +6,7 @@ import { ApiHttpPublicService } from '../../services/apiHttpPublicServices';
 import { DynamicFormWebPage } from '../dynamic-form-web/dynamic-form-web';
 import { ApiStorageService } from '../../services/apiStorageService';
 import { ApiAuthService } from '../../services/apiAuthService';
-import { ApiResourceService } from '../../services/apiResourceServices';
+import { ApiMediaService } from '../../services/apiMediaService';
 
 @Component({
   selector: 'page-login',
@@ -19,7 +19,7 @@ export class LoginPage {
     , private pubService: ApiHttpPublicService
     , private auth: ApiAuthService
     , private apiStorageService: ApiStorageService
-    , private resources: ApiResourceService //goi trong callback
+    , private apiMedia: ApiMediaService //goi trong callback
     , private events: Events    //goi trong callback
     , private platform: Platform
     , private modalCtrl: ModalController
@@ -240,7 +240,7 @@ export class LoginPage {
         });
         loading.present();
 
-        this.resources.authorizeFromResource(res.data.token)
+        this.apiMedia.authorizeFromResource(res.data.token)
           .then(login => {
             //console.log('data', login);
             if (login.status
