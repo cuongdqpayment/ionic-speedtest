@@ -245,7 +245,9 @@ export class ApiAuthService {
             .toPromise()
             .then(data => {
                 this.userToken={token:token};
-                return true; 
+                let rtn:any;
+                    rtn = data;
+                    return rtn; 
             })
     }
 
@@ -258,7 +260,9 @@ export class ApiAuthService {
             }))
             .toPromise()
             .then(data => {
-                return data;
+                let rtn:any;
+                    rtn = data;
+                    return rtn;
             });
     }
 
@@ -271,7 +275,9 @@ export class ApiAuthService {
         return this.httpClient.post(this.authenticationServer + '/request-isdn', jsonString)
              .toPromise()
              .then(data => {
-                 return data;
+                let rtn:any;
+                rtn = data;
+                return rtn;
              });
      }
 

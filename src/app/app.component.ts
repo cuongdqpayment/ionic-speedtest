@@ -87,14 +87,20 @@ export class MyApp {
     if (this.apiStorageService.getToken()) {
       this.auth.authorize
         (this.apiStorageService.getToken())
-        .then(status => {
+        .then(data => {
+          
+          console.log(data);
+
           this.auth.getServerPublicRSAKey()
             .then(pk => {
-              this.userInfo = this.auth.getUserInfo();
+              
+              this.userInfo = data.user_info;
               //Tiêm token cho các phiên làm việc lấy số liệu cần xác thực
               if (this.userInfo) this.auth.injectToken(); 
-              this.userInfo.url_background = this.userInfo.url_background?this.userInfo.url_background:'assets/imgs/img_forest.jpg'
-              this.userInfo.url_image = this.userInfo.url_image?this.userInfo.url_image:'http://www.foman.vn/Upload/tin-tuc/cham-soc-khach-hang/Xay-Dung-Hinh-Anh-Ca-Nhan.jpg'
+              
+              this.userInfo.data.background = this.userInfo.data.background?this.userInfo.data.background:'assets/imgs/img_forest.jpg'
+              this.userInfo.data.image = this.userInfo.data.image?this.userInfo.data.image:'http://www.foman.vn/Upload/tin-tuc/cham-soc-khach-hang/Xay-Dung-Hinh-Anh-Ca-Nhan.jpg'
+              
               this.resetTreeMenu();
             })
             .catch(err => {

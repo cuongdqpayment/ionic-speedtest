@@ -7,6 +7,7 @@ import { DynamicFormWebPage } from '../dynamic-form-web/dynamic-form-web';
 import { ApiStorageService } from '../../services/apiStorageService';
 import { ApiAuthService } from '../../services/apiAuthService';
 import { ApiMediaService } from '../../services/apiMediaService';
+import { HomeMenuPage } from '../home-menu/home-menu';
 
 @Component({
   selector: 'page-login',
@@ -46,17 +47,29 @@ export class LoginPage {
 
       this.auth.authorize
         (this.apiStorageService.getToken())
-        .then(status => {
-          loading.dismiss();
-          this.auth.getServerPublicRSAKey()
+        .then(data => {
+          
+          if (data.user_info){
+            this.auth.getServerPublicRSAKey()
             .then(pk => {
               let userInfo = this.auth.getUserInfo();
               if (userInfo) this.auth.injectToken(); //Tiêm token cho các phiên làm việc lấy số liệu cần xác thực
-              this.callLoginOk(userInfo);
+              
+              this.callLoginOk(data.user_info);
+  
+              loading.dismiss();
             })
             .catch(err => {
+              loading.dismiss();
               throw err;
             });
+          }else{
+            console.log('no User Info',data);
+            loading.dismiss();
+            throw "no data.user_info";
+          }
+
+
         })
         .catch(err => {
           loading.dismiss();
@@ -72,11 +85,13 @@ export class LoginPage {
 
 
   callLoginOk(userInfo) {
+    
     //console.log(userInfo);
     //truy van thong tin may chu lay userInfo khong phai user don dieu nhu nay
     //co dia chi, email, nickname,...
 
     this.userInfo = userInfo;
+
     let data = {
       title: "Đã Login"
       , items: [
@@ -89,23 +104,23 @@ export class LoginPage {
             },
             {
               name: "Họ và tên(*)",
-              value: userInfo.full_name
+              value: userInfo.data?userInfo.data.fullname:""
             },
             {
               name: "Nickname(*)",
-              value: userInfo.nickname
+              value: userInfo.data?userInfo.data.nickname:""
             },
             {
               name: "Địa chỉ(*)",
-              value: userInfo.address
+              value: userInfo.data?userInfo.data.address:""
             },
             {
               name: "Điện thoại(*)",
-              value: userInfo.phone
+              value: userInfo.data?userInfo.data.phone:""
             },
             {
               name: "Email(*)",
-              value: userInfo.email
+              value: userInfo.data?userInfo.data.email:""
             },
             {
               name: "Địa chỉ ip",
@@ -145,10 +160,12 @@ export class LoginPage {
         , options: [
           { name: "Sửa (*)", command:"EDIT" , next: "CALLBACK"}
           ,{ name: "Logout", command:"EXIT" , next: "CALLBACK"}
+          ,{ name: "Quay về", command:"HOME" , next: "CALLBACK"}
         ]
       }
       ]
     }
+    
     this.navCtrl.setRoot(DynamicFormWebPage
       , {
         parent: this, //bind this for call
@@ -167,11 +184,11 @@ export class LoginPage {
         title: "Sửa thông tin cá nhân"
         , items: [
            {          name: "THÔNG TIN CHO USER " + this.userInfo.username, type: "title"}
-          , { key: "nickname", name: "Tên thường gọi", type: "text", input_type: "text", icon: "heart", value: this.userInfo.nickname}
-          , { key: "name", name: "Họ và tên", type: "text", input_type: "text", icon: "person", value: this.userInfo.name}
-          , { key: "address", name: "Địa chỉ", type: "text", input_type: "text", icon: "pin", value: this.userInfo.address}
-          , { key: "phone", name: "Điện thoại", hint: "Yêu cầu định dạng số điện thoại nhé", type: "text", input_type: "tel", icon: "call", validators: [{ pattern: "^[0-9]*$" }], value: this.userInfo.phone?this.userInfo.phone:this.userInfo.username}
-          , { key: "email", name: "email", hint: "Yêu cầu định dạng email nhé", type: "text", input_type: "email", icon: "mail", validators: [{ pattern: "^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$" }], value: this.userInfo.email}
+          , { key: "nickname", name: "Tên thường gọi", type: "text", input_type: "text", icon: "heart", value: this.userInfo.data?this.userInfo.data.nickname:""}
+          , { key: "name", name: "Họ và tên", type: "text", input_type: "text", icon: "person", value: this.userInfo.data?this.userInfo.data.fullname:""}
+          , { key: "address", name: "Địa chỉ", type: "text", input_type: "text", icon: "pin", value: this.userInfo.data?this.userInfo.data.address:""}
+          , { key: "phone", name: "Điện thoại", hint: "Yêu cầu định dạng số điện thoại nhé", type: "text", input_type: "tel", icon: "call", validators: [{ pattern: "^[0-9]*$" }], value: this.userInfo.data&&this.userInfo.data.phone?this.userInfo.data.phone:this.userInfo.username}
+          , { key: "email", name: "email", hint: "Yêu cầu định dạng email nhé", type: "text", input_type: "email", icon: "mail", validators: [{ pattern: "^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$" }], value: this.userInfo.data?this.userInfo.data.email:""}
           , { 
             type: "button"
           , options: [
@@ -205,9 +222,17 @@ export class LoginPage {
       if (res.button&&res.button.command==="EDIT"){
         this.callEditForm();
       }
+
+      if (res.button&&res.button.command==="HOME"){
+        this.navCtrl.setRoot(HomeMenuPage);
+      }
       
       if (res.button&&res.button.command==="UPDATE"){
-        console.log(res); //neu co url callback khong gui btn
+        //console.log(res); //neu co url callback khong gui btn
+        if (res.data&&res.data.status){
+          this.events.publish('user-log-in-ok'); //bao hieu refresh userInfo
+          this.navCtrl.setRoot(HomeMenuPage);
+        }
       }
 
       resolve();
@@ -338,7 +363,7 @@ export class LoginPage {
   }
 
   presentAlert(msg) {
-    let alert = this.alertCtrl.create({
+    this.alertCtrl.create({
       title: 'For Administrator',
       subTitle: msg,
       buttons: ['Dismiss']
