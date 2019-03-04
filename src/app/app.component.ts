@@ -2,7 +2,6 @@ import { Component, ViewChild } from '@angular/core';
 import { Platform, Nav, MenuController, ModalController, Events } from 'ionic-angular';
 import { StatusBar } from '@ionic-native/status-bar';
 import { SplashScreen } from '@ionic-native/splash-screen';
-import { DynamicMenuPage } from '../pages/dynamic-menu/dynamic-menu';
 import { DynamicFormMobilePage } from '../pages/dynamic-form-mobile/dynamic-form-mobile';
 import { DynamicFormWebPage } from '../pages/dynamic-form-web/dynamic-form-web';
 import { DynamicRangePage } from '../pages/dynamic-range/dynamic-range';
@@ -13,18 +12,19 @@ import { DynamicMediasPage } from '../pages/dynamic-medias/dynamic-medias';
 import { DynamicCardSocialPage } from '../pages/dynamic-card-social/dynamic-card-social';
 import { GoogleMapPage } from '../pages/google-map/google-map';
 import { LoginPage } from '../pages/login/login';
-import { SpeedTestPage } from '../pages/speed-test/speed-test';
 import { SignaturePage } from '../pages/signature/signature';
-import { HomePage } from '../pages/home/home';
 import { ApiStorageService } from '../services/apiStorageService';
 import { ApiAuthService } from '../services/apiAuthService';
+import { HomeMenuPage } from '../pages/home-menu/home-menu';
+import { HomeSpeedtestPage } from '../pages/home-speedtest/home-speedtest';
+
 @Component({
   templateUrl: 'app.html'
 })
 export class MyApp {
   @ViewChild(Nav) navCtrl: Nav;
 
-  rootPage:any = DynamicMenuPage;
+  rootPage:any = HomeMenuPage;
   
   treeMenu:any;
   callbackTreeMenu:any;
@@ -60,13 +60,71 @@ export class MyApp {
     
     this.callbackTreeMenu = this.callbackTree;
 
-    this.treeMenu = [
+    this.ionViewDidLoad_main();
+      
+  }
+
+  ionViewDidLoad_main() {
+    //console.log('3. ionViewDidLoad Home');
+    
+    this.checkTokenLogin();
+    //dang ky dich vu kiem tra user login ok
+    
+    this.events.subscribe('user-log-in-ok', (() => {
+      this.checkTokenLogin();
+      //console.log('user-log-in-ok');
+    }));
+    
+    this.events.subscribe('user-log-out-ok', (() => {
+      this.checkTokenLogin();
+      //console.log('user-log-out-ok');
+    }));
+
+  }
+
+  checkTokenLogin(){
+
+    if (this.apiStorageService.getToken()) {
+      this.auth.authorize
+        (this.apiStorageService.getToken())
+        .then(status => {
+          this.auth.getServerPublicRSAKey()
+            .then(pk => {
+              this.userInfo = this.auth.getUserInfo();
+              //Tiêm token cho các phiên làm việc lấy số liệu cần xác thực
+              if (this.userInfo) this.auth.injectToken(); 
+              this.userInfo.url_background = this.userInfo.url_background?this.userInfo.url_background:'assets/imgs/img_forest.jpg'
+              this.userInfo.url_image = this.userInfo.url_image?this.userInfo.url_image:'http://www.foman.vn/Upload/tin-tuc/cham-soc-khach-hang/Xay-Dung-Hinh-Anh-Ca-Nhan.jpg'
+              this.resetTreeMenu();
+            })
+            .catch(err => {
+              this.resetTreeMenu();
+              throw err;
+            });
+        })
+        .catch(err => {
+          this.auth.deleteToken();
+          this.resetTreeMenu();
+        });
+    } else {
+      this.userInfo = undefined;
+      this.resetTreeMenu();
+    }
+    
+  }
+
+  resetTreeMenu(){
+
+    //tuy thuoc vao tung user se co menu khac nhau
+
+    if (this.userInfo&&(this.userInfo.username==='903500888'||this.userInfo.username==='702418821')){
+      this.treeMenu = [
         {
           name: "1. Trang chủ",
           size: "1.3em",
           click: true,
           next: this.rootPage,
-
+  
           icon: "home"
         }
         ,
@@ -74,7 +132,7 @@ export class MyApp {
           name: "2. Home & Tabs speedtest",
           size: "1.3em",
           click: true,
-          next: HomePage,
+          next: HomeSpeedtestPage,
           icon: "speedometer"
         }
         ,
@@ -181,56 +239,37 @@ export class MyApp {
           icon: "log-in"
         }
       ]
-
-      this.ionViewDidLoad_main();
-      
-  }
-
-  ionViewDidLoad_main() {
-    //console.log('3. ionViewDidLoad Home');
-    
-    this.checkTokenLogin();
-    //dang ky dich vu kiem tra user login ok
-    
-    this.events.subscribe('user-log-in-ok', (() => {
-      this.checkTokenLogin();
-      //console.log('user-log-in-ok');
-    }));
-    
-    this.events.subscribe('user-log-out-ok', (() => {
-      this.checkTokenLogin();
-      //console.log('user-log-out-ok');
-    }));
-
-  }
-
-  checkTokenLogin(){
-
-    if (this.apiStorageService.getToken()) {
-      this.auth.authorize
-        (this.apiStorageService.getToken())
-        .then(status => {
-          this.auth.getServerPublicRSAKey()
-            .then(pk => {
-              this.userInfo = this.auth.getUserInfo();
-              //Tiêm token cho các phiên làm việc lấy số liệu cần xác thực
-              if (this.userInfo) this.auth.injectToken(); 
-              this.userInfo.url_background = this.userInfo.url_background?this.userInfo.url_background:'assets/imgs/img_forest.jpg'
-              this.userInfo.url_image = this.userInfo.url_image?this.userInfo.url_image:'http://www.foman.vn/Upload/tin-tuc/cham-soc-khach-hang/Xay-Dung-Hinh-Anh-Ca-Nhan.jpg'
-            })
-            .catch(err => {
-              throw err;
-            });
-        })
-        .catch(err => {
-          this.auth.deleteToken();
-        });
-    } else {
-      this.userInfo = undefined;
+    }else{
+      this.treeMenu = [
+        {
+          name: "1. Trang chủ",
+          size: "1.3em",
+          click: true,
+          next: this.rootPage,
+  
+          icon: "home"
+        }
+        ,
+        {
+          name: "2. Home & Tabs speedtest",
+          size: "1.3em",
+          click: true,
+          next: HomeSpeedtestPage,
+          icon: "speedometer"
+        }
+        ,
+        {
+          name: "3. Login",
+          size: "1.3em",
+          click: true,
+          next: LoginPage,
+          icon: "log-in"
+        }
+      ]
     }
 
-    
   }
+
 
   callbackTree = function(item, idx, parent, isMore:boolean){
     if (item.visible){

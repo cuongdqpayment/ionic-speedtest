@@ -14,10 +14,10 @@ dataType.blob = 'BLOB'; */
 
 
 @Component({
-  selector: 'page-home',
-  templateUrl: 'home.html'
+  selector: 'page-home-speedtest',
+  templateUrl: 'home-speedtest.html'
 })
-export class HomePage {
+export class HomeSpeedtestPage {
 
   app: any = {
     id: "SPEEDTEST",

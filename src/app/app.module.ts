@@ -9,7 +9,8 @@ import { StorageServiceModule } from 'angular-webstorage-service';
 import { SQLite } from '@ionic-native/sqlite';
 
 import { MyApp } from './app.component';
-import { HomePage } from '../pages/home/home';
+import { HomeSpeedtestPage } from '../pages/home-speedtest/home-speedtest';
+import { HomeMenuPage } from '../pages/home-menu/home-menu';
 
 import { ArraySortPipe } from '../pipes/arrayOrder'
 
@@ -38,7 +39,6 @@ import { ResultsPage } from '../pages/results/results';
 import { GoogleMapPage } from '../pages/google-map/google-map';
 import { ApiMapService } from '../services/apiMapService';
 import { DynamicRangePage } from '../pages/dynamic-range/dynamic-range';
-import { DynamicMenuPage } from '../pages/dynamic-menu/dynamic-menu';
 import { TreeView } from '../components/tree-view/tree-view';
 import { DynamicTreePage } from '../pages/dynamic-tree/dynamic-tree';
 import { ApiMediaService } from '../services/apiMediaService';
@@ -48,14 +48,14 @@ import { ApiMediaService } from '../services/apiMediaService';
     MyApp,
     TreeView,
     LoginPage,
-    HomePage,
+    HomeSpeedtestPage,
     ResultsPage,
     TabsPage,
     SpeedTestPage,
     DynamicFormWebPage,
     DynamicFormMobilePage,
     DynamicRangePage,
-    DynamicMenuPage,
+    HomeMenuPage,
     DynamicTreePage,
     DynamicListPage,
     DynamicCardSocialPage,
@@ -76,14 +76,14 @@ import { ApiMediaService } from '../services/apiMediaService';
     MyApp,
     TreeView,
     LoginPage,
-    HomePage,
+    HomeSpeedtestPage,
     ResultsPage,
     TabsPage,
     SpeedTestPage,
     DynamicFormWebPage,
     DynamicFormMobilePage,
     DynamicRangePage,
-    DynamicMenuPage,
+    HomeMenuPage,
     DynamicTreePage,
     DynamicListPage,
     DynamicCardSocialPage,

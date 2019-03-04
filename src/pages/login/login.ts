@@ -14,6 +14,8 @@ import { ApiMediaService } from '../../services/apiMediaService';
 })
 export class LoginPage {
 
+  userInfo:any;
+
   constructor(
     private navCtrl: NavController
     , private pubService: ApiHttpPublicService
@@ -71,6 +73,10 @@ export class LoginPage {
 
   callLoginOk(userInfo) {
     //console.log(userInfo);
+    //truy van thong tin may chu lay userInfo khong phai user don dieu nhu nay
+    //co dia chi, email, nickname,...
+
+    this.userInfo = userInfo;
     let data = {
       title: "Đã Login"
       , items: [
@@ -78,23 +84,27 @@ export class LoginPage {
           type: "details",
           details: [
             {
-              name: "Username",
+              name: "Username(*)",
               value: userInfo.username
             },
             {
-              name: "Nickname",
+              name: "Họ và tên(*)",
+              value: userInfo.full_name
+            },
+            {
+              name: "Nickname(*)",
               value: userInfo.nickname
             },
             {
-              name: "Địa chỉ",
+              name: "Địa chỉ(*)",
               value: userInfo.address
             },
             {
-              name: "Điện thoại",
+              name: "Điện thoại(*)",
               value: userInfo.phone
             },
             {
-              name: "Email",
+              name: "Email(*)",
               value: userInfo.email
             },
             {
@@ -124,7 +134,7 @@ export class LoginPage {
               pipe_date: "HH:mm:ss dd/MM/yyyy"
             },
             {
-              name: "Giờ địa phương",
+              name: "Giờ GMT",
               value: userInfo.local_time,
               pipe_date: "HH:mm:ss dd/MM/yyyy"
             }
@@ -133,7 +143,8 @@ export class LoginPage {
         { 
           type: "button"
         , options: [
-          { name: "Thoát", command:"EXIT" , next: "CALLBACK"}
+          { name: "Sửa (*)", command:"EDIT" , next: "CALLBACK"}
+          ,{ name: "Logout", command:"EXIT" , next: "CALLBACK"}
         ]
       }
       ]
@@ -147,6 +158,41 @@ export class LoginPage {
       });
   }
 
+
+  callEditForm(){
+    //truy van thong tin tu may chu boi user nay
+
+    if (this.userInfo){
+      let data = {
+        title: "Sửa thông tin cá nhân"
+        , items: [
+           {          name: "THÔNG TIN CHO USER " + this.userInfo.username, type: "title"}
+          , { key: "nickname", name: "Tên thường gọi", type: "text", input_type: "text", icon: "heart", value: this.userInfo.nickname}
+          , { key: "name", name: "Họ và tên", type: "text", input_type: "text", icon: "person", value: this.userInfo.name}
+          , { key: "address", name: "Địa chỉ", type: "text", input_type: "text", icon: "pin", value: this.userInfo.address}
+          , { key: "phone", name: "Điện thoại", hint: "Yêu cầu định dạng số điện thoại nhé", type: "text", input_type: "tel", icon: "call", validators: [{ pattern: "^[0-9]*$" }], value: this.userInfo.phone?this.userInfo.phone:this.userInfo.username}
+          , { key: "email", name: "email", hint: "Yêu cầu định dạng email nhé", type: "text", input_type: "email", icon: "mail", validators: [{ pattern: "^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$" }], value: this.userInfo.email}
+          , { 
+            type: "button"
+          , options: [
+            { name: "Bỏ qua", command:"CLOSE" , next: "CLOSE"}
+            , { name: "Cập nhập", command:"UPDATE", url: ApiStorageService.authenticationServer+"/save-user-info", token:true, next: "CALLBACK"}
+          ]
+        }
+        ]
+      }
+
+      this.openModal(DynamicFormWebPage
+        , {
+          parent: this, //bind this for call
+          callback: this.callbackUserInfo,
+          step: 'form-user-edit',
+          form: data
+        });
+    }
+
+  }
+
   callbackUserInfo = function (res?: { step?: string, button?: any, data?: any, error?: any }) {
     //console.log('Goi logout',res);
     return new Promise((resolve, reject) => {
@@ -155,10 +201,23 @@ export class LoginPage {
         this.ionViewDidLoad_Login();
         this.events.publish('user-log-out-ok');
       }
+
+      if (res.button&&res.button.command==="EDIT"){
+        this.callEditForm();
+      }
+      
+      if (res.button&&res.button.command==="UPDATE"){
+        console.log(res); //neu co url callback khong gui btn
+      }
+
       resolve();
     });
 
   }.bind(this);
+
+
+  
+
 
   ionViewDidLoad_Login() {
     //console.log('3. ionViewDidLoad Home');
@@ -273,8 +332,8 @@ export class LoginPage {
     });
   }.bind(this);
 
-  openModal(data) {
-    let modal = this.modalCtrl.create(DynamicFormMobilePage, data);
+  openModal(form,data) {
+    let modal = this.modalCtrl.create(form, data);
     modal.present();
   }
 

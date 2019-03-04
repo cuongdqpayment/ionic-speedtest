@@ -3,10 +3,10 @@ import { ApiMediaService } from '../../services/apiMediaService';
 import { ApiStorageService } from '../../services/apiStorageService';
 
 @Component({
-  selector: 'page-dynamic-menu',
-  templateUrl: 'dynamic-menu.html',
+  selector: 'page-home-menu',
+  templateUrl: 'home-menu.html',
 })
-export class DynamicMenuPage {
+export class HomeMenuPage {
 
   dynamicTree: any ={
     title:"Trang chủ menu"
@@ -110,22 +110,7 @@ export class DynamicMenuPage {
               //console.log('userInfo:',this.userInfo);
               this.apiMedia.listFiles()
               .then(data=>{
-                /* 
-      device: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.109 Safari/537.36"
-      file_date: null
-      file_name: "ca_nau.JPG"
-      file_size: 354908
-      file_type: "image/jpeg"
-      func: "auth"
-      id: 2
-      ip: "10.151.50.36"
-      status: 1
-      sys: "admin"
-      time: 1550717933463
-      //https://c3.mobifone.vn/media/db/get-file
-          url: "upload_files/201902/21/354908_ca_nau.JPG"
-          user: "903500888" 
-      */
+                
                 let items = [];
                 if (data.length<10){
                   data.forEach(el => {

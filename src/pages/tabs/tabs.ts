@@ -4,7 +4,7 @@ import { DynamicFormWebPage } from '../dynamic-form-web/dynamic-form-web';
 import { DynamicFormMobilePage } from '../dynamic-form-mobile/dynamic-form-mobile';
 import { SpeedTestPage } from '../speed-test/speed-test';
 import { GoogleMapPage } from '../google-map/google-map';
-import { DynamicMenuPage } from '../dynamic-menu/dynamic-menu';
+import { HomeMenuPage } from '../home-menu/home-menu';
 
 @Component({
   templateUrl: 'tabs.html'
@@ -23,7 +23,7 @@ export class TabsPage {
       icon: 'globe'
     },
     {
-      root: DynamicMenuPage,
+      root: HomeMenuPage,
       title: 'Home',
       icon: 'home'
     }

@@ -189,17 +189,20 @@ export class DynamicFormMobilePage {
             .then(data => {
               btn.next_data = {
                 step: this.step,
+                button: btn, //chuyen dieu khien nut cho ben ngoai
                 data: data
               }
-              console.log('data token --> next btn', btn);
+              //console.log('data token --> next btn', btn);
               this.next(btn);
               loading.dismiss();
             })
             .catch(err => {
-              console.log('err token', err);
+              //console.log('err token', err);
               btn.next_data = {
                 step: this.step,
-                error: err
+                button: btn, //chuyen dieu khien nut cho ben ngoai
+                error: err,
+                keyResults:keyResults
               }
               this.next(btn);
               loading.dismiss();
@@ -214,19 +217,22 @@ export class DynamicFormMobilePage {
 
           this.pubService.postDynamicForm(btn.url, keyResults)
             .then(data => {
-              console.log('data --> next', data, btn.next);
+              //console.log('data --> next', data, btn.next);
               btn.next_data = {
                 step: this.step,
+                button: btn, //chuyen dieu khien nut cho ben ngoai
                 data: data
               }
               this.next(btn);
               loading.dismiss();
             })
             .catch(err => {
-              console.log('err', err);
+              //console.log('err', err);
               btn.next_data = {
                 step: this.step,
-                error: err
+                error: err,
+                button: btn, //chuyen dieu khien nut cho ben ngoai
+                keyResults:keyResults
               }
               this.next(btn);
               loading.dismiss();

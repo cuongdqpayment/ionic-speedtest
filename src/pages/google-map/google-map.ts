@@ -649,7 +649,7 @@ export class GoogleMapPage {
           &&this.apiMap.distance(loc.old.result.next_point.lat
                                 ,loc.old.result.next_point.lng
                                 ,loc.result.next_point.lat
-                                ,loc.result.next_point.lng)>50) this.mapDragend();
+                                ,loc.result.next_point.lng)>200) this.mapDragend();
       }
     }
 

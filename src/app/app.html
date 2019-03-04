@@ -11,13 +11,16 @@
                     </ion-col>
                 </ion-row>
 
-                <ion-title start *ngIf="!userInfo">Login...</ion-title>
-                <ion-buttons end *ngIf="!userInfo">
-                    <button class="badge-background" ion-button icon-only color="primary" (click)="onClickLogin()">
-                        <ion-icon name="log-in"></ion-icon>
-                        <!-- <ion-badge class="badge-alert" color="danger">10</ion-badge> -->
-                    </button>
-                </ion-buttons>
+                <ion-row *ngIf="!userInfo">
+                    <ion-col no-padding class="padding-col card-background-header background-image-header" col-12>
+                        <ion-title start>Login...</ion-title>
+                        <ion-buttons end *ngIf="!userInfo">
+                            <button class="badge-background" ion-button icon-only color="primary" (click)="onClickLogin()">
+                                <ion-icon name="log-in"></ion-icon>
+                            </button>
+                        </ion-buttons>
+                    </ion-col>
+                </ion-row>
 
             </ion-toolbar>
         </ion-header>

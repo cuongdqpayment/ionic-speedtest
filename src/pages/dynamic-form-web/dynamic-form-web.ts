@@ -11,25 +11,25 @@ import { ApiAuthService } from '../../services/apiAuthService';
 export class DynamicFormWebPage {
 
   dynamicForm: any = {
-    title: "Đăng ký"
+    title: "Tiêu đề của trang"
     , items: [
       {        name: "Thông tin cá nhân avatar", hint: "Avatar", type: "avatar", url: "https://www.w3schools.com/howto/img_forest.jpg" }
-      , { id: 1, name: "Check hay không chọn?", type: "check", value: true }
-      , { id: 2, name: "Thanh Trượt", type: "range", icon:"contrast", value: 50, min: 0, max: 100 }
-      , { id: 3, name: "Chọn hay không chọn Toggle?", icon: "plane", type: "toggle" }
-      , { id: 4, name: "Chọn radio cái nào", type: "radio", icon: "plane", value: 2, options: [{ name: "Tùy chọn 1", value: 1 }, { name: "Tùy chọn 2", value: 2 }] }
-      , { id: 5, name: "Chọn 1 cái nào", type: "select", value: 2, options: [{ name: "Tùy chọn 1", value: 1 }, { name: "Tùy chọn 2", value: 2 }] }
-      , { id: 6, name: "Chọn nhiều cái nào", type: "select_multiple", value: 2, options: [{ name: "Tùy chọn 1", value: 1 }, { name: "Tùy chọn 2", value: 2 }] }
+      , {          name: "Tiêu đề form", type: "title"}
+      , { key: "check_ok", name: "Check hay không chọn?", type: "check", value: true }
+      , { key: "range_number", name: "Thanh Trượt", type: "range", icon:"contrast", value: 50, min: 0, max: 100 }
+      , { key: "check_toggle", name: "Chọn hay không chọn Toggle?", icon: "plane", type: "toggle" }
+      , { key: "select_radio", name: "Chọn radio cái nào", type: "radio", icon: "plane", value: 2, options: [{ name: "Tùy chọn 1", value: 1 }, { name: "Tùy chọn 2", value: 2 }] }
+      , { key: "select_1", name: "Chọn 1 cái nào", type: "select", value: 2, options: [{ name: "Tùy chọn 1", value: 1 }, { name: "Tùy chọn 2", value: 2 }] }
+      , { key: "select_n", name: "Chọn nhiều cái nào", type: "select_multiple", value: 2, options: [{ name: "Tùy chọn 1", value: 1 }, { name: "Tùy chọn 2", value: 2 }] }
       , {        name: "Ảnh cá nhân", hint: "image viewer", type: "image", url: "https://www.w3schools.com/howto/img_forest.jpg" }
       , { key: "username", name: "username", hint: "Số điện thoại di động 9 số bỏ số 0 ở đầu", type: "text", input_type: "userName", icon: "information-circle", validators: [{ required: true, min: 9, max: 9, pattern: "^[0-9]*$" }]}
       , { key: "password", name: "password", hint: "Mật khẩu phải có chữ hoa, chữ thường, ký tự đặc biệt, số", type: "password", input_type: "password", icon: "information-circle", validators: [{ required: true, min: 6, max: 20}]}
-      , { id: 10, name: "Họ và tên", type: "text", input_type: "text", icon: "person" }
-      , { id: 11, name: "Điện thoại", hint: "Yêu cầu định dạng số điện thoại nhé", type: "text", input_type: "tel", icon: "call", validators: [{ pattern: "^[0-9]*$" }]}
-      , { id: 12, name: "email", hint: "Yêu cầu định dạng email nhé", type: "text", input_type: "email", icon: "mail", validators: [{ pattern: "^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$" }]}
-      , { id: 13, name: "Ngày bắt đầu", hint: "Chọn ngày", type: "datetime", display:"DD/MM/YYYY", picker:"DD MM YYYY"}
-      , { id: 14, name: "Thời gian bắt đầu", hint: "Chọn thời gian", type: "datetime", display:"HH:mm:ss", picker:"HH:mm:ss"}
-      , { id: 15, name: "Nội dung nhập", hint: "Nhập nhiều dòng", type: "text_area"}
-      , {          name: "Thông tin cá nhân", type: "title"}
+      , { key: "name", name: "Họ và tên", type: "text", input_type: "text", icon: "person" }
+      , { key: "phone", name: "Điện thoại", hint: "Yêu cầu định dạng số điện thoại nhé", type: "text", input_type: "tel", icon: "call", validators: [{ pattern: "^[0-9]*$" }]}
+      , { key: "email", name: "email", hint: "Yêu cầu định dạng email nhé", type: "text", input_type: "email", icon: "mail", validators: [{ pattern: "^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$" }]}
+      , { key: "start_date", name: "Ngày bắt đầu", hint: "Chọn ngày", type: "datetime", display:"DD/MM/YYYY", picker:"DD MM YYYY"}
+      , { key: "start_time", name: "Thời gian bắt đầu", hint: "Chọn thời gian", type: "datetime", display:"HH:mm:ss", picker:"HH:mm:ss"}
+      , { key: "text_area", name: "Nội dung nhập", hint: "Nhập nhiều dòng", type: "text_area"}
       , { type:"details",
           details: [
               {
@@ -183,7 +183,7 @@ export class DynamicFormWebPage {
         if (btn.token && keyResults) {
 
           let loading = this.loadingCtrl.create({
-            content: 'Đang xử lý dữ liệu từ máy chủ ....'
+            content: 'Đang xử lý dữ liệu từ máy chủ xác thực....'
           });
           loading.present();
 
@@ -192,16 +192,19 @@ export class DynamicFormWebPage {
               //console.log('data --> next', data, btn.next);
               btn.next_data = {
                 step: this.step,
+                button: btn, //chuyen dieu khien nut cho ben ngoai
                 data: data
               }
               this.next(btn);
               loading.dismiss();
             })
             .catch(err => {
-              //console.log('err', err);
+              //console.log('err keyResults', keyResults);
               btn.next_data = {
                 step: this.step,
-                error: err
+                error: err,
+                button: btn, //chuyen dieu khien nut cho ben ngoai
+                keyResults:keyResults
               }
               this.next(btn);
               loading.dismiss();
@@ -210,7 +213,7 @@ export class DynamicFormWebPage {
         } else if (keyResults) {
 
           let loading = this.loadingCtrl.create({
-            content: 'Đang xử lý dữ liệu từ máy chủ ....'
+            content: 'Đang xử lý dữ liệu từ máy chủ công cộng....'
           });
           loading.present();
 
@@ -219,16 +222,19 @@ export class DynamicFormWebPage {
               //console.log('data --> next', data, btn.next);
               btn.next_data = {
                 step: this.step,
+                button: btn, //chuyen dieu khien nut cho ben ngoai
                 data: data
               }
               this.next(btn);
               loading.dismiss();
             })
             .catch(err => {
-              //console.log('err', err);
+              //console.log('err keyResults', keyResults);
               btn.next_data = {
                 step: this.step,
-                error: err
+                error: err,
+                button: btn, //chuyen dieu khien nut cho ben ngoai
+                keyResults:keyResults
               }
               this.next(btn);
               loading.dismiss();
