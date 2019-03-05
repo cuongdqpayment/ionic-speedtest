@@ -42,6 +42,7 @@ import { DynamicRangePage } from '../pages/dynamic-range/dynamic-range';
 import { TreeView } from '../components/tree-view/tree-view';
 import { DynamicTreePage } from '../pages/dynamic-tree/dynamic-tree';
 import { ApiMediaService } from '../services/apiMediaService';
+import { OwnerImagesPage } from '../pages/owner-images/owner-images';
 
 @NgModule({
   declarations: [
@@ -52,6 +53,7 @@ import { ApiMediaService } from '../services/apiMediaService';
     ResultsPage,
     TabsPage,
     SpeedTestPage,
+    OwnerImagesPage,
     DynamicFormWebPage,
     DynamicFormMobilePage,
     DynamicRangePage,
@@ -80,6 +82,7 @@ import { ApiMediaService } from '../services/apiMediaService';
     ResultsPage,
     TabsPage,
     SpeedTestPage,
+    OwnerImagesPage,
     DynamicFormWebPage,
     DynamicFormMobilePage,
     DynamicRangePage,

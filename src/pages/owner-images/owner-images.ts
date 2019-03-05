@@ -3,47 +3,27 @@ import { NavController, Platform, NavParams, ViewController, LoadingController }
 import { ApiAuthService } from '../../services/apiAuthService';
 import { ApiHttpPublicService } from '../../services/apiHttpPublicServices';
 import { ApiImageService } from '../../services/apiImageService';
+import { ApiStorageService } from '../../services/apiStorageService';
 
 @Component({
-  selector: 'page-dynamic-medias',
-  templateUrl: 'dynamic-medias.html'
+  selector: 'page-owner-images',
+  templateUrl: 'owner-images.html'
 })
-export class DynamicMediasPage {
+export class OwnerImagesPage {
 
   dynamicMedias: any; 
   dynamicMediasOrigin: any = {
-    title:"Đa phương tiện"
-    /* ,buttons: [
-        {color:"primary", icon:"arrow-dropdown-circle",  next:"DOWN"}
-        , {color:"primary", icon:"arrow-dropup-circle", next:"UP"}
-      ] */
+    title:"Quản trị ảnh cá nhân"
+    ,buttons: [
+        {color:"dark", icon:"close",  next:"CLOSE"}
+      ]
     ,medias: [
-        {image:"assets/imgs/img_forest.jpg"
-            ,title:"Miền quê yêu dấu"
-            ,h1: "Chốn yên bình"
-            ,p: "Là nơi bình yên nhất. Bạn có thể dạo bước trên con đường rợp bóng mát thanh bình đến lạ"}
-        /* ,{image:"assets/imgs/anh_vua.png"
-            ,h1: "Nội dung bài viết vể cao tốc"
-            ,p: "Một bài viết về cao tốc đây nhé"}
-        ,{image:"assets/imgs/ca_nau.jpg"
-            ,h2: "Cá Nâu ở Quê Mỹ lợi"
-            ,p: "Cá ngày mồng 3 tết ở quê"}
-        ,{image:"assets/imgs/ca_the.jpg"
-            ,h1: "Cá Thệ ở Quê Mỹ lợi"
-            ,p: "Cá ngày mồng 3 tết ở quê, Cá thệ kho dưa rất tuyệt vời"}
-        ,{image:"assets/imgs/img_forest.jpg"}
-        ,{image:"assets/imgs/anh_nho.png"
-            ,h1: "Mùa trái cây chín đỏ"
-            ,p: "Trái cây vựa, miền quê nhiều cá lắm đó"} */
     ]
     ,actions:{
-        file: {name:"Open file", size: 480, color:"primary", icon: "image", next:"FILE"}
-        // ,
-        //files: {name:"Open files", color:"primary", icon: "images", next:"FILES"}
-        , open: {key: "down", link_key:"up", name:"Expand", color:"primary", icon:"arrow-dropdown",  next:"DOWN"}
-        , close: {key: "up", link_key:"down", name:"Collapse", color:"primary", icon:"arrow-dropup", next:"UP"}
+        open: {key: "down", link_key:"up", name:"Chi tiết", color:"primary", icon:"arrow-dropdown",  next:"DOWN"}
+        , close: {key: "up", link_key:"down", name:"Thu gọn", color:"primary", icon:"arrow-dropup", next:"UP"}
         , buttons: [
-             {name:"Save", icon: "share-alt", color:"primary", url:"https://c3.mobifone.vn/api/ext-auth/save-user-avatar", method: "FORM-DATA", token:true , next:"SAVE"}
+             {name:"Lưu", icon: "share-alt", color:"primary", url:ApiStorageService.mediaServer + "/db/upload-files", method: "FORM-DATA", token:true , next:"SAVE"}
         ]
     }
 };
@@ -345,7 +325,7 @@ export class DynamicMediasPage {
         btn.next_data.callback = this.callback; //gan lai cac function object
         btn.next_data.parent = this.parent;     //gan lai cac function object
         btn.next_data.list = btn.next_data.data; //gan du lieu tra ve tu server
-        this.navCtrl.push(DynamicMediasPage, btn.next_data);
+        this.navCtrl.push(OwnerImagesPage, btn.next_data);
       }
     }
   }

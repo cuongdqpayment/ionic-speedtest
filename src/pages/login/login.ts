@@ -224,18 +224,18 @@ export class LoginPage {
       }
 
       if (res.button&&res.button.command==="HOME"){
-        this.navCtrl.setRoot(HomeMenuPage);
+        this.navCtrl.setRoot(HomeMenuPage); //vi setRoot nen khong can dong
       }
       
       if (res.button&&res.button.command==="UPDATE"){
-        //console.log(res); //neu co url callback khong gui btn
-        if (res.data&&res.data.status){
           this.events.publish('user-log-in-ok'); //bao hieu refresh userInfo
           this.navCtrl.setRoot(HomeMenuPage);
-        }
+          resolve({next:"CLOSE"}); //vi dung modal nen phai dong lai
+      }else{
+        resolve();
       }
 
-      resolve();
+      
     });
 
   }.bind(this);

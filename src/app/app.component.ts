@@ -17,6 +17,7 @@ import { ApiStorageService } from '../services/apiStorageService';
 import { ApiAuthService } from '../services/apiAuthService';
 import { HomeMenuPage } from '../pages/home-menu/home-menu';
 import { HomeSpeedtestPage } from '../pages/home-speedtest/home-speedtest';
+import { OwnerImagesPage } from '../pages/owner-images/owner-images';
 
 @Component({
   templateUrl: 'app.html'
@@ -298,6 +299,11 @@ export class MyApp {
   onClickUserAvatar(){
     this.navCtrl.push(LoginPage);
     this.menuCtrl.close();
+  }
+
+
+  onClickBackground(){
+    this.openModal(OwnerImagesPage);
   }
 
   onClickLogin(){
