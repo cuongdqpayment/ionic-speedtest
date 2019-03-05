@@ -50,6 +50,25 @@ export class ApiStorageService {
         }
     }
 
+    saveHome(results){
+        this.save('home',JSON.stringify(results));
+    }
+
+    getHome(){
+        try{
+            let results = JSON.parse(this.read('home'));
+            return results?results:{
+                                        title: "HOME"
+                                        , items: []
+                                    };
+        }catch(e){
+            return {
+                    title: "HOME"
+                        , items: []
+                    };
+        }
+    }
+
     deleteResults(){
         this.delete('results');
     }

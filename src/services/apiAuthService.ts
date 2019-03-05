@@ -321,7 +321,7 @@ export class ApiAuthService {
 
 
 
-     postDynamicForm(url:string, json_data:Object, token?:string){
+     postDynamicForm(url:string, json_data:Object, token?:any){
         //lay token cua phien xac thuc
         this.reqInterceptor.setRequestToken(token&&token.length?token:this.userToken?this.userToken.token:'');
         return this.httpClient.post(url,JSON.stringify(json_data))
@@ -333,7 +333,19 @@ export class ApiAuthService {
                 });
     }
 
-    postDynamicFormData(url:string, form_data:any, token?:string){
+    getDynamicUrl(url:string, token?:any){
+        //lay token cua phien xac thuc
+        this.reqInterceptor.setRequestToken(token&&token.length?token:this.userToken?this.userToken.token:'');
+        return this.httpClient.get(url)
+                .toPromise()
+                .then(data => {
+                    let rtn:any;
+                    rtn = data;
+                    return rtn;
+                });
+    }
+
+    postDynamicFormData(url:string, form_data:any, token?:any){
         //lay token cua phien xac thuc
         this.reqInterceptor.setRequestToken(token?token:this.userToken?this.userToken.token:'');
         return this.httpClient.post(url,form_data)

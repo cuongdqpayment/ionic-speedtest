@@ -29,17 +29,7 @@ export class MyApp {
   
   treeMenu:any;
   callbackTreeMenu:any;
-
-
-  userInfo:any; /* = {
-    username:'903500888'
-    ,name: "Đoàn Quốc Cường"
-    ,nickname: "Cuongdq"
-    ,url_background:'assets/imgs/img_forest.jpg'
-    ,url_image:'http://www.foman.vn/Upload/tin-tuc/cham-soc-khach-hang/Xay-Dung-Hinh-Anh-Ca-Nhan.jpg'
-  } */
-
-  ;
+  userInfo:any; 
 
   constructor(
     private menuCtrl: MenuController, //goi trong callback
@@ -90,7 +80,7 @@ export class MyApp {
         (this.apiStorageService.getToken())
         .then(data => {
           
-          console.log(data);
+          //console.log(data);
 
           this.auth.getServerPublicRSAKey()
             .then(pk => {
