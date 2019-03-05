@@ -28,7 +28,7 @@
 						<ion-col class="background-card gradient card-background-page">
 							<div class="image-height" [style.background-image]="'url('+it.medias[0]?.image+')'"></div>
 							<div class="image-title">{{it.title}}</div>
-							<div class="image-subtitle">{{it.note | date:it.pipe_date}}</div>
+							<div class="image-subtitle">{{it.note | timeAgo}}</div>
 						</ion-col>
 					</ion-row>
 

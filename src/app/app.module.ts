@@ -11,6 +11,7 @@ import { SQLite } from '@ionic-native/sqlite';
 import { MyApp } from './app.component';
 import { HomeSpeedtestPage } from '../pages/home-speedtest/home-speedtest';
 import { HomeMenuPage } from '../pages/home-menu/home-menu';
+import {TimeAgoPipe} from 'time-ago-pipe';
 
 import { ArraySortPipe } from '../pipes/arrayOrder'
 
@@ -65,7 +66,8 @@ import { OwnerImagesPage } from '../pages/owner-images/owner-images';
     DynamicListOrderPage,
     GoogleMapPage,
     SignaturePage,
-    ArraySortPipe
+    ArraySortPipe,
+    TimeAgoPipe
   ],
   imports: [
     BrowserModule,

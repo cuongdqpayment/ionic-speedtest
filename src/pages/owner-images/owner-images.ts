@@ -210,9 +210,15 @@ export class OwnerImagesPage {
 
         let form_data: FormData = new FormData();
         form_data.append("count_image", this.dynamicMedias.medias.length);
+        form_data.append("content", "");  //nhap lieu tu text-area
+        //group_id, content, title
         
         this.dynamicMedias.medias.forEach((el,idx) => {
-          if (el.file && el.filename) form_data.append("image"+idx, el.file, el.filename);
+          if (el.file && el.filename) {
+            let key = "image"+idx;
+            form_data.append(key, el.file, el.filename);
+            form_data.append("origin_date_"+key, el.last_modified);
+          }
         });
 
         if (btn.token) {

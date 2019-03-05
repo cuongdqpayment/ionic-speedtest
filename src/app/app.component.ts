@@ -96,7 +96,7 @@ export class MyApp {
             })
             .catch(err => {
               this.resetTreeMenu();
-              throw err;
+              console.log('Error get Public key',err);
             });
         })
         .catch(err => {

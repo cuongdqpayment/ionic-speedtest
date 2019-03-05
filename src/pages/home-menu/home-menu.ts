@@ -70,7 +70,6 @@ export class HomeMenuPage {
                     {
                       title: el.user
                       , note: el.time
-                      , pipe_date: "HH:mm:ss dd/MM/yyyy"
                       , medias: [
                         {
                           image: ApiStorageService.mediaServer + "/db/get-file/" + el.url
@@ -123,7 +122,6 @@ export class HomeMenuPage {
             {
               title: el.user
               , note: el.time
-              , pipe_date: "HH:mm:ss dd/MM/yyyy"
               , medias: [
                 {
                   image: ApiStorageService.mediaServer + "/db/get-file/" + el.url
