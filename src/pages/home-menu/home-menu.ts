@@ -57,31 +57,33 @@ export class HomeMenuPage {
 
             this.userInfo = login.user_info;
 
-            this.auth.getDynamicUrl(ApiStorageService.mediaServer + "/db/list-files?limit=12&offset=1", true)
+            this.auth.getDynamicUrl(ApiStorageService.mediaServer + "/db/list-groups?limit=12&offset=0", true)
               .then(data => {
 
                 loading.dismiss();
 
-                console.log('list-files:', data);
+                //console.log('list-groups token:', data);
 
                 let items = [];
                 data.forEach(el => {
-                  items.push(
-                    {
-                      title: el.user
-                      , note: el.time
-                      , medias: [
-                        {
-                          image: ApiStorageService.mediaServer + "/db/get-file/" + el.url
-                          , title: el.file_name
-                        }
-                      ]
-                      , actions: {
-                        like: { name: "LIKE", color: "primary", icon: "thumbs-up", next: "LIKE" }
-                        , comment: { name: "COMMENT", color: "primary", icon: "chatbubbles", next: "COMMENT" }
-                        , share: { name: "SHARE", color: "primary", icon: "share-alt", next: "SHARE" }
-                      }
+
+                  let medias = [];
+                  if (el.medias){
+                    el.medias.forEach(e=>{
+                      e.image = ApiStorageService.mediaServer + "/db/get-file/" + e.url;
+                      medias.push(e);
                     })
+                  }
+
+                  el.medias = medias;
+                  el.actions = {
+                    like: { name: "LIKE", color: "primary", icon: "thumbs-up", next: "LIKE" }
+                    , comment: { name: "COMMENT", color: "primary", icon: "chatbubbles", next: "COMMENT" }
+                    , share: { name: "SHARE", color: "primary", icon: "share-alt", next: "SHARE" }
+                  }
+
+                  items.push(el);
+
                 });
 
                 this.dynamicTree.items = items;
@@ -112,28 +114,31 @@ export class HomeMenuPage {
     });
     loading.present();
 
-    this.auth.getDynamicUrl(ApiStorageService.mediaServer + "/db/public-files?limit=12&offset=1", true)
+    this.auth.getDynamicUrl(ApiStorageService.mediaServer + "/db/public-groups?limit=12&offset=0", true)
       .then(data => {
         loading.dismiss();
 
         let items = [];
         data.forEach(el => {
-          items.push(
-            {
-              title: el.user
-              , note: el.time
-              , medias: [
-                {
-                  image: ApiStorageService.mediaServer + "/db/get-file/" + el.url
-                  , title: el.file_name
-                }
-              ]
-              , actions: {
-                like: { name: "LIKE", color: "primary", icon: "thumbs-up", next: "LIKE" }
-                , comment: { name: "COMMENT", color: "primary", icon: "chatbubbles", next: "COMMENT" }
-                , share: { name: "SHARE", color: "primary", icon: "share-alt", next: "SHARE" }
-              }
+
+          let medias = [];
+          if (el.medias){
+            el.medias.forEach(e=>{
+                      e.image = ApiStorageService.mediaServer + "/db/get-file/" + e.url;
+                      e.note = el.time;
+                      medias.push(e);
             })
+          }
+
+          el.medias = medias;
+                  el.actions = {
+                    like: { name: "LIKE", color: "primary", icon: "thumbs-up", next: "LIKE" }
+                    , comment: { name: "COMMENT", color: "primary", icon: "chatbubbles", next: "COMMENT" }
+                    , share: { name: "SHARE", color: "primary", icon: "share-alt", next: "SHARE" }
+                  }
+
+          items.push(el);
+          
         });
 
         this.dynamicTree.items = items;
