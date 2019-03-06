@@ -33,6 +33,7 @@
             </ion-col>
 
             <ion-col col-12 offset-xl-3 col-xl-6 offset-lg-3 col-lg-6 offset-md-2 col-md-8 col-sm-12 *ngIf="dynamicMedias?.medias?.length>0">
+              
                 <ion-card *ngIf="isHide" class="background-card gradient grid-border">
 
                     <!-- 1 pics -->
@@ -138,6 +139,13 @@
                         </div>
                     </ion-card-content>
                 </ion-card>
+
+
+                <ion-col col-12>
+                    <ion-item class="input-item">
+                        <ion-textarea placeholder="Nhập nội dung" [(ngModel)]="content"></ion-textarea>
+                    </ion-item>
+                </ion-col>
 
                 <ion-row *ngIf="dynamicMedias.actions" no-padding>
 

@@ -88,7 +88,7 @@ export class ApiImageService {
                                     let newFile = new Blob([reader.result], { type: 'image/jpeg' });
                                     resolve({
                                         image: canvas.toDataURL(), //base64 for view and json post
-                                        file: newFile //formData post
+                                        file: (newSize===0?file:newFile) //formData post size=0 get Origin
                                         ,filename: filename
                                         ,h1: filename
                                         ,p: " ***Kích cỡ cũ: " + file.size 

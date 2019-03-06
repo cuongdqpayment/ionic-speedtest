@@ -70,7 +70,7 @@ export class HomeMenuPage {
                   let medias = [];
                   if (el.medias){
                     el.medias.forEach(e=>{
-                      e.image = ApiStorageService.mediaServer + "/db/get-file/" + e.url;
+                      e.image = ApiStorageService.mediaServer + "/db/get-file/" + encodeURI(e.url);
                       medias.push(e);
                     })
                   }
@@ -124,7 +124,7 @@ export class HomeMenuPage {
           let medias = [];
           if (el.medias){
             el.medias.forEach(e=>{
-                      e.image = ApiStorageService.mediaServer + "/db/get-file/" + e.url;
+                      e.image = ApiStorageService.mediaServer + "/db/get-file/" + encodeURI(e.url);
                       e.note = el.time;
                       medias.push(e);
             })

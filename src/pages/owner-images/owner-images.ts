@@ -45,6 +45,9 @@ export class OwnerImagesPage {
 
   isHideNote = false;
 
+  isContent:boolean = false;
+  content:string;
+
   constructor(  private platform: Platform
               , private authService: ApiAuthService
               , private apiImageService: ApiImageService
@@ -138,6 +141,9 @@ export class OwnerImagesPage {
     }
   }
 
+  clickAddMessage(){
+    this.isContent = !this.isContent;
+  }
 
   onClickShowNote(){
     this.isHideNote = !this.isHideNote;
@@ -210,7 +216,7 @@ export class OwnerImagesPage {
 
         let form_data: FormData = new FormData();
         form_data.append("count_image", this.dynamicMedias.medias.length);
-        form_data.append("content", "");  //nhap lieu tu text-area
+        form_data.append("content", this.content);  //nhap lieu tu text-area
         //group_id, content, title
         
         this.dynamicMedias.medias.forEach((el,idx) => {
@@ -226,7 +232,6 @@ export class OwnerImagesPage {
           .then(data=>{
             console.log('receive form data:',data);
             loading.dismiss();
-  
             this.next(btn);
   
           })
@@ -304,8 +309,13 @@ export class OwnerImagesPage {
   }
 
   next(btn) {
-
     if (btn) {
+
+      if (btn.next==="SAVE"){
+        this.dynamicMedias.medias = []
+      }
+
+
       if (btn.next == 'EXIT') {
         this.platform.exitApp();
       } else if (btn.next == 'REFRESH') {

@@ -111,8 +111,8 @@
 								</ion-col>
 							</ion-row>
 
-							<ion-title class="background-title">{{it.user}}</ion-title>
-							<p class="background-subtitle">{{it.content | slice:0:200}}<ion-note *ngIf="it.content?.length>200">...more</ion-note><span>{{it.time | timeAgo}}</span></p>
+							<ion-label class="background-title">{{it.user}}</ion-label>
+							<p class="background-subtitle">{{it.content | slice:0:200}}<ion-note *ngIf="it.content?.length>200">...more</ion-note><br><span style="color: white">{{it.time | timeAgo}}</span></p>
 							
 						</div>
 	
