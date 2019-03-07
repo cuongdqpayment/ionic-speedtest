@@ -30,6 +30,7 @@ export class OwnerImagesPage {
     }
 };
 
+  func:string;
   callback: any;
   step: any;
   parent:any;
@@ -70,6 +71,8 @@ export class OwnerImagesPage {
     this.refresh();
     this.myShow = this.showButton;
     
+    this.func = this.navParams.get("func");
+
     this.callback = this.navParams.get("callback");
     this.step = this.navParams.get("step");
     this.parent = this.navParams.get("parent");
@@ -92,7 +95,7 @@ export class OwnerImagesPage {
     this.showButton = (this.dynamicMedias.actions&&this.dynamicMedias.actions.open)?this.dynamicMedias.actions.open:this.showButton;
     this.hideButton = (this.dynamicMedias.actions&&this.dynamicMedias.actions.close)?this.dynamicMedias.actions.close:this.hideButton;
     
-    this.getMyImages();
+    if (this.func) this.getMyImages();
 
   }
 
@@ -143,12 +146,12 @@ export class OwnerImagesPage {
             //gui 
             this.authService.postDynamicForm(ApiStorageService.mediaServer+"/db/set-function",{
               id:item.id
-              ,func: 'avatar'
+              ,func: this.func
             },true)
             .catch(data=>{
               if (data&&data.status===1){
                 console.log(data);
-                this.events.publish('user-change-image-ok'); //bao hieu refresh userInfo
+                this.events.publish('user-change-image-ok');
               }
             })
             .then(err=>{

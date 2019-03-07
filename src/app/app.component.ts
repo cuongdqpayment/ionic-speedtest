@@ -300,8 +300,8 @@ export class MyApp {
   }
 
 
-  onClickUserImage(){
-    this.openModal(OwnerImagesPage);
+  onClickUserImage(func){
+    this.openModal(OwnerImagesPage,{func:func});
   }
 
   onClickLogin(){
