@@ -68,8 +68,19 @@ export class MyApp {
     
     this.events.subscribe('user-log-out-ok', (() => {
       this.checkTokenLogin();
-      //console.log('user-log-out-ok');
     }));
+
+    this.events.subscribe('user-change-image-ok', (() => {
+      console.log('call change image');
+      this.userChangeImage();
+    }));
+
+  }
+
+  userChangeImage(){
+
+    this.userInfo.data.image = ApiStorageService.mediaServer + "/db/get-private?func=avatar&token="+this.apiStorageService.getToken();
+    this.userInfo.data.background = ApiStorageService.mediaServer + "/db/get-private?func=background&token="+this.apiStorageService.getToken();
 
   }
 
@@ -88,10 +99,7 @@ export class MyApp {
               this.userInfo = data.user_info;
               //Tiêm token cho các phiên làm việc lấy số liệu cần xác thực
               if (this.userInfo) this.auth.injectToken(); 
-              
-              this.userInfo.data.background = this.userInfo.data.background?this.userInfo.data.background:'assets/imgs/img_forest.jpg'
-              this.userInfo.data.image = this.userInfo.data.image?this.userInfo.data.image:'http://www.foman.vn/Upload/tin-tuc/cham-soc-khach-hang/Xay-Dung-Hinh-Anh-Ca-Nhan.jpg'
-              
+              this.userChangeImage();
               this.resetTreeMenu();
             })
             .catch(err => {
@@ -286,13 +294,13 @@ export class MyApp {
   }.bind(this)
 
 
-  onClickUserAvatar(){
+  onClickUser(){
     this.navCtrl.push(LoginPage);
     this.menuCtrl.close();
   }
 
 
-  onClickBackground(){
+  onClickUserImage(){
     this.openModal(OwnerImagesPage);
   }
 

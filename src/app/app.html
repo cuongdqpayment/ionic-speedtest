@@ -5,9 +5,10 @@
 
                 <ion-row *ngIf="userInfo">
                     <ion-col no-padding class="padding-col card-background-header" col-12>
-                        <div class="background-image-header" [style.background-image]="'url('+userInfo?.data?.background+')'" tappable (click)="onClickBackground()"></div>
-                        <div class="card-title-header">{{userInfo?.data?.fullname?userInfo?.data?.fullname:userInfo?.data?.username}}{{userInfo?.data?.nickname?"\n("+userInfo?.data?.nickname+")":""}}</div>
-                        <img class="avatar-header" [src]="userInfo?.data?.image" tappable (click)="onClickUserAvatar()">
+                        <div class="background-image-header" [style.background-image]="'url('+userInfo?.data?.background+')'"></div>
+                        <ion-label class="card-title-header" tappable (click)="onClickUser()">{{userInfo?.data?.fullname?userInfo?.data?.fullname:userInfo?.data?.username}}{{userInfo?.data?.nickname?"\n("+userInfo?.data?.nickname+")":""}}</ion-label>
+                        <!-- <img class="avatar-header" [src]="userInfo?.data?.image" tappable (click)="onClickUserImage()"> -->
+                        <div class="avatar-header" [style.background-image]="'url('+userInfo?.data?.image+')'" tappable (click)="onClickUserImage()"></div>
                     </ion-col>
                 </ion-row>
 

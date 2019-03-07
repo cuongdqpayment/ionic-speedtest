@@ -1,5 +1,5 @@
-import { Component } from '@angular/core';
-import { NavController, Platform, NavParams, ViewController, LoadingController } from 'ionic-angular';
+import { Component, ViewChild } from '@angular/core';
+import { NavController, Platform, NavParams, ViewController, LoadingController, Slides, AlertController, Events } from 'ionic-angular';
 import { ApiAuthService } from '../../services/apiAuthService';
 import { ApiHttpPublicService } from '../../services/apiHttpPublicServices';
 import { ApiImageService } from '../../services/apiImageService';
@@ -10,6 +10,8 @@ import { ApiStorageService } from '../../services/apiStorageService';
   templateUrl: 'owner-images.html'
 })
 export class OwnerImagesPage {
+  @ViewChild(Slides) slides: Slides;
+  slideIndex = 0;
 
   dynamicMedias: any; 
   dynamicMediasOrigin: any = {
@@ -48,6 +50,8 @@ export class OwnerImagesPage {
   isContent:boolean = false;
   content:string;
 
+  myImages:any = [];
+
   constructor(  private platform: Platform
               , private authService: ApiAuthService
               , private apiImageService: ApiImageService
@@ -55,6 +59,8 @@ export class OwnerImagesPage {
               , private viewCtrl: ViewController
               , private navCtrl: NavController
               , private loadingCtrl: LoadingController
+              , private alertCtrl: AlertController
+              , private events: Events
               , private navParams: NavParams
              ) {}
 
@@ -76,6 +82,7 @@ export class OwnerImagesPage {
         this.myShow = this.showButton;
       })
     }
+
   }
 
   refresh(newList?:any){
@@ -84,7 +91,75 @@ export class OwnerImagesPage {
     this.dynamicMedias = this.dynamicMediasOrigin;
     this.showButton = (this.dynamicMedias.actions&&this.dynamicMedias.actions.open)?this.dynamicMedias.actions.open:this.showButton;
     this.hideButton = (this.dynamicMedias.actions&&this.dynamicMedias.actions.close)?this.dynamicMedias.actions.close:this.hideButton;
+    
+    this.getMyImages();
 
+  }
+
+
+  getMyImages(){
+    this.authService.getDynamicUrl(ApiStorageService.mediaServer + "/db/list-files?limit=12&offset=0", true)
+    .then(data=>{
+      this.myImages = data;
+      this.myImages.forEach(el=>{
+        el.image= encodeURI(ApiStorageService.mediaServer + "/db/get-file/" + el.url);
+      })
+
+    })
+    .catch(err=>{})
+  }
+
+
+  onClickSlideChange(direction){
+    if (direction==='LEFT'){
+      if (this.slideIndex>0) this.goToSlide(this.slideIndex-1);
+    }
+    if (direction==='RIGHT'){
+      if (this.slideIndex<3) this.goToSlide(this.slideIndex+1);
+    }
+  }
+
+  goToSlide(i) {
+    this.slides.slideTo(i, 300);
+  }
+
+  slideChanged() {
+    this.slideIndex = this.slides.getActiveIndex();
+  }
+
+
+  onClickSelected(item){
+    const confirm = this.alertCtrl.create({
+      title: 'CHỌN ẢNH ĐẠI DIỆN',
+      message: 'Có phải bạn muốn chọn ảnh này làm ảnh đại diện?<br><img width="200" height="200" src='+item.image+'></div>',
+      buttons: [
+        {
+          text: 'Bỏ qua',
+          handler: () => {}
+        },
+        {
+          text: 'Đồng ý',
+          handler: () => {
+            //gui 
+            this.authService.postDynamicForm(ApiStorageService.mediaServer+"/db/set-function",{
+              id:item.id
+              ,func: 'avatar'
+            },true)
+            .catch(data=>{
+              if (data&&data.status===1){
+                console.log(data);
+                this.events.publish('user-change-image-ok'); //bao hieu refresh userInfo
+              }
+            })
+            .then(err=>{
+              console.log(err);
+            })
+            ;
+          }
+        }
+      ]
+    });
+    confirm.present();
   }
 
   fileChange(event,action) {

@@ -18,7 +18,10 @@
     <ion-grid no-padding>
         <ion-row>
 
-            <ion-col col-12 offset-xl-3 col-xl-6 offset-lg-3 col-lg-6 offset-md-2 col-md-8 col-sm-12>
+            <ion-col col-12 
+            offset-xl-3 col-xl-6 
+            offset-lg-3 col-lg-6 
+            offset-md-2 col-md-8 col-sm-12>
                     <ion-card>
                         <ion-row>
                             <ion-col class="background-card gradient card-background-page">
@@ -32,7 +35,11 @@
                     
             </ion-col>
 
-            <ion-col col-12 offset-xl-3 col-xl-6 offset-lg-3 col-lg-6 offset-md-2 col-md-8 col-sm-12 *ngIf="dynamicMedias?.medias?.length>0">
+            <ion-col col-12 
+            offset-xl-3 col-xl-6 
+            offset-lg-3 col-lg-6 
+            offset-md-2 col-md-8 
+            col-sm-12 *ngIf="dynamicMedias?.medias?.length>0">
               
                 <ion-card *ngIf="isHide" class="background-card gradient grid-border">
 
@@ -180,6 +187,56 @@
 
             </ion-col>
 
+            <ion-col col-12 no-padding
+            *ngIf="myImages&&myImages.length>0&&dynamicMedias?.medias?.length===0">
+
+                <ion-row>
+                    <ion-col no-padding class="padding-col"
+                    col-6 style="text-align: left;">
+                        <button ion-button round icon-only color="secondary" (click)="onClickSlideChange('LEFT')">
+                            <ion-icon name="ios-arrow-back"></ion-icon>
+                        </button>
+                    </ion-col>
+                    <ion-col no-padding class="padding-col"
+                    col-6 style="text-align: right;">
+                        <button ion-button round icon-only color="secondary" (click)="onClickSlideChange('RIGHT')">
+                            <ion-icon name="ios-arrow-forward"></ion-icon>
+                        </button>                            
+                    </ion-col>
+                </ion-row>
+                <ion-slides (ionSlideDidChange)="slideChanged()">
+                    <ion-slide>
+                        <ion-row>
+                            <ion-col no-padding class="padding-col card-background-selected"
+                            col-3 
+                            *ngFor="let it of myImages.slice(0,4)">
+                                <div class="image-height-3" [style.background-image]="'url('+it.image+')'"></div>
+                                <div class="avatar-selected" tappable (click)="onClickSelected(it)"></div>
+                            </ion-col>
+                        </ion-row>
+                    </ion-slide>
+                    <ion-slide>
+                        <ion-row>
+                            <ion-col no-padding class="padding-col card-background-selected"
+                            col-3 
+                            *ngFor="let it of myImages.slice(4,8)">
+                                <div class="image-height-3" [style.background-image]="'url('+it.image+')'"></div>
+                                <div class="avatar-selected" tappable (click)="onClickSelected(it)"></div>
+                            </ion-col>
+                        </ion-row>
+                    </ion-slide>
+                    <ion-slide>
+                        <ion-row>
+                            <ion-col no-padding class="padding-col card-background-selected"
+                            col-3
+                            *ngFor="let it of myImages.slice(8,12)">
+                                <div class="image-height-3" [style.background-image]="'url('+it.image+')'"></div>
+                                <div class="avatar-selected" tappable (click)="onClickSelected(it)"></div>
+                            </ion-col>
+                        </ion-row>
+                    </ion-slide>
+                </ion-slides>
+            </ion-col>
         </ion-row>
 
     </ion-grid>
