@@ -73,6 +73,9 @@ export class OwnerImagesPage {
     
     this.func = this.navParams.get("func");
 
+    //console.log(this.func,this.navParams);
+    if (this.func) this.getMyImages();
+
     this.callback = this.navParams.get("callback");
     this.step = this.navParams.get("step");
     this.parent = this.navParams.get("parent");
@@ -101,6 +104,8 @@ export class OwnerImagesPage {
 
 
   getMyImages(){
+    //console.log(this.func);
+
     this.authService.getDynamicUrl(ApiStorageService.mediaServer + "/db/list-files?limit=12&offset=0", true)
     .then(data=>{
       this.myImages = data;
