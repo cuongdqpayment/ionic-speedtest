@@ -27,6 +27,11 @@ tmp/
 temp/
 #phai day www len server cho ionic hoat dong
 www/
+#khong day google-key
+www/index.html
+#khong day google-key
+src/index.html
+
 #khong truyen file upload len hoac xuong
 upload_files/
 #khong truyen file screen_shot_images len
