@@ -21,6 +21,7 @@ npm-debug.log*
 coverage/
 dist/
 node_modules/
+keys/
 tmp/
 #khong chuyen file database len vi se bi ghi de mat so lieu
 #/db/*.db
