@@ -99,6 +99,7 @@ export class OwnerImagesPage {
     this.hideButton = (this.dynamicMedias.actions&&this.dynamicMedias.actions.close)?this.dynamicMedias.actions.close:this.hideButton;
     
     if (this.func) this.getMyImages();
+    this.content = "";
 
   }
 
@@ -213,6 +214,7 @@ export class OwnerImagesPage {
         loading.dismiss();
       })
       .catch(err=>{
+
         loading.dismiss();
       });
 
@@ -320,6 +322,18 @@ export class OwnerImagesPage {
           })
           .catch(err=>{
             console.log('err postDynamicFormData',err);
+    
+            this.alertCtrl.create({
+              title: 'LỖI UPLOAD FILES',
+              message: 'Có thể giới hạn từ máy chủ cho phép load số lượng ảnh đồng thời, vui lòng hạn chế số lượng ảnh hoặc liên hệ Quản trị máy chủ lưu ảnh!',
+              buttons: [
+                {
+                  text: 'Bỏ qua',
+                  handler: () => {}
+                },
+              ]
+            }).present();
+
             loading.dismiss();
           })
         }else{
