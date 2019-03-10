@@ -563,13 +563,9 @@ export class GoogleMapPage {
     })
   }.bind(this);
 
-  openModal(data) {
-    let modal = this.modalCtrl.create(DynamicFormWebPage, data);
-    modal.present();
-  }
 
-  openModalAny(data,page) {
-    let modal = this.modalCtrl.create(page, data);
+  openModal(form, data) {
+    let modal = this.modalCtrl.create(form, data);
     modal.present();
   }
 
@@ -713,12 +709,13 @@ export class GoogleMapPage {
       ,items: items
     };
 
-    let form = {
+    let formData = {
+      parent: this,
       callback: this.callbackTrackingView,
       step: 'view-trackings',
       list: listResults
     };
-    this.openModalAny(form,DynamicListOrderPage);   
+    this.openModal(DynamicListOrderPage,formData);   
 
   }
 
@@ -785,12 +782,13 @@ export class GoogleMapPage {
       }
 
 
-      let form = {
+      let formData = {
+        parent: this,
         callback: this.callbackFunction,
         step: 'map-settings',
         form: formSetting
       };
-      this.openModalAny(form,DynamicFormWebPage);      
+      this.openModal(DynamicFormWebPage,formData);      
     }
 
   }

@@ -498,12 +498,13 @@ export class SpeedTestPage {
     };
 
     let settings = {
+      parent: this,
       callback: this.callbackSettings,
       step: 'form-user-info',
       form: data
     }
 
-    this.openModal(settings);
+    this.openModal(DynamicFormWebPage,settings);
   }
 
   /**
@@ -518,9 +519,9 @@ export class SpeedTestPage {
     })
   }.bind(this);
 
-
-  openModal(data) {
-    let modal = this.modalCtrl.create(DynamicFormWebPage, data);
+//DynamicFormWebPage
+  openModal(form,data) {
+    let modal = this.modalCtrl.create(form, data);
     modal.present();
   }
 
