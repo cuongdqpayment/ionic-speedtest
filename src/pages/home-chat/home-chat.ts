@@ -21,7 +21,28 @@ export class HomeChatPage {
   configSocketIo: SocketIoConfig;
 
   rooms = [];
+  users = [];
   last_time:number = new Date().getTime();
+
+  chatManager: any = {
+    title: "Chats - Nhắn tin online"
+    , search_bar: {hint: "Tìm cái gì đó"} 
+    , buttons: [
+        {color:"primary", icon:"add", next:"ADD"}
+        , {color:"primary", icon:"contacts", next:"FRIENDS"}
+        , {color:"primary", icon:"notifications", next:"NOTIFY"
+          , alerts:[
+              "cuong.dq"
+              ]
+          }
+        , {color:"royal", icon:"cog", next:"SETTINGS"}
+      ]
+    , items: []
+  }
+
+  isSearch: boolean = false;
+  searchString: string = '';
+  shouldShowCancel: boolean = false;
 
   constructor(private navParams: NavParams, 
               private navCtrl: NavController,
@@ -75,6 +96,26 @@ export class HomeChatPage {
     this.socket.disconnect();
   }
 
+  //Su dung search
+  //---------------------
+  goSearch(){
+    this.isSearch = true;
+  }
+
+  searchEnter(){
+    this.isSearch = false;
+  }
+
+  onInput(e){
+    console.log(this.searchString);
+  }
+
+  //onclick....
+  onClickHeader(btn){
+    console.log(btn);
+  }
+  
+  //emit....
   jointRooms(){
     this.socket.emit('client-joint-room'
                     ,{ rooms: this.rooms,
@@ -82,6 +123,7 @@ export class HomeChatPage {
                     });
   }
 
+  //socket.on...
   getMessages() {
     return new Observable(observer => {
       //default when server: socket.send('message data'/{})
@@ -98,5 +140,7 @@ export class HomeChatPage {
       });
     });
   }
+
+
 
 }

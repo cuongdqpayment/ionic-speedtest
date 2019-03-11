@@ -1,6 +1,24 @@
 <ion-header>
   <ion-navbar>
-    
+      <ion-buttons start *ngIf="!isSearch && chatManager?.search_bar">
+          <button ion-button icon-only color="primary" (click)="goSearch()">
+              <ion-icon name="search"></ion-icon>
+          </button>
+      </ion-buttons>
+
+      <ion-searchbar start *ngIf="isSearch && chatManager?.search_bar" placeholder="{{chatManager?.search_bar.hint}}" [(ngModel)]="searchString"
+      [showCancelButton]="shouldShowCancel" (ionInput)="onInput($event)" (keyup.enter)="searchEnter()"
+      (keyup.esc)="searchEnter()">
+      </ion-searchbar>
+      
+      <ion-title *ngIf="!isSearch">{{chatManager?.title}}</ion-title>
+
+      <ion-buttons end *ngFor="let btn of chatManager?.buttons">
+          <button *ngIf="!isSearch" class="badge-background" ion-button icon-only color="{{btn.color}}" (click)="onClickHeader(btn)">
+              <ion-icon name="{{btn.icon}}"></ion-icon>
+              <ion-badge class="badge-alert" color="danger" *ngIf="btn.alerts">{{ (btn.alerts?.length>99?'99+':btn.alerts?.length) }}</ion-badge>
+          </button>
+      </ion-buttons>
   </ion-navbar>
 </ion-header>
 
