@@ -9,6 +9,9 @@
 		<ion-title>{{dynamicTree?.title}}</ion-title>
 
 		<ion-buttons end *ngIf="userInfo">
+			<button class="badge-background" ion-button icon-only color="primary" (click)="onClickChat()">
+				<ion-icon name="ios-chatbubbles"></ion-icon>
+			</button>
 			<button class="badge-background" ion-button icon-only color="secondary" (click)="onClickAdd()">
 				<ion-icon name="add"></ion-icon>
 			</button>
