@@ -70,15 +70,14 @@ export class MyApp {
       this.checkTokenLogin();
     }));
 
-    this.events.subscribe('user-change-image-ok', (() => {
-      console.log('call change image');
-      this.userChangeImage();
-    }));
+    
+    //this.userChangeImage();
+
 
   }
 
   userChangeImage(){
-
+    //console.log('change image')
     this.userInfo.data.image = ApiStorageService.mediaServer + "/db/get-private?func=avatar&token="+this.apiStorageService.getToken();
     this.userInfo.data.background = ApiStorageService.mediaServer + "/db/get-private?func=background&token="+this.apiStorageService.getToken();
 
@@ -119,9 +118,7 @@ export class MyApp {
   }
 
   resetTreeMenu(){
-
     //tuy thuoc vao tung user se co menu khac nhau
-
     if (this.userInfo&&(this.userInfo.username==='903500888'||this.userInfo.username==='702418821')){
       this.treeMenu = [
         {
@@ -264,6 +261,93 @@ export class MyApp {
         }
         ,
         {
+          name: "3. Các mẫu reponsive",
+          size: "1.3em",
+          subs: [
+            {
+              name: "3.1 Các nhập liệu",
+              size: "1.3em",
+              subs: [
+              {
+                name: "3.1.1 Mẫu nhập liệu toàn màn hình dành cho di động",
+                click: true,
+                next: DynamicFormMobilePage,
+                icon: "phone-portrait"
+              }
+              ,
+              {
+                name: "3.1.2 Nhập liệu và hiển thị cho desktop & di động",
+                click: true,
+                next: DynamicFormWebPage,
+                icon: "desktop"
+              }
+              ,
+              {
+                name: "3.1.3 Mẫu nhập chọn & kéo",
+                click: true,
+                next: DynamicRangePage,
+                icon: "radio-button-on"
+              }
+            ]
+            }
+            ,
+            {
+              name: "3.2 Các mẫu hiển thị danh sách",
+              size: "1.3em",
+              subs: [
+              {
+                name: "3.2.1 Mẫu danh sách quẹt nút click",
+                click: true,
+                next: DynamicListPage,
+                icon: "paper"
+              }
+              ,
+              {
+                name: "3.2.2 Mẫu danh sách bảng, liệt kê & sắp xếp lại",
+                click: true,
+                next: DynamicListOrderPage,
+                icon: "reorder"
+              }
+              ,
+              {
+                name: "3.2.3 Mẫu danh sách theo cây FamilyTree",
+                click: true,
+                next: DynamicTreePage,
+                icon: "menu"
+              }
+            ]
+            }
+            ,
+            {
+              name: "3.3 Các mẫu xử lý hình ảnh và file",
+              size: "1.3em",
+              subs: [
+              {
+                name: "3.3.1 Mẫu upload ảnh theo facebook",
+                click: true,
+                next: DynamicMediasPage,
+                icon: "images"
+              }
+              ,
+              {
+                name: "3.3.2 Mẫu hiển thị ảnh và tương tác mạng xã hội",
+                click: true,
+                next: DynamicCardSocialPage,
+                icon: "logo-facebook"
+              }
+              ,
+              {
+                name: "3.3.3 Mẫu vẽ tay lên màn hình trên nền di động",
+                click: true,
+                next: SignaturePage,
+                icon: "create"
+              }
+            ]
+            }        
+          ]
+        }
+        ,
+        {
           name: "3. Login",
           size: "1.3em",
           click: true,
@@ -294,14 +378,27 @@ export class MyApp {
   }.bind(this)
 
 
+
   onClickUser(){
     this.navCtrl.push(LoginPage);
     this.menuCtrl.close();
   }
 
 
+  callbackChangeImage = function (res:any){
+    return new Promise((resolve,reject)=>{
+      this.userChangeImage();
+      resolve({next:'CLOSE'})
+    })
+  }.bind(this)
+
   onClickUserImage(func){
-    this.openModal(OwnerImagesPage,{func:func});
+    this.openModal(OwnerImagesPage,
+      {
+        parent: this
+        ,func: func
+        ,callback: this.callbackChangeImage
+      });
   }
 
   onClickLogin(){

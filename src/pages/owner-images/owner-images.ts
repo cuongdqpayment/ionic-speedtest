@@ -150,18 +150,22 @@ export class OwnerImagesPage {
           text: 'Đồng ý',
           handler: () => {
             //gui 
-            this.authService.postDynamicForm(ApiStorageService.mediaServer+"/db/set-function",{
+            this.authService.postDynamicForm(ApiStorageService.mediaServer+"/db/set-function"
+            ,{
               id:item.id
               ,func: this.func
             },true)
-            .catch(data=>{
+            .then(data=>{
               if (data&&data.status===1){
-                console.log(data);
-                this.events.publish('user-change-image-ok');
+                //this.events.publish('user-change-image-ok');
+                if (this.callback) {
+                  this.callback() //goi thay doi anh dai dien
+                    .then(nextStep => this.next(nextStep)); //dong lai
+                }
               }
             })
-            .then(err=>{
-              console.log(err);
+            .catch(err=>{
+              console.log('error',err);
             })
             ;
           }
@@ -412,15 +416,14 @@ export class OwnerImagesPage {
         this.dynamicMedias.medias = []
       }
 
-
       if (btn.next == 'EXIT') {
         this.platform.exitApp();
       } else if (btn.next == 'REFRESH') {
         this.refresh(btn.next_data);
       } else if (btn.next == 'CLOSE') {
-        try { this.viewCtrl.dismiss(btn.next_data) } catch (e) { }
+        if (this.parent) this.viewCtrl.dismiss(btn.next_data);
       } else if (btn.next == 'BACK') {
-        try { this.navCtrl.pop() } catch (e) { }
+        if (this.parent) this.navCtrl.pop();
       } else if (
         btn.next == 'ADD' 
       || btn.next == 'SETTINGS' 
