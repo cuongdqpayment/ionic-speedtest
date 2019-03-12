@@ -1,0 +1,75 @@
+<ion-header>
+  <ion-navbar>
+      <ion-buttons start *ngIf="!isSearch && chatManager?.search_bar">
+          <button ion-button icon-only color="primary" (click)="goSearch()">
+              <ion-icon name="search"></ion-icon>
+          </button>
+      </ion-buttons>
+
+      <ion-searchbar start *ngIf="isSearch && chatManager?.search_bar" placeholder="{{chatManager?.search_bar.hint}}" [(ngModel)]="searchString"
+      [showCancelButton]="shouldShowCancel" (ionInput)="onInput($event)" (keyup.enter)="searchEnter()"
+      (keyup.esc)="searchEnter()">
+      </ion-searchbar>
+      
+      <ion-title *ngIf="!isSearch">{{chatManager?.title}}</ion-title>
+
+      <ion-buttons end *ngFor="let btn of chatManager?.buttons">
+          <button *ngIf="!isSearch" class="badge-background" ion-button icon-only color="{{btn.color}}" (click)="onClickHeader(btn)">
+              <ion-icon name="{{btn.icon}}"></ion-icon>
+              <ion-badge class="badge-alert" color="danger" *ngIf="btn.alerts">{{ (btn.alerts?.length>99?'99+':btn.alerts?.length) }}</ion-badge>
+          </button>
+      </ion-buttons>
+  </ion-navbar>
+</ion-header>
+
+<ion-content class="list-avatar-page">
+    <ion-grid id="contentMessages">
+        <ion-row *ngFor="let message of messages">
+        <ion-col class="other-avatar" col-2 *ngIf="message?.user?.username !== user?.username">
+            <ion-item class="other-avatar">
+            <ion-avatar item-start>
+                <img src="{{message?.user?.image}}" />
+            </ion-avatar>
+            </ion-item>
+        </ion-col>
+        <ion-col class="message other_message" offset-1 col-9 *ngIf="message?.user?.username !== user?.username">
+            <div class="nick-name">{{ message?.user?.username }}:</div>
+            <br>
+            <div class="text-message">{{ message?.text }}</div>
+            <br>
+            <div class="time">{{message?.created | timeAgo}}</div>
+        </ion-col>
+        
+        <ion-col class="message my_message" offset-2 col-9 *ngIf="message?.user?.username === user?.username">
+            <div class="nick-name">{{ message?.user?.username }}:</div>
+            <br>
+            <div class="text-message">{{ message?.text }}</div>
+            <br>
+            <div class="time">{{message?.created | date:'dd.MM hh:MM'}}</div>
+        </ion-col>
+        <ion-col class="other-avatar" col-2 *ngIf="message?.user?.username === user?.username">
+            <ion-item class="other-avatar">
+            <ion-avatar item-start>
+                <img src="{{message?.user?.image?message?.user?.image.toLowerCase().indexOf('://')>0?message?.user?.image:(authenticationServer + '/get-avatar/' + message?.user?.image + '?token=' + token):image_default}}" />
+            </ion-avatar>
+            </ion-item>
+        </ion-col>
+        </ion-row>
+    </ion-grid>
+</ion-content>
+<ion-footer>
+    <ion-toolbar>
+        <ion-row class="message_row">
+        <ion-col col-10>
+            <ion-item no-lines>
+            <ion-input type="text" placeholder="Gõ nội dung tin nhắn cần gửi" [(ngModel)]="message" (keyup.enter)="sendMessage()"></ion-input>
+            </ion-item>
+        </ion-col>
+        <ion-col col-2>
+            <button ion-button type="button" round color="primary" (click)="sendMessage()" [disabled]="message === ''">
+            <ion-icon name="undo"></ion-icon>
+            </button>
+        </ion-col>
+        </ion-row>
+    </ion-toolbar>
+</ion-footer>

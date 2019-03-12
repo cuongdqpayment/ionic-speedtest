@@ -6,6 +6,7 @@ import { ApiAuthService } from '../../services/apiAuthService';
 import { ApiStorageService } from '../../services/apiStorageService';
 import { Observable } from 'rxjs/Observable';
 import { DynamicRangePage } from '../dynamic-range/dynamic-range';
+import { ChattingPage } from '../chatting/chatting';
 
 @Component({
   selector: 'page-home-chat',
@@ -21,7 +22,9 @@ export class HomeChatPage {
   socket: Socket;
   configSocketIo: SocketIoConfig;
 
+  roomType = '$R#';
   rooms = [];
+  userType = '$U#';
   users = [];
   last_time:number = new Date().getTime();
 
@@ -48,7 +51,7 @@ export class HomeChatPage {
   constructor(private navParams: NavParams, 
               private navCtrl: NavController,
               private modalCtrl: ModalController,
-              private apiService: ApiAuthService,
+              private apiAuth: ApiAuthService,
               private events: Events,
               private apiStorage: ApiStorageService) {}
 
@@ -83,19 +86,20 @@ export class HomeChatPage {
       let msg;
       msg = data;
       console.log(msg);
-
+      this.users = msg.users;
 
      })
 
   }
 
   ionViewDidLoad() {
-    
+    console.log('Form load home-chats')
   }
 
 
   ionViewWillLeave() {
-    this.socket.disconnect();
+    console.log('Form Leave home-chats')
+    //this.socket.disconnect();
   }
 
   //Su dung search
@@ -112,36 +116,75 @@ export class HomeChatPage {
     console.log(this.searchString);
   }
 
-  callbackAdd = function(res){
+  callbackAddRoom = function(res){
     return new Promise((resolve,reject)=>{
-      console.log(res);
+      let users = [];
+      res.data.forEach(el=>{
+        for (let key in el.details){
+          if (el.details[key]){
+            users.push(key)
+          }
+        }
+      })
+
+      //console.log(this.userInfo);
+      
+      if (users.length>0){
+        this.rooms.push(
+          {
+            id: this.roomType + this.userInfo.username + "#" + new Date().getTime(),
+            name: this.roomType + 'New Group',
+            group_users: users,
+            image: ApiStorageService.mediaServer + "/db/get-private?func=avatar&token="+this.token,
+            messages:[{
+              message: (this.userInfo.data?this.userInfo.data.fullname:this.userInfo.username) + " Create group",
+              time: new Date().getTime()
+            }]
+          }
+        )
+      }
+
+      console.log('results ROOMS:',this.rooms);
+
+      this.jointRooms()
+
       resolve({next:'CLOSE'});
     })
   }.bind(this);
 
+  
+  callbackChatRoom = function(res){
+    return new Promise((resolve,reject)=>{
+      resolve();
+    })
+  }.bind(this);
+
+  onClickItem(room){
+    console.log('goto room',room);
+    this.navCtrl.push(ChattingPage, {
+                        parent:this,
+                        callback: this.callbackChatRoom,
+                        room: room
+                      })
+  }
+
   //onclick....
   onClickHeader(btn){
-    console.log(btn);
+    //console.log(btn);
     if (btn.next==='ADD'){
+
+      let details = [];
+      this.users.forEach(el=>{
+        details.push({key:el.username,name:el.username.slice(3),color:"secondary",value:0})
+      })
+
       let formData={
         parent: this,
-        callback: this.callbackAdd
+        callback: this.callbackAddRoom
         ,form: {title: "Chọn user để liên lạc"
         , items: [
           { type: "check", key:"danh_sach", name: "Danh bạ online",
-          details:[
-                {
-                key:"U$903500888",
-                name: "903500888",
-                color:"secondary",
-                value: 0}
-                ,
-                {
-                key:"U$702418821",
-                name: "702418821",
-                value: 0
-                }
-              ]
+          details:details
             }
             , { 
               type: "button"
@@ -156,6 +199,8 @@ export class HomeChatPage {
       this.openModal(DynamicRangePage,formData);
     }
   }
+
+
   
   //emit....
   jointRooms(){

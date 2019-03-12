@@ -45,6 +45,7 @@ import { DynamicTreePage } from '../pages/dynamic-tree/dynamic-tree';
 import { ApiMediaService } from '../services/apiMediaService';
 import { OwnerImagesPage } from '../pages/owner-images/owner-images';
 import { HomeChatPage } from '../pages/home-chat/home-chat';
+import { ChattingPage } from '../pages/chatting/chatting';
 
 @NgModule({
   declarations: [
@@ -69,6 +70,7 @@ import { HomeChatPage } from '../pages/home-chat/home-chat';
     SignaturePage,
     ArraySortPipe,
     HomeChatPage,
+    ChattingPage,
     TimeAgoPipe
   ],
   imports: [
@@ -98,6 +100,7 @@ import { HomeChatPage } from '../pages/home-chat/home-chat';
     DynamicListOrderPage,
     GoogleMapPage,
     HomeChatPage,
+    ChattingPage,
     SignaturePage
   ],
   providers: [

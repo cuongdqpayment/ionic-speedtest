@@ -58,7 +58,7 @@ export class HomeMenuPage {
           ) {
 
             this.userInfo = login.user_info;
-
+            
             this.auth.getDynamicUrl(ApiStorageService.mediaServer + "/db/list-groups?limit=12&offset=0", true)
               .then(data => {
 
