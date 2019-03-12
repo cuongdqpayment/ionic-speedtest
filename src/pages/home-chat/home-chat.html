@@ -29,8 +29,8 @@
                 <img [src]="r.image">
             </ion-avatar>
             <ion-title>{{r.name}}</ion-title>
-            <p>{{r.messages[r.messages.length-1]?.message}}</p>
-            <ion-note item-end>{{r.messages[r.messages.length-1]?.time | timeAgo}}</ion-note>
+            <p>{{r.messages[r.messages.length-1]?.text}}</p>
+            <ion-note item-end>{{r.messages[r.messages.length-1]?.created | timeAgo}}</ion-note>
         </ion-item>
     </ion-list>
 </ion-content>

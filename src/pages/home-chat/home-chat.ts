@@ -80,6 +80,17 @@ export class HomeChatPage {
        }
      });
 
+     this.getMessagesEmit()
+     .subscribe(data=>{
+       let msg;
+       msg = data;
+       //console.log('server send - client receive',msg);
+       msg.user.image = ApiStorageService.mediaServer + "/db/get-private?func=avatar&user="+msg.user.username+"&token="+this.token;
+       let roomMsg = this.rooms.find(x=>x.id ===msg.room_id);
+       roomMsg.messages.push(msg);
+       this.events.publish('event-receiving-message',roomMsg);
+     });
+ 
 
      this.getRoomChating()
      .subscribe(data=>{
@@ -137,8 +148,8 @@ export class HomeChatPage {
             group_users: users,
             image: ApiStorageService.mediaServer + "/db/get-private?func=avatar&token="+this.token,
             messages:[{
-              message: (this.userInfo.data?this.userInfo.data.fullname:this.userInfo.username) + " Create group",
-              time: new Date().getTime()
+              text: (this.userInfo.data?this.userInfo.data.fullname:this.userInfo.username) + " Create group",
+              created: new Date().getTime()
             }]
           }
         )
@@ -163,6 +174,9 @@ export class HomeChatPage {
     console.log('goto room',room);
     this.navCtrl.push(ChattingPage, {
                         parent:this,
+                        socket: this.socket,
+                        user: this.userInfo,
+                        token: this.token,
                         callback: this.callbackChatRoom,
                         room: room
                       })
@@ -215,6 +229,14 @@ export class HomeChatPage {
     return new Observable(observer => {
       //default when server: socket.send('message data'/{})
       this.socket.on("message", (data) => {
+        observer.next(data);
+      });
+    })
+  }
+
+  getMessagesEmit() {
+    return new Observable(observer => {
+      this.socket.on("server-emit-message", (data) => {
         observer.next(data);
       });
     })
