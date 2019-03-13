@@ -4,7 +4,6 @@ import { Socket, SocketIoConfig } from 'ng-socket-io';
 
 import { ApiAuthService } from '../../services/apiAuthService';
 import { ApiStorageService } from '../../services/apiStorageService';
-import { Observable } from 'rxjs/Observable';
 
 @Component({
   selector: 'page-chatting',
@@ -73,7 +72,7 @@ export class ChattingPage {
       },200);
 
      this.events.subscribe('event-receiving-message', (room => {
-           if (this.room.id = room.id){
+           if (this.room.id === room.id){
              this.messages = room.messages;
             setTimeout(()=>{
               try{   
