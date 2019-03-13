@@ -73,7 +73,7 @@ export class HomeChatPage {
      .subscribe(data=>{
        let msg;
        msg = data;
-       //console.log(msg);
+       console.log('get welcome',msg);
        if (msg.step=='INIT'){
           //console.log('client-joint-room'); 
           this.jointRooms();
@@ -84,7 +84,7 @@ export class HomeChatPage {
      .subscribe(data=>{
        let msg;
        msg = data;
-       //console.log('server send - client receive',msg);
+       console.log('server send - client receive',msg);
        msg.user.image = ApiStorageService.mediaServer + "/db/get-private?func=avatar&user="+msg.user.username+"&token="+this.token;
        let roomMsg = this.rooms.find(x=>x.id ===msg.room_id);
        roomMsg.messages.push(msg);
@@ -96,8 +96,9 @@ export class HomeChatPage {
      .subscribe(data=>{
       let msg;
       msg = data;
-      console.log(msg);
+      console.log('getRoomChating:',msg);
       this.users = msg.users;
+      this.rooms = msg.rooms;
 
      })
 
@@ -107,11 +108,12 @@ export class HomeChatPage {
     console.log('Form load home-chats')
   }
 
-
-  ionViewWillLeave() {
-    console.log('Form Leave home-chats')
-    //this.socket.disconnect();
+  ionViewDidLeave() {
+    console.log('Form did Leave home-chats', this.navCtrl.length());
+    if (this.navCtrl.length()<3) this.socket.disconnect();
   }
+
+
 
   //Su dung search
   //---------------------
@@ -138,16 +140,22 @@ export class HomeChatPage {
         }
       })
 
-      //console.log(this.userInfo);
+      console.log('user',users);
       
       if (users.length>0){
+        let room_id = this.roomType + this.userInfo.username + "#" + new Date().getTime();
         this.rooms.push(
           {
-            id: this.roomType + this.userInfo.username + "#" + new Date().getTime(),
-            name: this.roomType + 'New Group',
-            group_users: users,
+            id: room_id,
+            name: 'New Group',
             image: ApiStorageService.mediaServer + "/db/get-private?func=avatar&token="+this.token,
+            admins:[this.userType+this.userInfo.username],
+            users: users,
+            created: new Date().getTime(),
+            time:  new Date().getTime(),
             messages:[{
+              //romm_id: room_id,
+              //user: this.userInfo,
               text: (this.userInfo.data?this.userInfo.data.fullname:this.userInfo.username) + " Create group",
               created: new Date().getTime()
             }]
@@ -155,7 +163,7 @@ export class HomeChatPage {
         )
       }
 
-      console.log('results ROOMS:',this.rooms);
+      //console.log('results ROOMS:',this.rooms);
 
       this.jointRooms()
 
@@ -171,7 +179,7 @@ export class HomeChatPage {
   }.bind(this);
 
   onClickItem(room){
-    console.log('goto room',room);
+    //console.log('goto room',room);
     this.navCtrl.push(ChattingPage, {
                         parent:this,
                         socket: this.socket,
@@ -184,8 +192,9 @@ export class HomeChatPage {
 
   //onclick....
   onClickHeader(btn){
-    //console.log(btn);
     if (btn.next==='ADD'){
+      
+      console.log(this.users);
 
       let details = [];
       this.users.forEach(el=>{

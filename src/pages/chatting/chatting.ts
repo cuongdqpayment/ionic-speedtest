@@ -63,17 +63,22 @@ export class ChattingPage {
       , items: []
     }
 
-     //console.log('gui alive room',this.room,this.socket);
+     console.log('gui alive room',this.room);
+
      this.messages = this.room.messages;
      setTimeout(()=>{
-        this.contentMessages.scrollToBottom();
+       try{
+         this.contentMessages.scrollToBottom();
+       }catch(e){}
       },200);
 
      this.events.subscribe('event-receiving-message', (room => {
            if (this.room.id = room.id){
              this.messages = room.messages;
             setTimeout(()=>{
-              this.contentMessages.scrollToBottom();
+              try{   
+                this.contentMessages.scrollToBottom();
+              }catch(e){}
             },200);
            }    
 
