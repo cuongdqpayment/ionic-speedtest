@@ -10,9 +10,11 @@
       [showCancelButton]="shouldShowCancel" (ionInput)="onInput($event)" (keyup.enter)="searchEnter()"
       (keyup.esc)="searchEnter()">
       </ion-searchbar>
-      
-      <ion-title *ngIf="!isSearch">{{chatManager?.title}}</ion-title>
 
+        <ion-title *ngIf="!isSearch" tappable >{{chatManager?.title}}({{room?.users?.length}})
+            <ion-icon name="ios-arrow-forward"></ion-icon>
+        </ion-title>
+        
       <ion-buttons end *ngFor="let btn of chatManager?.buttons">
           <button *ngIf="!isSearch" class="badge-background" ion-button icon-only color="{{btn.color}}" (click)="onClickHeader(btn)">
               <ion-icon name="{{btn.icon}}"></ion-icon>

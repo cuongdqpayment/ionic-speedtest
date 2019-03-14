@@ -118,6 +118,9 @@ export class ChattingPage {
   
   //emit....
   sendMessage() {
+    
+    console.log(this.message.length);
+
     if (this.message.length>0){
       this.socket.emit('client-send-message', 
         { 

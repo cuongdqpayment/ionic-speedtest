@@ -28,11 +28,11 @@
 
         <ion-item-sliding #slidingItem class="background-list" *ngFor="let r of rooms">
 
-            <ion-item #item class="background-item">
+            <ion-item #item class="background-item" tappable (click)="onClickItem(r)">
                 <ion-avatar item-start>
                     <img [src]="r.image">
                 </ion-avatar>
-                <ion-title tappable (click)="onClickItem(r)">{{r.name}}</ion-title>
+                <ion-title >{{r.name}}</ion-title>
                 <p>{{r.messages[r.messages.length-1]?.text}}</p>
                 <ion-note item-end>{{r.messages[r.messages.length-1]?.created | timeAgo}}</ion-note>
                 <ion-icon *ngIf="!isMobile" item-end [style.color]="r.visible?'darkgoldenrod':'darkblue'" 
