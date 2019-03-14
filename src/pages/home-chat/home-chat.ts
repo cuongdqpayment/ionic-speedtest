@@ -1,5 +1,5 @@
 import { Component, ViewChild } from '@angular/core';
-import { NavController, Events, Slides, NavParams, ModalController } from 'ionic-angular';
+import { NavController, Events, Slides, NavParams, ModalController, ItemSliding, Item } from 'ionic-angular';
 import { Socket, SocketIoConfig } from 'ng-socket-io';
 
 import { ApiAuthService } from '../../services/apiAuthService';
@@ -28,25 +28,14 @@ export class HomeChatPage {
   users = [];
   last_time:number = new Date().getTime();
 
-  chatManager: any = {
-    title: "Chats - Nhắn tin online"
-    , search_bar: {hint: "Tìm cái gì đó"} 
-    , buttons: [
-        {color:"primary", icon:"add", next:"ADD"}
-        , {color:"primary", icon:"contacts", next:"FRIENDS"}
-        , {color:"primary", icon:"notifications", next:"NOTIFY"
-          , alerts:[
-              "cuong.dq"
-              ]
-          }
-        , {color:"royal", icon:"cog", next:"SETTINGS"}
-      ]
-    , items: []
-  }
+  chatManager: any;
 
   isSearch: boolean = false;
   searchString: string = '';
   shouldShowCancel: boolean = false;
+
+  myNavCtrlLength:number;
+  isMobile:boolean = true;
 
   constructor(private navParams: NavParams, 
               private navCtrl: NavController,
@@ -57,25 +46,35 @@ export class HomeChatPage {
 
   ngOnInit() {
      //this.slides.lockSwipes(true);
+
+     this.chatManager = {
+      title: "Chats - Nhắn tin online"
+      , search_bar: {hint: "Tìm nhóm"} 
+      , buttons: [
+          {color:"primary", icon:"add", next:"ADD"}
+        ]
+      , items: []
+    };
+
+     //console.log('ngOnInit home-chat', this.navCtrl.length());
+     this.myNavCtrlLength =  this.navCtrl.length();
+
      this.userInfo = this.navParams.get('user'); 
      this.token = this.navParams.get('token'); 
      
      this.configSocketIo = { url: ApiStorageService.chatServer+'?token='+this.token
                             , options: {  path:'/media/socket.io'
-                                        //,transports: ['websocket']
                                         , pingInterval: 10000
                                         , wsEngine: 'ws'
                             } };
      this.socket = new Socket(this.configSocketIo); 
-     //this.socket.connect();
-     //this.socket.emit('authenticate',{token:this.token});
+
      this.getMessages()
      .subscribe(data=>{
        let msg;
        msg = data;
-       console.log('get welcome',msg);
+       //console.log('get welcome',msg);
        if (msg.step=='INIT'){
-          //console.log('client-joint-room'); 
           this.jointRooms();
        }
      });
@@ -84,7 +83,7 @@ export class HomeChatPage {
      .subscribe(data=>{
        let msg;
        msg = data;
-       console.log('server send - client receive',msg);
+       //console.log('server send - client receive',msg);
        msg.user.image = ApiStorageService.mediaServer + "/db/get-private?func=avatar&user="+msg.user.username+"&token="+this.token;
        let roomMsg = this.rooms.find(x=>x.id ===msg.room_id);
        roomMsg.messages.push(msg);
@@ -99,21 +98,20 @@ export class HomeChatPage {
       console.log('getRoomChating:',msg);
       this.users = msg.users;
       this.rooms = msg.rooms;
-
      })
 
   }
 
   ionViewDidLoad() {
-    console.log('Form load home-chats')
+    //console.log('Form load home-chats')
   }
 
   ionViewDidLeave() {
-    console.log('Form did Leave home-chats', this.navCtrl.length());
-    if (this.navCtrl.length()<3) this.socket.disconnect();
+    if (this.navCtrl.length() <= this.myNavCtrlLength){
+      console.log('Form did Leave disconnect chat');
+      this.socket.disconnect();
+    } 
   }
-
-
 
   //Su dung search
   //---------------------
@@ -222,6 +220,43 @@ export class HomeChatPage {
       this.openModal(DynamicRangePage,formData);
     }
   }
+
+  // Su dung slide Pages
+  //--------------------------
+  /**
+   * Thay đổi kiểu bấm nút mở lệnh trên item sliding
+   * @param slidingItem 
+   * @param item 
+   */
+  openSwipeOptions(slidingItem: ItemSliding, item: Item, room:any ){
+    room.visible = !room.visible;
+    if (room.visible){
+      let _offset =  "translate3d(-168px, 0px, 0px)"
+      slidingItem.setElementClass("active-sliding", true);
+      slidingItem.setElementClass("active-slide", true);
+      slidingItem.setElementClass("active-options-right", true);
+      item.setElementStyle("transform",_offset); 
+    }else{
+      this.closeSwipeOptions(slidingItem);
+    }
+  }
+
+  /**
+   * Thay đổi cách bấm nút đóng lệnh bằng nút trên item sliding
+   * @param slidingItem 
+   */
+  closeSwipeOptions(slidingItem: ItemSliding){
+    slidingItem.close();
+    slidingItem.setElementClass("active-sliding", false);
+    slidingItem.setElementClass("active-slide", false);
+    slidingItem.setElementClass("active-options-right", false);
+  }
+
+  onClickDetails(slidingItem: ItemSliding, room: any, func: number){
+    this.closeSwipeOptions(slidingItem);
+
+  }
+  //----------- end of sliding
 
 
   

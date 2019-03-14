@@ -35,8 +35,6 @@ export class ChattingPage {
   message:string = '';
   messages = [];
 
-  
-
   constructor(private navParams: NavParams, 
               private navCtrl: NavController,
               private modalCtrl: ModalController,
@@ -45,24 +43,24 @@ export class ChattingPage {
               private apiStorage: ApiStorageService) {}
 
   ngOnInit() {
-     //this.slides.lockSwipes(true);
+     
      this.userInfo = this.navParams.get('user'); 
      this.token = this.navParams.get('token'); 
      this.socket = this.navParams.get('socket'); 
      this.callback = this.navParams.get('callback'); 
      this.room = this.navParams.get('room'); 
 
+     console.log('gui alive room',this.room);
      
      this.chatManager = {
-      title: "Chating - Nhắn tin online"
-      , search_bar: {hint: "Tìm cái gì đó"} 
+      title: this.room.name
+      , search_bar: {hint: "Tìm trong nội dung trong nhóm"}
       , buttons: [
-          {color:"primary", icon:"add", next:"ADD"}
+          {color:"primary", icon:"person-add", next:"ADD"}
         ]
       , items: []
     }
 
-     console.log('gui alive room',this.room);
 
      this.messages = this.room.messages;
      setTimeout(()=>{

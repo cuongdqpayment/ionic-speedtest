@@ -1,6 +1,6 @@
 <ion-header>
   <ion-navbar>
-      <ion-buttons start *ngIf="!isSearch && chatManager?.search_bar">
+      <ion-buttons end *ngIf="!isSearch && chatManager?.search_bar">
           <button ion-button icon-only color="primary" (click)="goSearch()">
               <ion-icon name="search"></ion-icon>
           </button>
@@ -25,7 +25,7 @@
 <ion-content class="list-avatar-page" #contentMessages>
     <ion-grid>
         <ion-row *ngFor="let message of messages">
-            <ion-col class="card-background-parent" col-1 *ngIf="message?.user?.username !== userInfo?.username">
+            <ion-col class="card-background-parent" col-2 *ngIf="message?.user?.username !== userInfo?.username">
                 <div *ngIf="message?.user?.image" class="avatar-height" [style.background-image]="'url('+message?.user?.image+')'">
                 </div>
             </ion-col>
@@ -42,7 +42,7 @@
                 <p text-wrap>{{ message?.text }}</p>
                 <ion-note class="time">{{message?.created | timeAgo}}</ion-note>
             </ion-col>
-            <ion-col col-1 class="card-background-parent" *ngIf="message?.user?.username === userInfo?.username">
+            <ion-col col-2 class="card-background-parent" *ngIf="message?.user?.username === userInfo?.username">
                 <div *ngIf="message?.user?.image" class="avatar-height" [style.background-image]="'url('+message?.user?.image+')'">
                 </div>
             </ion-col>

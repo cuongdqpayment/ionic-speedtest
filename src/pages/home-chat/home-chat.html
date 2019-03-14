@@ -1,6 +1,6 @@
 <ion-header>
   <ion-navbar>
-      <ion-buttons start *ngIf="!isSearch && chatManager?.search_bar">
+      <ion-buttons end *ngIf="!isSearch && chatManager?.search_bar">
           <button ion-button icon-only color="primary" (click)="goSearch()">
               <ion-icon name="search"></ion-icon>
           </button>
@@ -23,14 +23,50 @@
 </ion-header>
 
 <ion-content class="list-avatar-page">
-    <ion-list class="background-list">
-        <ion-item class="background-item" *ngFor="let r of rooms" tappable (click)="onClickItem(r)">
-            <ion-avatar item-start>
-                <img [src]="r.image">
-            </ion-avatar>
-            <ion-title>{{r.name}}</ion-title>
-            <p>{{r.messages[r.messages.length-1]?.text}}</p>
-            <ion-note item-end>{{r.messages[r.messages.length-1]?.created | timeAgo}}</ion-note>
-        </ion-item>
+   
+    <ion-list>
+
+        <ion-item-sliding #slidingItem class="background-list" *ngFor="let r of rooms">
+
+            <ion-item #item class="background-item">
+                <ion-avatar item-start>
+                    <img [src]="r.image">
+                </ion-avatar>
+                <ion-title tappable (click)="onClickItem(r)">{{r.name}}</ion-title>
+                <p>{{r.messages[r.messages.length-1]?.text}}</p>
+                <ion-note item-end>{{r.messages[r.messages.length-1]?.created | timeAgo}}</ion-note>
+                <ion-icon *ngIf="!isMobile" item-end [style.color]="r.visible?'darkgoldenrod':'darkblue'" 
+                          name="{{r.visible?'ios-arrow-forward':'ios-arrow-back'}}" 
+                          tappable (click)="openSwipeOptions(slidingItem, item, r)"></ion-icon>
+            </ion-item>
+
+            <ion-item-options>
+                <button ion-button color="bg-blue" (click)="onClickDetails(slidingItem, r, 1)">
+                    <ion-icon name="ios-arrow-dropup"></ion-icon>
+                    Pin
+                </button>
+                <button ion-button color="secondary" (click)="onClickDetails(slidingItem, r, 2)">
+                    <ion-icon name="volume-off"></ion-icon>
+                    Mute
+                </button>
+                <button ion-button color="danger" (click)="onClickDetails(slidingItem, r, 3)">
+                    <ion-icon name="trash"></ion-icon>
+                    Delete
+                </button>
+            </ion-item-options>
+
+            <ion-item-options side="left">
+                <button ion-button color="primary" expandable (click)="onClickDetails(slidingItem, r, 4)">
+                    <ion-icon name="checkmark"></ion-icon>
+                    <div>Read</div>
+                    <ion-spinner id="archive-spinner"></ion-spinner>
+                </button>
+            </ion-item-options>
+
+        </ion-item-sliding>
+
     </ion-list>
+
+
+
 </ion-content>
