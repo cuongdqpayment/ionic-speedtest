@@ -46,6 +46,7 @@ import { ApiMediaService } from '../services/apiMediaService';
 import { OwnerImagesPage } from '../pages/owner-images/owner-images';
 import { HomeChatPage } from '../pages/home-chat/home-chat';
 import { ChattingPage } from '../pages/chatting/chatting';
+import { Autosize } from '../components/autosize';
 
 @NgModule({
   declarations: [
@@ -71,7 +72,8 @@ import { ChattingPage } from '../pages/chatting/chatting';
     ArraySortPipe,
     HomeChatPage,
     ChattingPage,
-    TimeAgoPipe
+    TimeAgoPipe,
+    Autosize
   ],
   imports: [
     BrowserModule,

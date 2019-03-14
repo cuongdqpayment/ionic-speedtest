@@ -1,6 +1,6 @@
 import { Component, ViewChild } from '@angular/core';
 import { NavController, Events, Slides, NavParams, ModalController, ItemSliding, Item } from 'ionic-angular';
-import { Socket, SocketIoConfig } from 'ng-socket-io';
+import { Socket } from 'ng-socket-io';
 
 import { ApiAuthService } from '../../services/apiAuthService';
 import { ApiStorageService } from '../../services/apiStorageService';
@@ -20,7 +20,7 @@ export class HomeChatPage {
   userInfo:any;
 
   socket: Socket;
-  configSocketIo: SocketIoConfig;
+  //configSocketIo: SocketIoConfig;
 
   roomType = '$R#';
   rooms = [];
@@ -43,9 +43,14 @@ export class HomeChatPage {
               private apiAuth: ApiAuthService,
               private events: Events,
               private apiStorage: ApiStorageService) {}
-
+              
   ngOnInit() {
-     //this.slides.lockSwipes(true);
+                
+      this.token = this.navParams.get('token'); 
+      this.userInfo = this.navParams.get('user'); 
+      this.socket = this.navParams.get('socket'); 
+      this.users = this.navParams.get('users'); 
+      this.rooms = this.navParams.get('rooms'); 
 
      this.chatManager = {
       title: "Chats - Nhắn tin online"
@@ -56,28 +61,7 @@ export class HomeChatPage {
       , items: []
     };
 
-     //console.log('ngOnInit home-chat', this.navCtrl.length());
      this.myNavCtrlLength =  this.navCtrl.length();
-
-     this.userInfo = this.navParams.get('user'); 
-     this.token = this.navParams.get('token'); 
-     
-     this.configSocketIo = { url: ApiStorageService.chatServer+'?token='+this.token
-                            , options: {  path:'/media/socket.io'
-                                        , pingInterval: 10000
-                                        , wsEngine: 'ws'
-                            } };
-     this.socket = new Socket(this.configSocketIo); 
-
-     this.getMessages()
-     .subscribe(data=>{
-       let msg;
-       msg = data;
-       //console.log('get welcome',msg);
-       if (msg.step=='INIT'){
-          this.jointRooms();
-       }
-     });
 
      this.getMessagesEmit()
      .subscribe(data=>{
@@ -91,15 +75,6 @@ export class HomeChatPage {
      });
  
 
-     this.getRoomChating()
-     .subscribe(data=>{
-      let msg;
-      msg = data;
-      console.log('getRoomChating:',msg);
-      this.users = msg.users;
-      this.rooms = msg.rooms;
-     })
-
   }
 
   ionViewDidLoad() {
@@ -109,7 +84,7 @@ export class HomeChatPage {
   ionViewDidLeave() {
     if (this.navCtrl.length() <= this.myNavCtrlLength){
       console.log('Form did Leave disconnect chat');
-      this.socket.disconnect();
+      //this.socket.disconnect();
     } 
   }
 

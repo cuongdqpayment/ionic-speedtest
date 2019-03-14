@@ -1,5 +1,5 @@
 import { Component, ViewChild } from '@angular/core';
-import { Platform, Nav, MenuController, ModalController, Events } from 'ionic-angular';
+import { Platform, Nav, MenuController, ModalController, Events, LoadingController } from 'ionic-angular';
 import { StatusBar } from '@ionic-native/status-bar';
 import { SplashScreen } from '@ionic-native/splash-screen';
 import { DynamicFormMobilePage } from '../pages/dynamic-form-mobile/dynamic-form-mobile';
@@ -19,6 +19,9 @@ import { HomeMenuPage } from '../pages/home-menu/home-menu';
 import { HomeSpeedtestPage } from '../pages/home-speedtest/home-speedtest';
 import { OwnerImagesPage } from '../pages/owner-images/owner-images';
 
+import { Socket, SocketIoConfig } from 'ng-socket-io';
+import { Observable } from 'rxjs/Observable';
+
 @Component({
   templateUrl: 'app.html'
 })
@@ -31,9 +34,17 @@ export class MyApp {
   callbackTreeMenu:any;
   userInfo:any; 
 
+  token:any;
+
+  rooms:[];
+  socket: Socket;
+  configSocketIo: SocketIoConfig;
+  last_time:number = new Date().getTime();
+
   constructor(
     private menuCtrl: MenuController, //goi trong callback
     private modalCtrl: ModalController,
+    private loadingCtrl: LoadingController,
     private apiStorageService: ApiStorageService,
     private auth: ApiAuthService,
     private events: Events,
@@ -56,41 +67,38 @@ export class MyApp {
   }
 
   ionViewDidLoad_main() {
-    //console.log('3. ionViewDidLoad Home');
-    
+
     this.checkTokenLogin();
-    //dang ky dich vu kiem tra user login ok
-    
+ 
     this.events.subscribe('user-log-in-ok', (() => {
       this.checkTokenLogin();
-      //console.log('user-log-in-ok');
     }));
     
     this.events.subscribe('user-log-out-ok', (() => {
       this.checkTokenLogin();
     }));
 
-    
-    //this.userChangeImage();
-
-
   }
 
   userChangeImage(){
-    //console.log('change image')
+    
     this.userInfo.data.image = ApiStorageService.mediaServer + "/db/get-private?func=avatar&token="+this.apiStorageService.getToken();
     this.userInfo.data.background = ApiStorageService.mediaServer + "/db/get-private?func=background&token="+this.apiStorageService.getToken();
 
   }
 
   checkTokenLogin(){
+    this.token = this.apiStorageService.getToken();
+    if (this.token) {
+      
+      let loading = this.loadingCtrl.create({
+        content: 'Đợi xác thực...'
+      });
+      loading.present();
 
-    if (this.apiStorageService.getToken()) {
       this.auth.authorize
-        (this.apiStorageService.getToken())
+        (this.token)
         .then(data => {
-          
-          //console.log(data);
 
           this.auth.getServerPublicRSAKey()
             .then(pk => {
@@ -98,23 +106,58 @@ export class MyApp {
               this.userInfo = data.user_info;
               //Tiêm token cho các phiên làm việc lấy số liệu cần xác thực
               if (this.userInfo) this.auth.injectToken(); 
+              this.initChatting();
               this.userChangeImage();
               this.resetTreeMenu();
+
+              loading.dismiss();
             })
             .catch(err => {
               this.resetTreeMenu();
-              console.log('Error get Public key',err);
+              //console.log('Error get Public key',err);
+              loading.dismiss();
             });
         })
         .catch(err => {
-          this.auth.deleteToken();
+          //this.auth.deleteToken();
           this.resetTreeMenu();
+          loading.dismiss();
         });
     } else {
       this.userInfo = undefined;
       this.resetTreeMenu();
     }
     
+  }
+
+
+  initChatting(){
+
+    this.configSocketIo = { url: ApiStorageService.chatServer+'?token='+this.token
+                            , options: {  path:'/media/socket.io'
+                                        , pingInterval: 10000
+                                        , wsEngine: 'ws'
+                            } };
+    this.socket = new Socket(this.configSocketIo); 
+
+    this.getMessages()
+     .subscribe(data=>{
+       let msg;
+       msg = data;
+       //console.log('get socket welcome',msg);
+       if (msg.step=='INIT'){
+          this.jointRooms();
+       }
+     });
+
+     this.getRoomChating()
+     .subscribe(data=>{
+        let msg;
+        msg = data;
+        console.log('getRoomChating:',msg);
+        this.events.publish('event-main-received-rooms',msg);
+     })
+
   }
 
   resetTreeMenu(){
@@ -357,6 +400,11 @@ export class MyApp {
       ]
     }
 
+    this.events.publish('event-main-login-checked',{
+      token: this.token,
+      user: this.userInfo,
+      socket: this.socket
+    });
   }
 
 
@@ -424,5 +472,31 @@ export class MyApp {
     let modal = this.modalCtrl.create(form, data);
     modal.present();
   }
+
+  //emit....
+  jointRooms(){
+    this.socket.emit('client-joint-room'
+                    ,{ rooms: this.rooms,
+                      last_time: this.last_time
+                    });
+  }
+
+  //socket.on...
+  getMessages() {
+    return new Observable(observer => {
+      this.socket.on("message", (data) => {
+        observer.next(data);
+      });
+    })
+  }
+
+  getRoomChating() {
+    return new Observable(observer => {
+      this.socket.on('server-reply-room', (data) => {
+        observer.next(data);
+      });
+    });
+  }
+
 }
 

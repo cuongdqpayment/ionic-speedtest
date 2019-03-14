@@ -115,11 +115,22 @@ export class ChattingPage {
   }
 
 
+  onKeydown(event){
+    if (event.key === "Enter") {
+        this.sendMessage()
+    }
+    /* else{
+      this.message = event.target.value;
+    } */
+  }
+  onKeyup(event){
+    if (event.key === "Enter") {
+      this.message = '';
+    }
+  }
   
   //emit....
   sendMessage() {
-    
-    console.log(this.message.length);
 
     if (this.message.length>0){
       this.socket.emit('client-send-message', 
@@ -128,8 +139,9 @@ export class ChattingPage {
           room: this.room,
           created: new Date().getTime()
        });
-      this.message = '';
     }
+    
+    this.message = '';
   }
  
 

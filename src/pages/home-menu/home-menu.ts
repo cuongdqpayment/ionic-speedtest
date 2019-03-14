@@ -1,10 +1,10 @@
 import { Component, } from '@angular/core';
-import { ApiMediaService } from '../../services/apiMediaService';
 import { ApiStorageService } from '../../services/apiStorageService';
 import { ApiAuthService } from '../../services/apiAuthService';
-import { LoadingController, ModalController, NavController } from 'ionic-angular';
+import { LoadingController, ModalController, NavController, Events } from 'ionic-angular';
 import { OwnerImagesPage } from '../owner-images/owner-images';
 import { HomeChatPage } from '../home-chat/home-chat';
+import { Socket } from 'ng-socket-io';
 
 @Component({
   selector: 'page-home-menu',
@@ -15,104 +15,101 @@ export class HomeMenuPage {
   dynamicTree: any;
 
   userInfo: any;
+  token:any;
+  socket: Socket;
+  users = [];
+  rooms = [];
+
 
   constructor(
-    private apiMedia: ApiMediaService
-    , private apiStorageService: ApiStorageService
+      private apiStorageService: ApiStorageService
     , private auth: ApiAuthService
     , private loadingCtrl: LoadingController
     , private navCtrl: NavController
     , private modalCtrl: ModalController
+    , private events: Events
   ) { }
 
   ngOnInit() {
 
     //doc tu bo nho len lay danh sach da load truoc day ghi ra 
     this.dynamicTree = this.apiStorageService.getHome();
+    
+    this.events.subscribe('event-main-login-checked'
+      , (data => {
 
-    let loading = this.loadingCtrl.create({
-      content: 'Đợi load form...'
-    });
-    loading.present();
-    setTimeout(() => {
-      this.checkTokenLogin();
-      loading.dismiss();
-    }, 3000);
-}
+        this.token = data.token;
+        this.userInfo = data.user;
+        this.socket = data.socket;
 
-  checkTokenLogin() {
+        if (this.dynamicTree.items.length===0){
+          setTimeout(() => {
+            this.getHomeNews();
+          }, 1000);
+        }
 
-    if (this.apiStorageService.getToken()) {
+      })
+    )
 
-      let loading = this.loadingCtrl.create({
-        content: 'Đợi kiểm tra xác thực và load dữ liệu...'
-      });
-      loading.present();
-
-      this.apiMedia.authorizeFromResource
-        (this.apiStorageService.getToken())
-        .then(login => {
-          if (login.status
-            && login.user_info
-            && login.token
-          ) {
-
-            this.userInfo = login.user_info;
-            
-            this.auth.getDynamicUrl(ApiStorageService.mediaServer + "/db/list-groups?limit=12&offset=0", true)
-              .then(data => {
-
-                loading.dismiss();
-
-                //console.log('list-groups token:', data);
-
-                let items = [];
-                data.forEach(el => {
-
-                  let medias = [];
-                  if (el.medias){
-                    el.medias.forEach(e=>{
-                      e.image = ApiStorageService.mediaServer + "/db/get-file/" + encodeURI(e.url);
-                      medias.push(e);
-                    })
-                  }
-
-                  el.medias = medias;
-                  el.actions = {
-                    like: { name: "LIKE", color: "primary", icon: "thumbs-up", next: "LIKE" }
-                    , comment: { name: "COMMENT", color: "primary", icon: "chatbubbles", next: "COMMENT" }
-                    , share: { name: "SHARE", color: "primary", icon: "share-alt", next: "SHARE" }
-                  }
-
-                  items.push(el);
-
-                });
-
-                this.dynamicTree.items = items;
-                
-                this.apiStorageService.saveHome(this.dynamicTree);
-
-              })
-              .catch(err => {
-                loading.dismiss();
-                console.log(err);
-              })
-
-          }
-        })
-        .catch(err => { loading.dismiss() });
-    } else {
-      this.userInfo = undefined;
-      this.getPublicNews();
-      //truong hop khong co mang thi thoi
-    }
+    this.events.subscribe('event-main-received-rooms'
+      , (data => {
+        this.users = data.users;
+        this.rooms = data.rooms;
+      })
+    )
 
   }
 
-  getPublicNews() {
+  getHomeNews() {
+    if (this.userInfo) {
 
+      let loading = this.loadingCtrl.create({
+        content: 'Đợi lấy dữ liệu cá nhân...'
+      });
+      loading.present();
+      //chuyen thu tuc lay thong tin sang keo len, keo xuong
+      this.auth.getDynamicUrl(ApiStorageService.mediaServer + "/db/list-groups?limit=12&offset=0", true)
+        .then(data => {
+
+          let items = [];
+          data.forEach(el => {
+
+            let medias = [];
+            if (el.medias) {
+              el.medias.forEach(e => {
+                e.image = ApiStorageService.mediaServer + "/db/get-file/" + encodeURI(e.url);
+                medias.push(e);
+              })
+            }
+
+            el.medias = medias;
+            el.actions = {
+              like: { name: "LIKE", color: "primary", icon: "thumbs-up", next: "LIKE" }
+              , comment: { name: "COMMENT", color: "primary", icon: "chatbubbles", next: "COMMENT" }
+              , share: { name: "SHARE", color: "primary", icon: "share-alt", next: "SHARE" }
+            }
+
+            items.push(el);
+
+          });
+
+          this.dynamicTree.items = items;
+          this.apiStorageService.saveHome(this.dynamicTree);
+
+          loading.dismiss();
+        })
+        .catch(err => {
+          loading.dismiss();
+        })
+    } else {
+      this.userInfo = undefined;
+      this.getPublicNews();
+    }
+  }
+
+  getPublicNews() {
     let loading = this.loadingCtrl.create({
-      content: 'Đợi kiểm tra xác thực và load dữ liệu...'
+      content: 'Đợi load dữ liệu chung...'
     });
     loading.present();
 
@@ -124,48 +121,45 @@ export class HomeMenuPage {
         data.forEach(el => {
 
           let medias = [];
-          if (el.medias){
-            el.medias.forEach(e=>{
-                      e.image = ApiStorageService.mediaServer + "/db/get-file/" + encodeURI(e.url);
-                      e.note = el.time;
-                      medias.push(e);
+          if (el.medias) {
+            el.medias.forEach(e => {
+              e.image = ApiStorageService.mediaServer + "/db/get-file/" + encodeURI(e.url);
+              e.note = el.time;
+              medias.push(e);
             })
           }
 
           el.medias = medias;
-                  el.actions = {
-                    like: { name: "LIKE", color: "primary", icon: "thumbs-up", next: "LIKE" }
-                    , comment: { name: "COMMENT", color: "primary", icon: "chatbubbles", next: "COMMENT" }
-                    , share: { name: "SHARE", color: "primary", icon: "share-alt", next: "SHARE" }
-                  }
+          el.actions = {
+            like: { name: "LIKE", color: "primary", icon: "thumbs-up", next: "LIKE" }
+            , comment: { name: "COMMENT", color: "primary", icon: "chatbubbles", next: "COMMENT" }
+            , share: { name: "SHARE", color: "primary", icon: "share-alt", next: "SHARE" }
+          }
 
           items.push(el);
-          
+
         });
 
         this.dynamicTree.items = items;
       })
       .catch(err => {
-        
         loading.dismiss();
-        
-        console.log(err);
       })
   }
 
-
-  
-  
   // Xử lý sự kiện click button theo id
   onClickAdd() {
     this.openModal(OwnerImagesPage);
   }
 
-  onClickChat(){
-    //this.navCtrl.setRoot(ChatHomePage);
+  onClickChat() {
     this.navCtrl.push(HomeChatPage, {
-      user: this.userInfo, 
-      token: this.apiStorageService.getToken() });
+      token: this.token,
+      user: this.userInfo,
+      socket: this.socket,
+      users: this.users,
+      rooms: this.rooms
+    });
   }
 
   onClickMedia(idx, item) {
