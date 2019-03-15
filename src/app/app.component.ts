@@ -36,6 +36,7 @@ export class MyApp {
 
   token:any;
 
+  mySocket:any;
   rooms:[];
   socket: Socket;
   configSocketIo: SocketIoConfig;
@@ -138,17 +139,29 @@ export class MyApp {
                                         , pingInterval: 10000
                                         , wsEngine: 'ws'
                             } };
+    
+    //1.chat - client -->open
     this.socket = new Socket(this.configSocketIo); 
-
+    
+    //2.chat - client received welcome
     this.getMessages()
      .subscribe(data=>{
        let msg;
        msg = data;
-       //console.log('get socket welcome',msg);
        if (msg.step=='INIT'){
           this.jointRooms();
+          this.mySocket = msg.your_socket
        }
      });
+
+     //3.chat - client received new socket
+     this.getNewSocket()
+     .subscribe(data=>{
+        let msg;
+        msg = data;
+        console.log(this.socket)
+     })
+
 
      this.getRoomChating()
      .subscribe(data=>{
@@ -486,6 +499,25 @@ export class MyApp {
     return new Observable(observer => {
       this.socket.on("message", (data) => {
         observer.next(data);
+      });
+    })
+  }
+
+  /**
+   * new socket connected
+   */
+  getNewSocket() {
+    return new Observable(observer => {
+      this.socket.on("server-broadcast-new-socket", (data) => {
+        observer.next(data); //{socket_id, user, sockets}
+      });
+    })
+  }
+
+  getEndSocket() {
+    return new Observable(observer => {
+      this.socket.on("server-broadcast-end-socket", (data) => {
+        observer.next(data); //{socket_id, user, sockets}
       });
     })
   }
