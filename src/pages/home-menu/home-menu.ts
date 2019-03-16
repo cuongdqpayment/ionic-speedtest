@@ -51,6 +51,12 @@ export class HomeMenuPage {
       })
     )
 
+    this.events.subscribe('event-main-received-users'
+      , (users => {
+        this.users = users;
+      })
+    )
+
     this.events.subscribe('event-main-received-rooms'
       , (rooms => {
         this.rooms = rooms;

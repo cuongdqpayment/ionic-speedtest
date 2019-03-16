@@ -144,24 +144,26 @@ export class MyApp {
                                         , wsEngine: 'ws'
                             } };
     
-    //1.chat - client -->open
+    //chat - client -->open
     this.socket = new Socket(this.configSocketIo); 
 
-    this.originRooms = [
-      {
-      id: 'test-room-1#123456789',
-      name: 'Test 1',
-      users: ['903500888','702418821']
-      }
-      ,
-      {
-      id: 'test-room-1#1234567893',
-      name: 'Test 2',
-      users: ['903500888','702418821','905300888']
-      }
-    ]; //lay tu storage de join lai cac room
+    if (this.userInfo&&this.userInfo.username==='903500888'){
+      this.originRooms = [
+        {
+        id: 'test-room-1#123456789',
+        name: 'Test 1',
+        users: ['903500888','702418821']
+        }
+        ,
+        {
+        id: 'test-room-1#1234567893',
+        name: 'Test 2',
+        users: ['903500888','702418821','905300888']
+        }
+      ]; //lay tu storage de join lai cac room
+    }
     
-    //2.chat - client received welcome
+    //1.chat - client received welcome
     this.getMessages()
      .subscribe(data=>{
        let msg;
@@ -169,35 +171,68 @@ export class MyApp {
        console.log('send, message',msg);
        if (msg.step=='INIT'){
           this.mySocket = msg.your_socket;
-          this.jointRooms();
+          //4. chat - join rooms
+          this.socket.emit('client-join-rooms'
+                    ,{ rooms: this.originRooms,
+                      last_time: this.last_time
+                    });
        }
        if (msg.step=='JOINED'){
+         //4.2 rooms joined
           this.rooms = msg.rooms;
+          this.events.publish('event-main-received-rooms',this.rooms);
+       }
+
+       if (msg.step=='ACCEPTED'){
+         //5.1 accepted room
+          this.rooms.push(msg.room);
           this.events.publish('event-main-received-rooms',this.rooms);
        }
        
      });
 
-     //3.chat - client received new/disconnect socket the same user
+     //2.chat - client received new/disconnect socket the same user
     this.getPrivateMessages()
      .subscribe(data=>{
        let msg;
        msg = data;
        if (msg.step==='START'){
+         //3.2 private old socket in username inform new socket
          this.mySocket.sockets.push(msg.socket_id);
         }else if (msg.step==='END'){
+          //x.2 chat
           this.mySocket.sockets.splice(this.mySocket.sockets.indexOf(msg.socket_id), 1);
        }
        //console.log('private, mysocket',this.mySocket);
      });
 
-     //4.chat - client received new user
+     //3.1 chat - client received new user
      this.getNewUser()
      .subscribe(data=>{
         let msg;
         msg = data;
         this.users.push(msg.username);
+        this.events.publish('event-main-received-users',this.users);
      });
+
+     //4.1 send to all sockets to invite join this room
+     this.getInvitedRoom()
+     .subscribe(data=>{
+        let msg;
+        msg = data;
+        //{roomId:{name:,messages[],users:[{username:[socketonline,...]}]}}
+        console.log('new room from other', msg);
+        //join-new-room
+        for (let key in msg){
+          msg[key].id = key;
+          //5. accept room
+          this.socket.emit('client-accept-room',msg[key]);
+        }
+
+     });
+
+
+
 
      this.getRoomChating()
      .subscribe(data=>{
@@ -207,12 +242,13 @@ export class MyApp {
         //this.events.publish('event-main-received-rooms',msg);
      })
 
-     //x.chat - client user disconnect
+     //x.1 chat - client user disconnect
      this.getEndUser()
      .subscribe(data=>{
         let msg;
         msg = data;
         this.users = this.users.splice( this.users.indexOf(msg.username), 1 );
+        this.events.publish('event-main-received-users',this.users);
      });
 
 
@@ -564,6 +600,17 @@ export class MyApp {
   getNewUser() {
     return new Observable(observer => {
       this.socket.on("server-broadcast-new-user", (data) => {
+        observer.next(data); //user
+      });
+    })
+  }
+
+  /**
+   * 4.1 room other socket or user new invite
+   */
+  getInvitedRoom() {
+    return new Observable(observer => {
+      this.socket.on("server-private-join-room-invite", (data) => {
         observer.next(data); //user
       });
     })
