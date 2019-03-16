@@ -32,7 +32,7 @@
                     <ion-avatar item-start *ngIf="room.image">
                         <img [src]="room.image">
                     </ion-avatar>
-                    <ion-title >{{roomId}} {{room.name}}</ion-title>
+                    <ion-title >{{room.name}}</ion-title>
                     <p *ngIf="room.messages">{{room.messages[room.messages.length-1]?.text}}</p>
                     <ion-note item-end *ngIf="room.messages">{{room.messages[room.messages.length-1]?.created | timeAgo}}</ion-note>
                     <ion-icon *ngIf="!isMobile" item-end [style.color]="room.visible?'darkgoldenrod':'darkblue'" 
