@@ -33,12 +33,13 @@ export class MyApp {
   treeMenu:any;
   callbackTreeMenu:any;
   userInfo:any; 
-
   token:any;
 
   mySocket:any;
-  rooms:[];
-  socket: Socket;
+  users = []        //users online
+  rooms = [];       //room online
+  originRooms = []; //luu goc
+  socket: Socket;   
   configSocketIo: SocketIoConfig;
   last_time:number = new Date().getTime();
 
@@ -136,40 +137,86 @@ export class MyApp {
 
     this.configSocketIo = { url: ApiStorageService.chatServer+'?token='+this.token
                             , options: {  path:'/media/socket.io'
-                                        , pingInterval: 10000
+                                        , pingInterval: 20000
+                                        , timeout: 60000
+                                        , reconnectionDelay: 30000
+                                        , reconnectionDelayMax: 60000
                                         , wsEngine: 'ws'
                             } };
     
     //1.chat - client -->open
     this.socket = new Socket(this.configSocketIo); 
+
+    this.originRooms = [
+      {
+      id: 'test-room-1#123456789',
+      name: 'Test 1',
+      users: ['903500888','702418821']
+      }
+      ,
+      {
+      id: 'test-room-1#1234567893',
+      name: 'Test 2',
+      users: ['903500888','702418821','905300888']
+      }
+    ]; //lay tu storage de join lai cac room
     
     //2.chat - client received welcome
     this.getMessages()
      .subscribe(data=>{
        let msg;
        msg = data;
+       console.log('send, message',msg);
        if (msg.step=='INIT'){
+          this.mySocket = msg.your_socket;
           this.jointRooms();
-          this.mySocket = msg.your_socket
        }
+       if (msg.step=='JOINED'){
+          this.rooms = msg.rooms;
+          this.events.publish('event-main-received-rooms',this.rooms);
+       }
+       
      });
 
-     //3.chat - client received new socket
-     this.getNewSocket()
+     //3.chat - client received new/disconnect socket the same user
+    this.getPrivateMessages()
+     .subscribe(data=>{
+       let msg;
+       msg = data;
+       if (msg.step==='START'){
+         this.mySocket.sockets.push(msg.socket_id);
+        }else if (msg.step==='END'){
+          this.mySocket.sockets.splice(this.mySocket.sockets.indexOf(msg.socket_id), 1);
+       }
+       //console.log('private, mysocket',this.mySocket);
+     });
+
+     //4.chat - client received new user
+     this.getNewUser()
      .subscribe(data=>{
         let msg;
         msg = data;
-        console.log(this.socket)
-     })
-
+        this.users.push(msg.username);
+     });
 
      this.getRoomChating()
      .subscribe(data=>{
         let msg;
         msg = data;
         console.log('getRoomChating:',msg);
-        this.events.publish('event-main-received-rooms',msg);
+        //this.events.publish('event-main-received-rooms',msg);
      })
+
+     //x.chat - client user disconnect
+     this.getEndUser()
+     .subscribe(data=>{
+        let msg;
+        msg = data;
+        this.users = this.users.splice( this.users.indexOf(msg.username), 1 );
+     });
+
+
+     
 
   }
 
@@ -489,7 +536,7 @@ export class MyApp {
   //emit....
   jointRooms(){
     this.socket.emit('client-joint-room'
-                    ,{ rooms: this.rooms,
+                    ,{ rooms: this.originRooms,
                       last_time: this.last_time
                     });
   }
@@ -503,24 +550,37 @@ export class MyApp {
     })
   }
 
-  /**
-   * new socket connected
-   */
-  getNewSocket() {
+  getPrivateMessages() {
     return new Observable(observer => {
-      this.socket.on("server-broadcast-new-socket", (data) => {
-        observer.next(data); //{socket_id, user, sockets}
+      this.socket.on("server-private-emit", (data) => {
+        observer.next(data);
       });
     })
   }
 
-  getEndSocket() {
+  /**
+   * new user connected
+   */
+  getNewUser() {
     return new Observable(observer => {
-      this.socket.on("server-broadcast-end-socket", (data) => {
-        observer.next(data); //{socket_id, user, sockets}
+      this.socket.on("server-broadcast-new-user", (data) => {
+        observer.next(data); //user
       });
     })
   }
+
+  /**
+   * end user coonected
+   */
+  getEndUser() {
+    return new Observable(observer => {
+      this.socket.on("server-broadcast-end-user", (data) => {
+        observer.next(data); //user
+      });
+    })
+  }
+
+
 
   getRoomChating() {
     return new Observable(observer => {

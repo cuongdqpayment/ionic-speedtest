@@ -22,6 +22,7 @@ export class HomeChatPage {
   socket: Socket;
   //configSocketIo: SocketIoConfig;
 
+  Object = Object;
   roomType = '$R#';
   rooms = [];
   userType = '$U#';
@@ -50,7 +51,18 @@ export class HomeChatPage {
       this.userInfo = this.navParams.get('user'); 
       this.socket = this.navParams.get('socket'); 
       this.users = this.navParams.get('users'); 
-      this.rooms = this.navParams.get('rooms'); 
+
+      let rooms = this.navParams.get('rooms'); 
+      //[{roomid:{name:'',...adding+...,users:[{username:[socketonline]}]}}]
+
+      rooms.forEach(room=>{
+        for (let key in room){
+          room[key].id = key;
+          this.rooms.push(room[key])
+        }
+      })
+
+      console.log('rooms',this.rooms);
 
      this.chatManager = {
       title: "Chats - Nhắn tin online"
@@ -83,7 +95,7 @@ export class HomeChatPage {
 
   ionViewDidLeave() {
     if (this.navCtrl.length() <= this.myNavCtrlLength){
-      console.log('Form did Leave disconnect chat');
+      //console.log('Form did Leave disconnect chat');
       //this.socket.disconnect();
     } 
   }

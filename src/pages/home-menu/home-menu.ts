@@ -52,9 +52,8 @@ export class HomeMenuPage {
     )
 
     this.events.subscribe('event-main-received-rooms'
-      , (data => {
-        this.users = data.users;
-        this.rooms = data.rooms;
+      , (rooms => {
+        this.rooms = rooms;
       })
     )
 
