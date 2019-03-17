@@ -588,10 +588,25 @@ export class MyApp {
     }
 
     if (isMore){
-      //console.log(item);
       if (item.next) {
         this.navCtrl.push(item.next);
         this.menuCtrl.close();
+        if (item.next===HomeMenuPage){
+          
+          setTimeout(()=>{
+            console.log(item);
+            this.events.publish('event-main-login-checked',{
+              token: this.token,
+              user: this.userInfo,
+              socket: this.socket
+            });
+  
+            this.events.publish('event-main-received-users',this.users);
+            this.events.publish('event-main-received-rooms',this.rooms);
+          },1000)
+
+        }
+
       }
     }
 
