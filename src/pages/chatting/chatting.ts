@@ -62,7 +62,12 @@ export class ChattingPage {
     }
 
 
-     this.messages = this.room.messages;
+      this.room.messages.forEach(msg => {
+        if (msg.user&&!msg.user.image)
+          msg.user.image=ApiStorageService.mediaServer+"/db/get-private?func=avatar&user="+msg.user.username+"&token="+this.token
+        this.messages.push(msg);
+      });
+
      setTimeout(()=>{
        try{
          this.contentMessages.scrollToBottom();
