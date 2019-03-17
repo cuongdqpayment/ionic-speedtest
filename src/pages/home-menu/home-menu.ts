@@ -53,12 +53,14 @@ export class HomeMenuPage {
 
     this.events.subscribe('event-main-received-users'
       , (users => {
+        //console.log('event-main-received-users-home-menu', users);
         this.users = users;
       })
     )
 
     this.events.subscribe('event-main-received-rooms'
       , (rooms => {
+        //console.log('event-main-received-rooms-home-menu', rooms);
         this.rooms = rooms;
       })
     )
@@ -154,7 +156,7 @@ export class HomeMenuPage {
 
   // Xử lý sự kiện click button theo id
   onClickAdd() {
-    this.openModal(OwnerImagesPage);
+    this.openModal(OwnerImagesPage,{parent: this});
   }
 
   onClickChat() {

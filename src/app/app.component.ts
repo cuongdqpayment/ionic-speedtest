@@ -146,23 +146,41 @@ export class MyApp {
     
     //chat - client -->open
     this.socket = new Socket(this.configSocketIo); 
+    //this.apiStorageService.deleteUserRooms(this.userInfo)
+    this.originRooms = this.apiStorageService.getUserRooms(this.userInfo);
 
-    if (this.userInfo&&this.userInfo.username==='903500888'){
+    if (this.userInfo&&this.originRooms.length===0&&this.userInfo.username==='903500888'){
       this.originRooms = [
         {
-        id: 'test-room-1#123456789',
-        name: 'Test 1',
-        users: ['903500888','702418821']
+        id: this.userInfo.username+'-0#xxxx',
+        name: 'demo 1',
+        users: ['903500888','702418821'],
+        created: new Date().getTime(),
+        time:  new Date().getTime(),
+        messages:[{
+          //romm_id: room_id,
+          //user: this.userInfo,
+          text: (this.userInfo.data?this.userInfo.data.fullname:this.userInfo.username) + " Create group",
+          created: new Date().getTime()
+        }]
         }
         ,
         {
-        id: 'test-room-1#1234567893',
-        name: 'Test 2',
-        users: ['903500888','702418821','905300888']
+        id: this.userInfo.username+'-1#yyyy',
+        name: 'demo 2',
+        users: ['903500888','702418821','905300888'],
+        created: new Date().getTime(),
+        time:  new Date().getTime(),
+        messages:[{
+          //romm_id: room_id,
+          //user: this.userInfo,
+          text: (this.userInfo.data?this.userInfo.data.fullname:this.userInfo.username) + " Create group",
+          created: new Date().getTime()
+        }]
         }
       ]; //lay tu storage de join lai cac room
     }
-    
+
     //1.chat - client received welcome
     this.getMessages()
      .subscribe(data=>{
@@ -170,22 +188,76 @@ export class MyApp {
        msg = data;
        console.log('send, message',msg);
        if (msg.step=='INIT'){
+          //socketid,user,sockets
           this.mySocket = msg.your_socket;
           //4. chat - join rooms
           this.socket.emit('client-join-rooms'
-                    ,{ rooms: this.originRooms,
-                      last_time: this.last_time
+                    ,{ rooms: this.originRooms
                     });
        }
        if (msg.step=='JOINED'){
-         //4.2 rooms joined
+         //4.2 rooms joined first
           this.rooms = msg.rooms;
+
+          let originRooms=[]; //reset
+          this.rooms.forEach(room=>{
+              let users = [];
+              room.users.forEach(user=>{
+                for (let uname in user){
+                  users.push(uname);
+                }
+              });
+
+              if (room.id.indexOf('#')>0){
+                originRooms.push({
+                  id: room.id,
+                  name: room.name,
+                  created: room.created,
+                  time:  room.time,
+                  image: room.image,
+                  admin: room.admin,
+                  users: users,
+                  messages: room.messages,
+                })
+              }
+          })
+          //luu room de load lan sau
+          this.apiStorageService.saveUserRooms(this.userInfo, originRooms);
+
           this.events.publish('event-main-received-rooms',this.rooms);
        }
 
        if (msg.step=='ACCEPTED'){
-         //5.1 accepted room
-          this.rooms.push(msg.room);
+         //5.1 + 6.2 accepted room
+
+          //this.originRooms
+          let originRooms = this.apiStorageService.getUserRooms(this.userInfo);
+          
+          if (msg.room){
+            
+            this.rooms.push(msg.room);
+
+            let users = [];
+            msg.room.users.forEach(user=>{
+              for (let uname in user){
+                users.push(uname);
+              }
+            });
+
+            originRooms.push({
+              id: msg.room.id,
+              name: msg.room.name,
+              created: msg.room.created,
+              time:  msg.room.time,
+              image: msg.room.image,
+              admin: msg.room.admin,
+              users: users,
+              messages: msg.room.messages
+            })
+          }
+          //luu room de load lan sau
+          this.apiStorageService.saveUserRooms(this.userInfo, originRooms);
+
           this.events.publish('event-main-received-rooms',this.rooms);
        }
        
@@ -211,11 +283,14 @@ export class MyApp {
      .subscribe(data=>{
         let msg;
         msg = data;
-        this.users.push(msg.username);
-        this.events.publish('event-main-received-users',this.users);
+        console.log('new user receive', msg);
+        if (!this.users.find(user=>user.username===msg.username)){
+          this.users.push(msg);
+          this.events.publish('event-main-received-users',this.users);
+        }
      });
 
-     //4.1 send to all sockets to invite join this room
+     //4.1 + 6.1 invite join this room
      this.getInvitedRoom()
      .subscribe(data=>{
         let msg;
@@ -232,15 +307,19 @@ export class MyApp {
      });
 
 
-
-
-     this.getRoomChating()
+     //7. new message
+     this.getMessagesEmit()
      .subscribe(data=>{
-        let msg;
-        msg = data;
-        console.log('getRoomChating:',msg);
-        //this.events.publish('event-main-received-rooms',msg);
-     })
+       let msg;
+       msg = data;
+       console.log('7. new message:',msg, this.rooms);
+       msg.user.image = ApiStorageService.mediaServer + "/db/get-private?func=avatar&user="+msg.user.username+"&token="+this.token;
+       
+       let roomMsg = this.rooms.find(room=>room.id===msg.room_id);
+
+       roomMsg.messages.push(msg);
+       this.events.publish('event-receiving-message',roomMsg);
+     });
 
      //x.1 chat - client user disconnect
      this.getEndUser()
@@ -250,9 +329,6 @@ export class MyApp {
         this.users = this.users.splice( this.users.indexOf(msg.username), 1 );
         this.events.publish('event-main-received-users',this.users);
      });
-
-
-     
 
   }
 
@@ -627,14 +703,12 @@ export class MyApp {
     })
   }
 
-
-
-  getRoomChating() {
+  getMessagesEmit() {
     return new Observable(observer => {
-      this.socket.on('server-reply-room', (data) => {
+      this.socket.on("server-emit-message", (data) => {
         observer.next(data);
       });
-    });
+    })
   }
 
 }

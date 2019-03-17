@@ -56,10 +56,8 @@ export class HomeChatPage {
       //[{roomid:{name:'',...adding+...,users:[{username:[socketonline]}]}}]
 
       rooms.forEach(room=>{
-        for (let key in room){
-          room[key].id = key;
-          this.rooms.push(room[key])
-        }
+          room.image = room.image?room.image: ApiStorageService.mediaServer + "/db/get-private?func=avatar&token="+this.token;
+          this.rooms.push(room);
       })
 
       console.log('rooms',this.rooms);
@@ -75,17 +73,36 @@ export class HomeChatPage {
 
      this.myNavCtrlLength =  this.navCtrl.length();
 
-     this.getMessagesEmit()
-     .subscribe(data=>{
-       let msg;
-       msg = data;
-       //console.log('server send - client receive',msg);
-       msg.user.image = ApiStorageService.mediaServer + "/db/get-private?func=avatar&user="+msg.user.username+"&token="+this.token;
-       let roomMsg = this.rooms.find(x=>x.id ===msg.room_id);
-       roomMsg.messages.push(msg);
-       this.events.publish('event-receiving-message',roomMsg);
-     });
- 
+
+     //nhan ket qua dong thoi new room?? cung events voi home-menu
+     //dang ky room moi
+     //nhan tin nhan gui den
+    this.events.subscribe('event-main-received-users'
+      , (users => {
+        //console.log('event-main-received-users-home-chats', users);
+        //this.users = users;
+        users.forEach(user=>{
+        let userExists = this.users.find(u=>u.username===user.username);
+          if (!userExists){
+            this.users.push(user);
+          }
+        })
+      })
+
+    )
+
+    this.events.subscribe('event-main-received-rooms'
+      , (rooms => {
+        //console.log('event-main-received-rooms-home-chats', rooms);
+        rooms.forEach(room=>{
+          let roomExists = this.rooms.find(r=>r.id===room.id);
+          if (!roomExists){
+            this.rooms.push(room);
+          }
+        })
+        //this.rooms = rooms;
+      })
+    ) 
 
   }
 
@@ -117,7 +134,10 @@ export class HomeChatPage {
   callbackAddRoom = function(res){
     return new Promise((resolve,reject)=>{
       let users = [];
+      let groupName;
       res.data.forEach(el=>{
+        //el.room_name???
+        groupName = el.title?el.title:'new Group';
         for (let key in el.details){
           if (el.details[key]){
             users.push(key)
@@ -125,32 +145,27 @@ export class HomeChatPage {
         }
       })
 
-      console.log('user',users);
+      console.log('users new room:',users);
       
       if (users.length>0){
-        let room_id = this.roomType + this.userInfo.username + "#" + new Date().getTime();
-        this.rooms.push(
+        let room_id = this.userInfo.username + "#" + new Date().getTime();
+        let roomNew = 
           {
             id: room_id,
-            name: 'New Group',
+            name: groupName,
             image: ApiStorageService.mediaServer + "/db/get-private?func=avatar&token="+this.token,
-            admins:[this.userType+this.userInfo.username],
+            admins:[this.userInfo.username],
             users: users,
             created: new Date().getTime(),
             time:  new Date().getTime(),
             messages:[{
-              //romm_id: room_id,
-              //user: this.userInfo,
               text: (this.userInfo.data?this.userInfo.data.fullname:this.userInfo.username) + " Create group",
               created: new Date().getTime()
             }]
           }
-        )
+          //6. user create newroom
+          this.socket.emit('client-create-new-room',roomNew);  
       }
-
-      //console.log('results ROOMS:',this.rooms);
-
-      this.jointRooms()
 
       resolve({next:'CLOSE'});
     })
@@ -183,7 +198,7 @@ export class HomeChatPage {
 
       let details = [];
       this.users.forEach(el=>{
-        details.push({key:el.username,name:el.username.slice(3),color:"secondary",value:0})
+        details.push({key:el.username,name:el.data&&el.data.fullname?el.data.fullname+'('+el.data.nickname+')':el.username,color:"secondary",value:0})
       })
 
       let formData={
@@ -244,42 +259,6 @@ export class HomeChatPage {
 
   }
   //----------- end of sliding
-
-
-  
-  //emit....
-  jointRooms(){
-    this.socket.emit('client-joint-room'
-                    ,{ rooms: this.rooms,
-                      last_time: this.last_time
-                    });
-  }
-
-  //socket.on...
-  getMessages() {
-    return new Observable(observer => {
-      //default when server: socket.send('message data'/{})
-      this.socket.on("message", (data) => {
-        observer.next(data);
-      });
-    })
-  }
-
-  getMessagesEmit() {
-    return new Observable(observer => {
-      this.socket.on("server-emit-message", (data) => {
-        observer.next(data);
-      });
-    })
-  }
-
-  getRoomChating() {
-    return new Observable(observer => {
-      this.socket.on('server-reply-room', (data) => {
-        observer.next(data);
-      });
-    });
-  }
 
   openModal(form,data?:any) {
     this.modalCtrl.create(form, data).present();

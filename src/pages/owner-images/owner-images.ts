@@ -260,7 +260,7 @@ export class OwnerImagesPage {
 
 
   onClickAction(btn){
-    console.log(btn);
+    //console.log(btn);
     this.processCommand(btn);
   }
 
