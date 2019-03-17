@@ -25,6 +25,8 @@ keys/
 tmp/
 #khong chuyen file database len vi se bi ghi de mat so lieu
 #/db/*.db
+gmap-test/
+
 temp/
 #phai day www len server cho ionic hoat dong
 www/
