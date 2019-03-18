@@ -170,11 +170,19 @@ export class HomeMenuPage {
   }
 
 
-  doInfinite(infiniteScroll) {
-    setTimeout(() => {
-      
-      infiniteScroll.complete();
-    }, 1000);
+  doInfinite(infiniteScroll,direction) {
+    if (direction==='UP'){
+      console.log('UP');
+      setTimeout(() => {
+        infiniteScroll.complete();
+      }, 3000);
+    }else{
+      console.log('DOWN');
+      setTimeout(() => {
+        infiniteScroll.complete();
+      }, 1000);
+    }
+
   }
 
   onClickMedia(idx, item) {
