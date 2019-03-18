@@ -58,8 +58,8 @@ export class ApiImageService {
                     canvas.width = iwScaled;
                     canvas.height = ihScaled;
                     context.drawImage(img, 0, 0, iwScaled, ihScaled);
-                    let base64 = canvas.toDataURL();
-                    resolve(base64)
+                    
+                    resolve(canvas.toDataURL())
                 }
             }catch(err){
                 reject(err);

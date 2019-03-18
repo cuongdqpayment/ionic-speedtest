@@ -20,6 +20,14 @@
 </ion-header>
 
 <ion-content no-padding class="background-page gradient">
+
+	<ion-infinite-scroll *ngIf="!isLoaded" position="top" (ionInfinite)="doInfinite($event,'UP')"  threshold="1%">
+		<ion-infinite-scroll-content
+			loadingSpinner="bubbles"
+			loadingText="Load dữ liệu mới hơn...">
+		</ion-infinite-scroll-content>
+	</ion-infinite-scroll>
+
 	<ion-grid>
 		<ion-row>
 			<ion-col class="background-card gradient grid-border" text-center 
@@ -124,13 +132,6 @@
 			</ion-col>
 		</ion-row>
 	</ion-grid>
-
-	<ion-infinite-scroll position="top" (ionInfinite)="doInfinite($event,'UP')"  threshold="1%">
-		<ion-infinite-scroll-content
-			loadingSpinner="bubbles"
-			loadingText="Load dữ liệu mới hơn...">
-		</ion-infinite-scroll-content>
-	</ion-infinite-scroll>
 
 	<ion-infinite-scroll (ionInfinite)="doInfinite($event,'DOWN')">
 		<ion-infinite-scroll-content 

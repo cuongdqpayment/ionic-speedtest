@@ -20,6 +20,7 @@ export class HomeMenuPage {
   users = [];
   rooms = [];
 
+  isLoaded: boolean = true;
 
   constructor(
       private apiStorageService: ApiStorageService
@@ -34,6 +35,8 @@ export class HomeMenuPage {
 
     //doc tu bo nho len lay danh sach da load truoc day ghi ra 
     this.dynamicTree = this.apiStorageService.getHome();
+
+    //setInterval(()=>{this.isLoaded = false},10000); //cu 1 phut la cho doc du lieu moi
     
     this.events.subscribe('event-main-login-checked'
       , (data => {
@@ -173,11 +176,16 @@ export class HomeMenuPage {
   doInfinite(infiniteScroll,direction) {
     if (direction==='UP'){
       console.log('UP');
+      if (!this.isLoaded){
+        this.getHomeNews()
+      }
       setTimeout(() => {
+        this.isLoaded = true;
         infiniteScroll.complete();
-      }, 3000);
+      }, 1000);
     }else{
       console.log('DOWN');
+      this.isLoaded = false; //khi keo xuong duoi thi o tren moi cho phep
       setTimeout(() => {
         infiniteScroll.complete();
       }, 1000);

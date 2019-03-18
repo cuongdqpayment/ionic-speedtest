@@ -295,6 +295,20 @@ export class MyApp {
                     ,{ rooms: this.originRooms
                     });
        }
+       if (msg.step=='USERS'){
+          //msg.users = {username,{name:,nickname:,sockets:[socketid]},...}
+          for (let username in msg.users){
+            if (!this.users.find(user=>user.username===username)){
+              this.users.push({
+                username: username,
+                name: msg.users[username].name,
+                nickname: msg.users[username].nickname
+              })
+            }
+            
+          }
+          
+       }
        if (msg.step=='JOINED'){
          //4.2 rooms joined first
           this.rooms = msg.rooms;
@@ -388,7 +402,11 @@ export class MyApp {
         this.prepareContactsNewUser(msg);
 
         if (!this.users.find(user=>user.username===msg.username)){
-          this.users.push(msg);
+          this.users.push({
+            username: msg.username,
+            name: msg.data.fullname,
+            nickname: msg.data.nickname
+          });
           this.events.publish('event-main-received-users',this.users);
         }
      });
