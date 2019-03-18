@@ -32,6 +32,41 @@ export class ApiImageService {
         }
     }
 
+    /**
+     * chuyen doi anh tu url sang base64 anh nho hon
+     * @param url 
+     * @param newSize 
+     */
+    createBase64Image(url:any,newSize:number){
+        return new Promise((resolve, reject) => {
+            try {
+                let canvas = document.createElement('canvas');
+                let context = canvas.getContext('2d');
+                let img = document.createElement('img');
+                let maxW = newSize;
+                let maxH = newSize;
+                img.crossOrigin="anonymous"; //quan trong de load image from url
+                img.src = url;
+                
+                img.onload = () => {
+                    let iw = img.width;
+                    let ih = img.height;
+                    let scale = Math.min((maxW / iw), (maxH / ih));
+                    let iwScaled = (scale<=0||scale>1)?iw: iw * scale;
+                    let ihScaled = (scale<=0||scale>1)?ih: ih * scale;
+                    //giam kich thuoc
+                    canvas.width = iwScaled;
+                    canvas.height = ihScaled;
+                    context.drawImage(img, 0, 0, iwScaled, ihScaled);
+                    let base64 = canvas.toDataURL();
+                    resolve(base64)
+                }
+            }catch(err){
+                reject(err);
+            }
+        })
+    }
+
     //dua vao doi tuong file image
     //tra ve doi tuong file image co kich co nho hon
     /**

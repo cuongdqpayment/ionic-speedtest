@@ -169,6 +169,14 @@ export class HomeMenuPage {
     });
   }
 
+
+  doInfinite(infiniteScroll) {
+    setTimeout(() => {
+      
+      infiniteScroll.complete();
+    }, 1000);
+  }
+
   onClickMedia(idx, item) {
     console.log(idx, item);
   }

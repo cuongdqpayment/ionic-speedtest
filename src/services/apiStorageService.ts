@@ -89,6 +89,20 @@ export class ApiStorageService {
         this.delete('token');
     }
 
+
+    saveUserContacts(user,contacts){
+        this.save('#contacts#'+user.username,JSON.stringify(contacts));
+    }
+
+    getUserContacts(user){
+        try{
+            let results = JSON.parse(this.read('#contacts#'+user.username));
+            return results?results:{};
+        }catch(e){
+            return {};
+        }
+    }
+
     saveUserRooms(user,rooms){
         this.save('#rooms#'+user.username,JSON.stringify(rooms));
     }

@@ -21,6 +21,14 @@ import { OwnerImagesPage } from '../pages/owner-images/owner-images';
 
 import { Socket, SocketIoConfig } from 'ng-socket-io';
 import { Observable } from 'rxjs/Observable';
+import { ApiImageService } from '../services/apiImageService';
+
+
+const createObjectKey = (obj,key,value)=>{
+  Object.defineProperty(obj, key, {value: value, writable: false, enumerable: true, configurable: false});
+  return obj;
+} 
+
 
 @Component({
   templateUrl: 'app.html'
@@ -36,6 +44,11 @@ export class MyApp {
   token:any;
 
   mySocket:any;
+  contacts = {}      //users with all info include image private
+  //login vao thi lay user cua minh
+  //lien lac voi chat thi lay user new online
+  //doc danh ba tu dien thoai thi tao user offline
+  //{username:{fullname,nickname,image,status:-1,0,1}} -1= from contact, 0 = owner, 1 online
   users = []        //users online
   rooms = [];       //room online
   originRooms = []; //luu goc
@@ -48,6 +61,7 @@ export class MyApp {
     private modalCtrl: ModalController,
     private loadingCtrl: LoadingController,
     private apiStorageService: ApiStorageService,
+    private apiImage: ApiImageService,
     private auth: ApiAuthService,
     private events: Events,
     platform: Platform, 
@@ -65,7 +79,7 @@ export class MyApp {
     this.callbackTreeMenu = this.callbackTree;
 
     this.ionViewDidLoad_main();
-      
+    
   }
 
   ionViewDidLoad_main() {
@@ -82,10 +96,96 @@ export class MyApp {
 
   }
 
+  /**
+   * login ok get image and background
+   * add to contacts
+   */
   userChangeImage(){
-    
-    this.userInfo.data.image = ApiStorageService.mediaServer + "/db/get-private?func=avatar&token="+this.apiStorageService.getToken();
-    this.userInfo.data.background = ApiStorageService.mediaServer + "/db/get-private?func=background&token="+this.apiStorageService.getToken();
+    let count_process = 0;
+    new Promise((resolve,reject)=>{
+      this.apiImage
+      .createBase64Image(ApiStorageService.mediaServer + "/db/get-private?func=avatar&token="+this.apiStorageService.getToken(),120)
+      .then(base64=>{
+        this.userInfo.data.image = base64;
+        if (++count_process>=2) resolve()
+      })
+      .catch(err=>reject(err))
+      ;
+  
+      this.apiImage
+      .createBase64Image(ApiStorageService.mediaServer + "/db/get-private?func=background&token="+this.apiStorageService.getToken(),300)
+      .then(base64=>{
+        this.userInfo.data.background = base64;
+        if (++count_process>=2) resolve()
+      })
+      .catch(err=>reject(err))
+      ;
+    })
+    .then(()=>{
+      this.contacts = this.apiStorageService.getUserContacts(this.userInfo);
+      if (!this.contacts[this.userInfo.username]){
+        createObjectKey(this.contacts,this.userInfo.username,{
+          fullname: this.userInfo.data.fullname
+          ,nickname: this.userInfo.data.nickname
+          ,image: this.userInfo.data.image
+          ,background: this.userInfo.data.background 
+          ,status: 0
+        })
+        this.apiStorageService.saveUserContacts(this.userInfo,this.contacts);
+      }else{
+        this.contacts[this.userInfo.username] = {
+          fullname: this.userInfo.data.fullname
+          ,nickname: this.userInfo.data.nickname
+          ,image: this.userInfo.data.image
+          ,background: this.userInfo.data.background 
+          ,status: 0 //owner user
+        }
+        this.apiStorageService.saveUserContacts(this.userInfo,this.contacts);
+      }
+    })
+    .catch(err=>{})
+    /* .then(()=>{
+      console.log('xong user owner',this.contacts)
+    }) */
+  }
+
+  prepareContactsNewUser(user){
+
+    if (user.username!==this.userInfo.username){
+      //luon lam moi thong tin cua user moi lan login
+      new Promise((resolve,reject)=>{
+        this.apiImage
+        .createBase64Image(ApiStorageService.mediaServer + "/db/get-private?func=avatar&user="+user.username+"&token="+this.apiStorageService.getToken(),60)
+        .then(base64=>{
+          user.image = base64;
+          resolve()
+        })
+        .catch(err=>reject(err));
+      })
+      .then(()=>{
+        if (!this.contacts[user.username]){
+          createObjectKey(this.contacts,user.username,{
+            fullname: user.data.fullname
+            ,nickname: user.data.nickname
+            ,image: user.image
+            ,status: 1 //user online chat
+          })
+          this.apiStorageService.saveUserContacts(this.userInfo,this.contacts);
+        }else{
+          this.contacts[user.username] = {
+            fullname: user.data.fullname
+            ,nickname: user.data.nickname
+            ,image: user.image
+            ,status: 1 //user online chat
+          }
+          this.apiStorageService.saveUserContacts(this.userInfo,this.contacts);
+        }
+      })
+      .catch(err=>{})
+      .then(()=>{
+        console.log('xong prepare',this.contacts)
+      })
+    }
 
   }
 
@@ -284,6 +384,9 @@ export class MyApp {
         let msg;
         msg = data;
         console.log('new user receive', msg);
+        //luu trong contact de tham chieu nhanh, khong load lai cua server
+        this.prepareContactsNewUser(msg);
+
         if (!this.users.find(user=>user.username===msg.username)){
           this.users.push(msg);
           this.events.publish('event-main-received-users',this.users);
