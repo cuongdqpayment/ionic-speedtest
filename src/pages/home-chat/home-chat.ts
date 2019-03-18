@@ -22,10 +22,7 @@ export class HomeChatPage {
   socket: Socket;
   //configSocketIo: SocketIoConfig;
 
-  Object = Object;
-  roomType = '$R#';
   rooms = [];
-  userType = '$U#';
   users = [];
   last_time:number = new Date().getTime();
 
@@ -41,7 +38,6 @@ export class HomeChatPage {
   constructor(private navParams: NavParams, 
               private navCtrl: NavController,
               private modalCtrl: ModalController,
-              private apiAuth: ApiAuthService,
               private events: Events,
               private apiStorage: ApiStorageService) {}
               

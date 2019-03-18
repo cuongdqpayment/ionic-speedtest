@@ -416,7 +416,7 @@ export class MyApp {
        let msg;
        msg = data;
        console.log('7. new message:',msg, this.rooms);
-       msg.user.image = ApiStorageService.mediaServer + "/db/get-private?func=avatar&user="+msg.user.username+"&token="+this.token;
+       msg.user.image = this.contacts[msg.user.username].image;
        
        let roomMsg = this.rooms.find(room=>room.id===msg.room_id);
 
