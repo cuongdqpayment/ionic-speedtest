@@ -9,8 +9,8 @@ export class ApiStorageService {
  
     public static token;
     public static mapServer = 'https://c3.mobifone.vn/i_api'; 
-    public static chatServer = 'http://localhost:8080'; 
-    //public static chatServer = 'https://c3.mobifone.vn'; 
+    //public static chatServer = 'http://localhost:8080'; 
+    public static chatServer = 'https://c3.mobifone.vn'; 
     public static mediaServer = 'https://c3.mobifone.vn/media'; 
     public static resourceServer = 'https://c3.mobifone.vn/qld'; 
     public static authenticationServer = 'https://c3.mobifone.vn/api/ext-auth';
