@@ -30,7 +30,17 @@ page-home-menu {
 		min-height: 308px;
 	}
 
-	.card-background-parent .background-title {
+	.card-background-parent .background-item {
+			position: absolute;
+			top: 10px;
+			left: 10px;
+			font-size: 1.3em;
+			width: 95%;
+			color: black;
+			opacity: 0.6;
+	}
+
+	/* .card-background-parent .background-title-0 {
 			position: absolute;
 			top: 10px;
 			left: 10px;
@@ -41,7 +51,7 @@ page-home-menu {
 			opacity: 0.6;
 	}
 
-	.card-background-parent .background-subtitle {
+	.card-background-parent .background-subtitle-0 {
 			position: absolute;
 			top: 30px;
 			left: 10px;
@@ -50,7 +60,7 @@ page-home-menu {
 			color: blue;
 			text-align: justify;
 			opacity: 0.7;
-	}
+	} */
 
 	.card-background-page {
 		position: relative;
@@ -62,6 +72,15 @@ page-home-menu {
 		top: 80%;
 		left: 30%;
 		font-size: 1.3em;
+		width: 100%;
+		font-weight: bold;
+		color: #fff;
+	}
+
+	.card-background-page .card-more {
+		position: absolute;
+		top: 36%;
+		font-size: 1.5em;
 		width: 100%;
 		font-weight: bold;
 		color: #fff;

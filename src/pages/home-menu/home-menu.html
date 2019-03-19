@@ -117,12 +117,18 @@
 								</ion-col>
 								<ion-col no-padding class="padding-col card-background-page" col-4 (click)="onClickMedia(4,it)">
 									<div class="image-height-3" [style.background-image]="'url('+it.medias[4].image+')'"></div>
-									<div class="card-title" *ngIf="it.medias.length>5">+{{(it.medias.length-5)}}</div>
+									<div class="card-more" *ngIf="it.medias.length>5">+{{(it.medias.length-5)}}</div>
 								</ion-col>
 							</ion-row>
 
-							<ion-label class="background-title">{{it.user}}</ion-label>
-							<p class="background-subtitle">{{it.content | slice:0:200}}<ion-note *ngIf="it.content?.length>200">...more</ion-note><br><span style="color: white">{{it.time | timeAgo}}</span></p>
+							<ion-item class="background-item">
+								<ion-avatar item-start *ngIf="contacts[it.user]&&contacts[it.user].image"><img [src]="contacts[it.user].image"></ion-avatar>
+								<ion-title>{{contacts[it.user]&&contacts[it.user].fullname?contacts[it.user].fullname:it.user}}</ion-title>
+								<p text-wrap>{{it.content | slice:0:200}}<ion-note *ngIf="it.content?.length>200">...more</ion-note><br><span style="color: blue">{{it.time | timeAgo}}</span></p>
+								<button item-end icon-only ion-button clear small color="primary" (click)="onClickShortDetails(it)">
+									<ion-icon name="more"></ion-icon>
+								</button>
+							</ion-item>
 							
 						</div>
 	

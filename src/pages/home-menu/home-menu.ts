@@ -13,6 +13,8 @@ import { Socket } from 'ng-socket-io';
 export class HomeMenuPage {
 
   dynamicTree: any;
+  
+  contacts = {}
 
   userInfo: any;
   token:any;
@@ -36,6 +38,7 @@ export class HomeMenuPage {
     //doc tu bo nho len lay danh sach da load truoc day ghi ra 
     this.dynamicTree = this.apiStorageService.getHome();
 
+    
     //setInterval(()=>{this.isLoaded = false},10000); //cu 1 phut la cho doc du lieu moi
     
     this.events.subscribe('event-main-login-checked'
@@ -44,6 +47,8 @@ export class HomeMenuPage {
         this.token = data.token;
         this.userInfo = data.user;
         this.socket = data.socket;
+
+        this.contacts = this.apiStorageService.getUserContacts(this.userInfo);
 
         if (this.dynamicTree.items.length===0){
           setTimeout(() => {
@@ -176,6 +181,7 @@ export class HomeMenuPage {
   doInfinite(infiniteScroll,direction) {
     if (direction==='UP'){
       console.log('UP');
+
       if (!this.isLoaded){
         this.getHomeNews()
       }
@@ -185,6 +191,7 @@ export class HomeMenuPage {
       }, 1000);
     }else{
       console.log('DOWN');
+
       this.isLoaded = false; //khi keo xuong duoi thi o tren moi cho phep
       setTimeout(() => {
         infiniteScroll.complete();
@@ -201,8 +208,8 @@ export class HomeMenuPage {
     console.log(btn);
   }
 
-  onClickShortDetails(btn, item) {
-    console.log(btn, item);
+  onClickShortDetails(item) {
+    console.log(item);
   }
 
   onClickActions(btn, item) {
