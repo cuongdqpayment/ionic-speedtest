@@ -462,17 +462,47 @@ export class MyApp {
           size: "1.3em",
           click: true,
           next: this.rootPage,
-  
           icon: "home"
         }
         ,
         {
-          name: "2. Home & Tabs speedtest",
+          name: "2. Các liên kết Nội bộ",
           size: "1.3em",
-          click: true,
-          next: HomeSpeedtestPage,
-          icon: "speedometer"
+          subs: [
+                  {
+                    name: "2.1 Quản lý công việc - yêu cầu",
+                    size: "1.3em",
+                    click: true,
+                    url: "https://c3.mobifone.vn/qlhs/login",
+                    icon: "alarm"
+                  }
+                  ,
+                  {
+                    name: "2.2 Hỗ trợ điểm bán lẻ",
+                    size: "1.3em",
+                    click: true,
+                    url: "https://c3.mobifone.vn/dbl/login",
+                    icon: "people"
+                  }
+                  ,
+                  {
+                    name: "2.3 Chọn số Công ty 3",
+                    size: "1.3em",
+                    click: true,
+                    url: "https://chonsoc3.mobifone.vn/",
+                    icon: "keypad"
+                  }
+                  ,
+                  {
+                    name: "2.4 Nối mạng Công ty 3 SSL4",
+                    size: "1.3em",
+                    click: true,
+                    url: "https://ssl4.c3.mobifone.vn/dana-na/auth/url_default/welcome.cgi",
+                    icon: "flash"
+                  }
+                ]
         }
+        
         ,
         {
           name: "3. Các mẫu reponsive",
@@ -559,6 +589,14 @@ export class MyApp {
             ]
             }        
           ]
+        }
+        ,
+        {
+          name: "3. Speedtest",
+          size: "1.3em",
+          click: true,
+          next: HomeSpeedtestPage,
+          icon: "speedometer"
         }
         ,
         {
@@ -584,107 +622,43 @@ export class MyApp {
           size: "1.3em",
           click: true,
           next: this.rootPage,
-  
           icon: "home"
         }
         ,
         {
-          name: "2. Home & Tabs speedtest",
+          name: "2. Quản lý công việc - yêu cầu",
           size: "1.3em",
           click: true,
-          next: HomeSpeedtestPage,
-          icon: "speedometer"
+          url: "https://c3.mobifone.vn/qlhs/login",
+          icon: "alarm"
         }
         ,
         {
-          name: "3. Các mẫu reponsive",
+          name: "3. Hỗ trợ điểm bán lẻ",
           size: "1.3em",
-          subs: [
-            {
-              name: "3.1 Các nhập liệu",
-              size: "1.3em",
-              subs: [
-              {
-                name: "3.1.1 Mẫu nhập liệu toàn màn hình dành cho di động",
-                click: true,
-                next: DynamicFormMobilePage,
-                icon: "phone-portrait"
-              }
-              ,
-              {
-                name: "3.1.2 Nhập liệu và hiển thị cho desktop & di động",
-                click: true,
-                next: DynamicFormWebPage,
-                icon: "desktop"
-              }
-              ,
-              {
-                name: "3.1.3 Mẫu nhập chọn & kéo",
-                click: true,
-                next: DynamicRangePage,
-                icon: "radio-button-on"
-              }
-            ]
-            }
-            ,
-            {
-              name: "3.2 Các mẫu hiển thị danh sách",
-              size: "1.3em",
-              subs: [
-              {
-                name: "3.2.1 Mẫu danh sách quẹt nút click",
-                click: true,
-                next: DynamicListPage,
-                icon: "paper"
-              }
-              ,
-              {
-                name: "3.2.2 Mẫu danh sách bảng, liệt kê & sắp xếp lại",
-                click: true,
-                next: DynamicListOrderPage,
-                icon: "reorder"
-              }
-              ,
-              {
-                name: "3.2.3 Mẫu danh sách theo cây FamilyTree",
-                click: true,
-                next: DynamicTreePage,
-                icon: "menu"
-              }
-            ]
-            }
-            ,
-            {
-              name: "3.3 Các mẫu xử lý hình ảnh và file",
-              size: "1.3em",
-              subs: [
-              {
-                name: "3.3.1 Mẫu upload ảnh theo facebook",
-                click: true,
-                next: DynamicMediasPage,
-                icon: "images"
-              }
-              ,
-              {
-                name: "3.3.2 Mẫu hiển thị ảnh và tương tác mạng xã hội",
-                click: true,
-                next: DynamicCardSocialPage,
-                icon: "logo-facebook"
-              }
-              ,
-              {
-                name: "3.3.3 Mẫu vẽ tay lên màn hình trên nền di động",
-                click: true,
-                next: SignaturePage,
-                icon: "create"
-              }
-            ]
-            }        
-          ]
+          click: true,
+          url: "https://c3.mobifone.vn/dbl/login",
+          icon: "people"
         }
         ,
         {
-          name: "3. Login",
+          name: "4. Chọn số Công ty 3",
+          size: "1.3em",
+          click: true,
+          url: "https://chonsoc3.mobifone.vn/",
+          icon: "keypad"
+        }
+        ,
+        {
+          name: "5. Nối mạng Công ty 3 SSL4",
+          size: "1.3em",
+          click: true,
+          url: "https://ssl4.c3.mobifone.vn/dana-na/auth/url_default/welcome.cgi",
+          icon: "flash"
+        }
+        ,
+        {
+          name: "6. Login",
           size: "1.3em",
           click: true,
           next: LoginPage,
@@ -728,6 +702,8 @@ export class MyApp {
 
         }
 
+      } else if (item.url) {
+        window.open(item.url);
       }
     }
 

@@ -283,6 +283,8 @@ export class LoginPage {
    */
   callbackFunction = function (res?: { step?: string, data?: any, error?: any }) {
     
+    console.log('callback error:', res);
+    
     return new Promise((resolve, reject) => {
 
       if (res && res.error && res.error.error) {
