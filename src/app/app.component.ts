@@ -592,37 +592,33 @@ export class MyApp {
                 }
               ]
             }
-            ,
-            {
-              name: "3.4 Các phôi pdf In",
-              size: "1.3em",
-              subs: [
-                {
-                  name: "3.4.1 Mẫu ma trận điểm A4",
-                  size: "1.3em",
-                  click: true,
-                  url: "https://c3.mobifone.vn/qld/db/matrix-a4",
-                  icon: "people"
-                }
-                ,
-                {
-                  name: "3.4.2 Mẫu ma trận điểm A5",
-                  size: "1.3em",
-                  click: true,
-                  url: "https://c3.mobifone.vn/qld/db/matrix-a5",
-                  icon: "people"
-                }
-              ]
-            }
           ]
-
-
-
-
         }
         ,
         {
-          name: "3. Speedtest",
+          name: "4. Các phôi pdf In",
+          size: "1.3em",
+          subs: [
+            {
+              name: "4.1 Mẫu ma trận điểm A4",
+              size: "1.3em",
+              click: true,
+              url: "https://c3.mobifone.vn/qld/db/matrix-a4",
+              icon: "people"
+            }
+            ,
+            {
+              name: "4.2 Mẫu ma trận điểm A5",
+              size: "1.3em",
+              click: true,
+              url: "https://c3.mobifone.vn/qld/db/matrix-a5",
+              icon: "people"
+            }
+          ]
+        }
+        ,
+        {
+          name: "5. Speedtest",
           size: "1.3em",
           click: true,
           next: HomeSpeedtestPage,
@@ -630,7 +626,7 @@ export class MyApp {
         }
         ,
         {
-          name: "4. Bản đồ dẫn đường",
+          name: "6. Bản đồ dẫn đường",
           size: "1.3em",
           click: true,
           next: GoogleMapPage,
@@ -638,7 +634,7 @@ export class MyApp {
         }
         ,
         {
-          name: "5. Login",
+          name: "7. Login",
           size: "1.3em",
           click: true,
           next: LoginPage,
