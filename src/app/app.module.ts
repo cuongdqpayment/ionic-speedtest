@@ -7,6 +7,7 @@ import { StatusBar } from '@ionic-native/status-bar';
 import { Geolocation } from '@ionic-native/geolocation';
 import { StorageServiceModule } from 'angular-webstorage-service';
 import { SQLite } from '@ionic-native/sqlite';
+import { InAppBrowser } from '@ionic-native/in-app-browser/ngx';
 
 import { MyApp } from './app.component';
 import { HomeSpeedtestPage } from '../pages/home-speedtest/home-speedtest';
@@ -47,6 +48,7 @@ import { OwnerImagesPage } from '../pages/owner-images/owner-images';
 import { HomeChatPage } from '../pages/home-chat/home-chat';
 import { ChattingPage } from '../pages/chatting/chatting';
 import { Autosize } from '../components/autosize';
+
 
 @NgModule({
   declarations: [
@@ -110,6 +112,7 @@ import { Autosize } from '../components/autosize';
     SplashScreen,
     Geolocation,
     SQLite,
+    InAppBrowser,
     ApiGraphService,
     ApiImageService,
     ApiAuthService,

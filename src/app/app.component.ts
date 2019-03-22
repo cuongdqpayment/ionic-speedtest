@@ -22,7 +22,7 @@ import { OwnerImagesPage } from '../pages/owner-images/owner-images';
 import { Socket, SocketIoConfig } from 'ng-socket-io';
 import { Observable } from 'rxjs/Observable';
 import { ApiImageService } from '../services/apiImageService';
-
+import { InAppBrowser } from '@ionic-native/in-app-browser/ngx';
 
 const createObjectKey = (obj,key,value)=>{
   Object.defineProperty(obj, key, {value: value, writable: false, enumerable: true, configurable: false});
@@ -64,11 +64,12 @@ export class MyApp {
     private apiImage: ApiImageService,
     private auth: ApiAuthService,
     private events: Events,
-    platform: Platform, 
+    private inAppBrowser: InAppBrowser,
+    private platform: Platform,
     statusBar: StatusBar, 
     splashScreen: SplashScreen
     ) {
-    platform.ready().then(() => {
+    this.platform.ready().then(() => {
       statusBar.styleDefault();
       splashScreen.hide();
     });
@@ -703,7 +704,12 @@ export class MyApp {
         }
 
       } else if (item.url) {
-        window.open(item.url);
+        //neu ios, browser, android??
+        if (this.platform.is('ios')){
+          const browser = this.inAppBrowser.create(item.url);
+        }else{
+          window.open(item.url,'_system');
+        }
       }
     }
 
