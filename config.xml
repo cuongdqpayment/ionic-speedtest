@@ -1,8 +1,8 @@
 <?xml version='1.0' encoding='utf-8'?>
 <widget id="vn.speedtest" version="2.0.1" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
-    <name>M-Speedtest</name>
-    <description>Cuongdq Speedtest</description>
-    <author email="cuongdq3500888@gmail.com" href="https://cuongdq-auth.herokuapp.com/">Doan Quoc Cuong</author>
+    <name>C3-Gate</name>
+    <description>C3 Gate</description>
+    <author email="cuongdq3500888@gmail.com" href="https://c3.mobifone.vn/">Doan Quoc Cuong</author>
     <content src="index.html" />
     <access origin="*" />
     <allow-intent href="http://*/*" />
