@@ -24,10 +24,10 @@ import { Observable } from 'rxjs/Observable';
 import { ApiImageService } from '../services/apiImageService';
 import { InAppBrowser } from '@ionic-native/in-app-browser/ngx';
 
-const createObjectKey = (obj,key,value)=>{
-  Object.defineProperty(obj, key, {value: value, writable: false, enumerable: true, configurable: false});
+const createObjectKey = (obj, key, value) => {
+  Object.defineProperty(obj, key, { value: value, writable: false, enumerable: true, configurable: false });
   return obj;
-} 
+}
 
 
 @Component({
@@ -36,14 +36,14 @@ const createObjectKey = (obj,key,value)=>{
 export class MyApp {
   @ViewChild(Nav) navCtrl: Nav;
 
-  rootPage:any = HomeMenuPage;
-  
-  treeMenu:any;
-  callbackTreeMenu:any;
-  userInfo:any; 
-  token:any;
+  rootPage: any = HomeMenuPage;
 
-  mySocket:any;
+  treeMenu: any;
+  callbackTreeMenu: any;
+  userInfo: any;
+  token: any;
+
+  mySocket: any;
   contacts = {}      //users with all info include image private
   //login vao thi lay user cua minh
   //lien lac voi chat thi lay user new online
@@ -52,9 +52,9 @@ export class MyApp {
   users = []        //users online
   rooms = [];       //room online
   originRooms = []; //luu goc
-  socket: Socket;   
+  socket: Socket;
   configSocketIo: SocketIoConfig;
-  last_time:number = new Date().getTime();
+  last_time: number = new Date().getTime();
 
   constructor(
     private menuCtrl: MenuController, //goi trong callback
@@ -66,9 +66,9 @@ export class MyApp {
     private events: Events,
     private inAppBrowser: InAppBrowser,
     private platform: Platform,
-    statusBar: StatusBar, 
+    statusBar: StatusBar,
     splashScreen: SplashScreen
-    ) {
+  ) {
     this.platform.ready().then(() => {
       statusBar.styleDefault();
       splashScreen.hide();
@@ -76,21 +76,21 @@ export class MyApp {
   }
 
   ngOnInit() {
-    
+
     this.callbackTreeMenu = this.callbackTree;
 
     this.ionViewDidLoad_main();
-    
+
   }
 
   ionViewDidLoad_main() {
 
     this.checkTokenLogin();
- 
+
     this.events.subscribe('user-log-in-ok', (() => {
       this.checkTokenLogin();
     }));
-    
+
     this.events.subscribe('user-log-out-ok', (() => {
       this.checkTokenLogin();
     }));
@@ -101,99 +101,99 @@ export class MyApp {
    * login ok get image and background
    * add to contacts
    */
-  userChangeImage(){
+  userChangeImage() {
     let count_process = 0;
-    new Promise((resolve,reject)=>{
+    new Promise((resolve, reject) => {
       this.apiImage
-      .createBase64Image(ApiStorageService.mediaServer + "/db/get-private?func=avatar&token="+this.apiStorageService.getToken(),120)
-      .then(base64=>{
-        this.userInfo.data.image = base64;
-        if (++count_process>=2) resolve()
-      })
-      .catch(err=>reject(err))
-      ;
-  
-      this.apiImage
-      .createBase64Image(ApiStorageService.mediaServer + "/db/get-private?func=background&token="+this.apiStorageService.getToken(),300)
-      .then(base64=>{
-        this.userInfo.data.background = base64;
-        if (++count_process>=2) resolve()
-      })
-      .catch(err=>reject(err))
-      ;
-    })
-    .then(()=>{
-      this.contacts = this.apiStorageService.getUserContacts(this.userInfo);
-      if (!this.contacts[this.userInfo.username]){
-        createObjectKey(this.contacts,this.userInfo.username,{
-          fullname: this.userInfo.data.fullname
-          ,nickname: this.userInfo.data.nickname
-          ,image: this.userInfo.data.image
-          ,background: this.userInfo.data.background 
-          ,status: 0
+        .createBase64Image(ApiStorageService.mediaServer + "/db/get-private?func=avatar&token=" + this.apiStorageService.getToken(), 120)
+        .then(base64 => {
+          this.userInfo.data.image = base64;
+          if (++count_process >= 2) resolve()
         })
-        this.apiStorageService.saveUserContacts(this.userInfo,this.contacts);
-      }else{
-        this.contacts[this.userInfo.username] = {
-          fullname: this.userInfo.data.fullname
-          ,nickname: this.userInfo.data.nickname
-          ,image: this.userInfo.data.image
-          ,background: this.userInfo.data.background 
-          ,status: 0 //owner user
-        }
-        this.apiStorageService.saveUserContacts(this.userInfo,this.contacts);
-      }
+        .catch(err => reject(err))
+        ;
+
+      this.apiImage
+        .createBase64Image(ApiStorageService.mediaServer + "/db/get-private?func=background&token=" + this.apiStorageService.getToken(), 300)
+        .then(base64 => {
+          this.userInfo.data.background = base64;
+          if (++count_process >= 2) resolve()
+        })
+        .catch(err => reject(err))
+        ;
     })
-    .catch(err=>{})
+      .then(() => {
+        this.contacts = this.apiStorageService.getUserContacts(this.userInfo);
+        if (!this.contacts[this.userInfo.username]) {
+          createObjectKey(this.contacts, this.userInfo.username, {
+            fullname: this.userInfo.data.fullname
+            , nickname: this.userInfo.data.nickname
+            , image: this.userInfo.data.image
+            , background: this.userInfo.data.background
+            , status: 0
+          })
+          this.apiStorageService.saveUserContacts(this.userInfo, this.contacts);
+        } else {
+          this.contacts[this.userInfo.username] = {
+            fullname: this.userInfo.data.fullname
+            , nickname: this.userInfo.data.nickname
+            , image: this.userInfo.data.image
+            , background: this.userInfo.data.background
+            , status: 0 //owner user
+          }
+          this.apiStorageService.saveUserContacts(this.userInfo, this.contacts);
+        }
+      })
+      .catch(err => { })
     /* .then(()=>{
       console.log('xong user owner',this.contacts)
     }) */
   }
 
-  prepareContactsNewUser(user){
+  prepareContactsNewUser(user) {
 
-    if (user.username!==this.userInfo.username){
+    if (user.username !== this.userInfo.username) {
       //luon lam moi thong tin cua user moi lan login
-      new Promise((resolve,reject)=>{
+      new Promise((resolve, reject) => {
         this.apiImage
-        .createBase64Image(ApiStorageService.mediaServer + "/db/get-private?func=avatar&user="+user.username+"&token="+this.apiStorageService.getToken(),60)
-        .then(base64=>{
-          user.image = base64;
-          resolve()
-        })
-        .catch(err=>reject(err));
-      })
-      .then(()=>{
-        if (!this.contacts[user.username]){
-          createObjectKey(this.contacts,user.username,{
-            fullname: user.data.fullname
-            ,nickname: user.data.nickname
-            ,image: user.image
-            ,status: 1 //user online chat
+          .createBase64Image(ApiStorageService.mediaServer + "/db/get-private?func=avatar&user=" + user.username + "&token=" + this.apiStorageService.getToken(), 60)
+          .then(base64 => {
+            user.image = base64;
+            resolve()
           })
-          this.apiStorageService.saveUserContacts(this.userInfo,this.contacts);
-        }else{
-          this.contacts[user.username] = {
-            fullname: user.data.fullname
-            ,nickname: user.data.nickname
-            ,image: user.image
-            ,status: 1 //user online chat
+          .catch(err => reject(err));
+      })
+        .then(() => {
+          if (!this.contacts[user.username]) {
+            createObjectKey(this.contacts, user.username, {
+              fullname: user.data.fullname
+              , nickname: user.data.nickname
+              , image: user.image
+              , status: 1 //user online chat
+            })
+            this.apiStorageService.saveUserContacts(this.userInfo, this.contacts);
+          } else {
+            this.contacts[user.username] = {
+              fullname: user.data.fullname
+              , nickname: user.data.nickname
+              , image: user.image
+              , status: 1 //user online chat
+            }
+            this.apiStorageService.saveUserContacts(this.userInfo, this.contacts);
           }
-          this.apiStorageService.saveUserContacts(this.userInfo,this.contacts);
-        }
-      })
-      .catch(err=>{})
-      .then(()=>{
-        console.log('xong prepare',this.contacts)
-      })
+        })
+        .catch(err => { })
+        .then(() => {
+          console.log('xong prepare', this.contacts)
+        })
     }
 
   }
 
-  checkTokenLogin(){
+  checkTokenLogin() {
     this.token = this.apiStorageService.getToken();
     if (this.token) {
-      
+
       let loading = this.loadingCtrl.create({
         content: 'Đợi xác thực...'
       });
@@ -205,10 +205,10 @@ export class MyApp {
 
           this.auth.getServerPublicRSAKey()
             .then(pk => {
-              
+
               this.userInfo = data.user_info;
               //Tiêm token cho các phiên làm việc lấy số liệu cần xác thực
-              if (this.userInfo) this.auth.injectToken(); 
+              if (this.userInfo) this.auth.injectToken();
               this.initChatting();
               this.userChangeImage();
               this.resetTreeMenu();
@@ -230,131 +230,135 @@ export class MyApp {
       this.userInfo = undefined;
       this.resetTreeMenu();
     }
-    
+
   }
 
 
-  initChatting(){
+  initChatting() {
 
-    this.configSocketIo = { url: ApiStorageService.chatServer+'?token='+this.token
-                            , options: {  path:'/media/socket.io'
-                                        , pingInterval: 20000
-                                        , timeout: 60000
-                                        , reconnectionDelay: 30000
-                                        , reconnectionDelayMax: 60000
-                                        , wsEngine: 'ws'
-                            } };
-    
+    this.configSocketIo = {
+      url: ApiStorageService.chatServer + '?token=' + this.token
+      , options: {
+        path: '/media/socket.io'
+        , pingInterval: 20000
+        , timeout: 60000
+        , reconnectionDelay: 30000
+        , reconnectionDelayMax: 60000
+        , wsEngine: 'ws'
+      }
+    };
+
     //chat - client -->open
-    this.socket = new Socket(this.configSocketIo); 
+    this.socket = new Socket(this.configSocketIo);
     //this.apiStorageService.deleteUserRooms(this.userInfo)
     this.originRooms = this.apiStorageService.getUserRooms(this.userInfo);
 
-    if (this.userInfo&&this.originRooms.length===0&&this.userInfo.username==='903500888'){
+    if (this.userInfo && this.originRooms.length === 0 && this.userInfo.username === '903500888') {
       this.originRooms = [
         {
-        id: this.userInfo.username+'-0#xxxx',
-        name: 'demo 1',
-        users: ['903500888','702418821'],
-        created: new Date().getTime(),
-        time:  new Date().getTime(),
-        messages:[{
-          //romm_id: room_id,
-          //user: this.userInfo,
-          text: (this.userInfo.data?this.userInfo.data.fullname:this.userInfo.username) + " Create group",
-          created: new Date().getTime()
-        }]
+          id: this.userInfo.username + '-0#xxxx',
+          name: 'demo 1',
+          users: ['903500888', '702418821'],
+          created: new Date().getTime(),
+          time: new Date().getTime(),
+          messages: [{
+            //romm_id: room_id,
+            //user: this.userInfo,
+            text: (this.userInfo.data ? this.userInfo.data.fullname : this.userInfo.username) + " Create group",
+            created: new Date().getTime()
+          }]
         }
         ,
         {
-        id: this.userInfo.username+'-1#yyyy',
-        name: 'demo 2',
-        users: ['903500888','702418821','905300888'],
-        created: new Date().getTime(),
-        time:  new Date().getTime(),
-        messages:[{
-          //romm_id: room_id,
-          //user: this.userInfo,
-          text: (this.userInfo.data?this.userInfo.data.fullname:this.userInfo.username) + " Create group",
-          created: new Date().getTime()
-        }]
+          id: this.userInfo.username + '-1#yyyy',
+          name: 'demo 2',
+          users: ['903500888', '702418821', '905300888'],
+          created: new Date().getTime(),
+          time: new Date().getTime(),
+          messages: [{
+            //romm_id: room_id,
+            //user: this.userInfo,
+            text: (this.userInfo.data ? this.userInfo.data.fullname : this.userInfo.username) + " Create group",
+            created: new Date().getTime()
+          }]
         }
       ]; //lay tu storage de join lai cac room
     }
 
     //1.chat - client received welcome
     this.getMessages()
-     .subscribe(data=>{
-       let msg;
-       msg = data;
-       console.log('send, message',msg);
-       if (msg.step=='INIT'){
+      .subscribe(data => {
+        let msg;
+        msg = data;
+        console.log('send, message', msg);
+        if (msg.step == 'INIT') {
           //socketid,user,sockets
           this.mySocket = msg.your_socket;
           //4. chat - join rooms
           this.socket.emit('client-join-rooms'
-                    ,{ rooms: this.originRooms
-                    });
-       }
-       if (msg.step=='USERS'){
+            , {
+              rooms: this.originRooms
+            });
+        }
+        if (msg.step == 'USERS') {
           //msg.users = {username,{name:,nickname:,sockets:[socketid]},...}
-          for (let username in msg.users){
-            if (!this.users.find(user=>user.username===username)){
+          for (let username in msg.users) {
+            if (!this.users.find(user => user.username === username)) {
               this.users.push({
                 username: username,
                 name: msg.users[username].name,
                 nickname: msg.users[username].nickname
               })
             }
-            
+
           }
-          
-       }
-       if (msg.step=='JOINED'){
-         //4.2 rooms joined first
+
+        }
+        if (msg.step == 'JOINED') {
+          //4.2 rooms joined first
           this.rooms = msg.rooms;
 
-          let originRooms=[]; //reset
-          this.rooms.forEach(room=>{
-              let users = [];
-              room.users.forEach(user=>{
-                for (let uname in user){
-                  users.push(uname);
-                }
-              });
-
-              if (room.id.indexOf('#')>0){
-                originRooms.push({
-                  id: room.id,
-                  name: room.name,
-                  created: room.created,
-                  time:  room.time,
-                  image: room.image,
-                  admin: room.admin,
-                  users: users,
-                  messages: room.messages,
-                })
+          let originRooms = []; //reset
+          this.rooms.forEach(room => {
+            let users = [];
+            room.users.forEach(user => {
+              for (let uname in user) {
+                users.push(uname);
               }
+            });
+
+            if (room.id.indexOf('#') > 0) {
+              originRooms.push({
+                id: room.id,
+                name: room.name,
+                created: room.created,
+                time: room.time,
+                image: room.image,
+                admin: room.admin,
+                users: users,
+                messages: room.messages,
+              })
+            }
           })
           //luu room de load lan sau
           this.apiStorageService.saveUserRooms(this.userInfo, originRooms);
 
-          this.events.publish('event-main-received-rooms',this.rooms);
-       }
+          this.events.publish('event-main-received-rooms', this.rooms);
+        }
 
-       if (msg.step=='ACCEPTED'){
-         //5.1 + 6.2 accepted room
+        if (msg.step == 'ACCEPTED') {
+          //5.1 + 6.2 accepted room
 
           //this.originRooms
           let originRooms = this.apiStorageService.getUserRooms(this.userInfo);
-          
-          if (msg.room){
-            
+
+          if (msg.room) {
+
             this.rooms.push(msg.room);
 
             let users = [];
-            msg.room.users.forEach(user=>{
-              for (let uname in user){
+            msg.room.users.forEach(user => {
+              for (let uname in user) {
                 users.push(uname);
               }
             });
@@ -363,7 +367,7 @@ export class MyApp {
               id: msg.room.id,
               name: msg.room.name,
               created: msg.room.created,
-              time:  msg.room.time,
+              time: msg.room.time,
               image: msg.room.image,
               admin: msg.room.admin,
               users: users,
@@ -373,90 +377,90 @@ export class MyApp {
           //luu room de load lan sau
           this.apiStorageService.saveUserRooms(this.userInfo, originRooms);
 
-          this.events.publish('event-main-received-rooms',this.rooms);
-       }
-       
-     });
+          this.events.publish('event-main-received-rooms', this.rooms);
+        }
 
-     //2.chat - client received new/disconnect socket the same user
+      });
+
+    //2.chat - client received new/disconnect socket the same user
     this.getPrivateMessages()
-     .subscribe(data=>{
-       let msg;
-       msg = data;
-       if (msg.step==='START'){
-         //3.2 private old socket in username inform new socket
-         this.mySocket.sockets.push(msg.socket_id);
-        }else if (msg.step==='END'){
+      .subscribe(data => {
+        let msg;
+        msg = data;
+        if (msg.step === 'START') {
+          //3.2 private old socket in username inform new socket
+          this.mySocket.sockets.push(msg.socket_id);
+        } else if (msg.step === 'END') {
           //x.2 chat
           this.mySocket.sockets.splice(this.mySocket.sockets.indexOf(msg.socket_id), 1);
-       }
-       //console.log('private, mysocket',this.mySocket);
-     });
+        }
+        //console.log('private, mysocket',this.mySocket);
+      });
 
-     //3.1 chat - client received new user
-     this.getNewUser()
-     .subscribe(data=>{
+    //3.1 chat - client received new user
+    this.getNewUser()
+      .subscribe(data => {
         let msg;
         msg = data;
         console.log('new user receive', msg);
         //luu trong contact de tham chieu nhanh, khong load lai cua server
         this.prepareContactsNewUser(msg);
 
-        if (!this.users.find(user=>user.username===msg.username)){
+        if (!this.users.find(user => user.username === msg.username)) {
           this.users.push({
             username: msg.username,
             name: msg.data.fullname,
             nickname: msg.data.nickname
           });
-          this.events.publish('event-main-received-users',this.users);
+          this.events.publish('event-main-received-users', this.users);
         }
-     });
+      });
 
-     //4.1 + 6.1 invite join this room
-     this.getInvitedRoom()
-     .subscribe(data=>{
+    //4.1 + 6.1 invite join this room
+    this.getInvitedRoom()
+      .subscribe(data => {
         let msg;
         msg = data;
         //{roomId:{name:,messages[],users:[{username:[socketonline,...]}]}}
         console.log('new room from other', msg);
         //join-new-room
-        for (let key in msg){
+        for (let key in msg) {
           msg[key].id = key;
           //5. accept room
-          this.socket.emit('client-accept-room',msg[key]);
+          this.socket.emit('client-accept-room', msg[key]);
         }
 
-     });
+      });
 
 
-     //7. new message
-     this.getMessagesEmit()
-     .subscribe(data=>{
-       let msg;
-       msg = data;
-       console.log('7. new message:',msg, this.rooms);
-       msg.user.image = this.contacts[msg.user.username].image;
-       
-       let roomMsg = this.rooms.find(room=>room.id===msg.room_id);
-
-       roomMsg.messages.push(msg);
-       this.events.publish('event-receiving-message',roomMsg);
-     });
-
-     //x.1 chat - client user disconnect
-     this.getEndUser()
-     .subscribe(data=>{
+    //7. new message
+    this.getMessagesEmit()
+      .subscribe(data => {
         let msg;
         msg = data;
-        this.users = this.users.splice( this.users.indexOf(msg.username), 1 );
-        this.events.publish('event-main-received-users',this.users);
-     });
+        console.log('7. new message:', msg, this.rooms);
+        msg.user.image = this.contacts[msg.user.username].image;
+
+        let roomMsg = this.rooms.find(room => room.id === msg.room_id);
+
+        roomMsg.messages.push(msg);
+        this.events.publish('event-receiving-message', roomMsg);
+      });
+
+    //x.1 chat - client user disconnect
+    this.getEndUser()
+      .subscribe(data => {
+        let msg;
+        msg = data;
+        this.users = this.users.splice(this.users.indexOf(msg.username), 1);
+        this.events.publish('event-main-received-users', this.users);
+      });
 
   }
 
-  resetTreeMenu(){
+  resetTreeMenu() {
     //tuy thuoc vao tung user se co menu khac nhau
-    if (this.userInfo&&(this.userInfo.username==='903500888'||this.userInfo.username==='702418821')){
+    if (this.userInfo && (this.userInfo.username === '903500888' || this.userInfo.username === '702418821')) {
       this.treeMenu = [
         {
           name: "1. Trang chủ",
@@ -470,40 +474,39 @@ export class MyApp {
           name: "2. Các liên kết Nội bộ",
           size: "1.3em",
           subs: [
-                  {
-                    name: "2.1 Quản lý công việc - yêu cầu",
-                    size: "1.3em",
-                    click: true,
-                    url: "https://c3.mobifone.vn/qlhs/login",
-                    icon: "alarm"
-                  }
-                  ,
-                  {
-                    name: "2.2 Hỗ trợ điểm bán lẻ",
-                    size: "1.3em",
-                    click: true,
-                    url: "https://c3.mobifone.vn/dbl/login",
-                    icon: "people"
-                  }
-                  ,
-                  {
-                    name: "2.3 Chọn số Công ty 3",
-                    size: "1.3em",
-                    click: true,
-                    url: "https://chonsoc3.mobifone.vn/",
-                    icon: "keypad"
-                  }
-                  ,
-                  {
-                    name: "2.4 Nối mạng Công ty 3 SSL4",
-                    size: "1.3em",
-                    click: true,
-                    url: "https://ssl4.c3.mobifone.vn/dana-na/auth/url_default/welcome.cgi",
-                    icon: "flash"
-                  }
-                ]
+            {
+              name: "2.1 Quản lý công việc - yêu cầu",
+              size: "1.3em",
+              click: true,
+              url: "https://c3.mobifone.vn/qlhs/login",
+              icon: "alarm"
+            }
+            ,
+            {
+              name: "2.2 Hỗ trợ điểm bán lẻ",
+              size: "1.3em",
+              click: true,
+              url: "https://c3.mobifone.vn/dbl/login",
+              icon: "people"
+            }
+            ,
+            {
+              name: "2.3 Chọn số Công ty 3",
+              size: "1.3em",
+              click: true,
+              url: "https://chonsoc3.mobifone.vn/",
+              icon: "keypad"
+            }
+            ,
+            {
+              name: "2.4 Nối mạng Công ty 3 SSL4",
+              size: "1.3em",
+              click: true,
+              url: "https://ssl4.c3.mobifone.vn/dana-na/auth/url_default/welcome.cgi",
+              icon: "flash"
+            }
+          ]
         }
-        
         ,
         {
           name: "3. Các mẫu reponsive",
@@ -513,108 +516,108 @@ export class MyApp {
               name: "3.1 Các nhập liệu",
               size: "1.3em",
               subs: [
-              {
-                name: "3.1.1 Mẫu nhập liệu toàn màn hình dành cho di động",
-                click: true,
-                next: DynamicFormMobilePage,
-                icon: "phone-portrait"
-              }
-              ,
-              {
-                name: "3.1.2 Nhập liệu và hiển thị cho desktop & di động",
-                click: true,
-                next: DynamicFormWebPage,
-                icon: "desktop"
-              }
-              ,
-              {
-                name: "3.1.3 Mẫu nhập chọn & kéo",
-                click: true,
-                next: DynamicRangePage,
-                icon: "radio-button-on"
-              }
-            ]
+                {
+                  name: "3.1.1 Mẫu nhập liệu toàn màn hình dành cho di động",
+                  click: true,
+                  next: DynamicFormMobilePage,
+                  icon: "phone-portrait"
+                }
+                ,
+                {
+                  name: "3.1.2 Nhập liệu và hiển thị cho desktop & di động",
+                  click: true,
+                  next: DynamicFormWebPage,
+                  icon: "desktop"
+                }
+                ,
+                {
+                  name: "3.1.3 Mẫu nhập chọn & kéo",
+                  click: true,
+                  next: DynamicRangePage,
+                  icon: "radio-button-on"
+                }
+              ]
             }
             ,
             {
               name: "3.2 Các mẫu hiển thị danh sách",
               size: "1.3em",
               subs: [
-              {
-                name: "3.2.1 Mẫu danh sách quẹt nút click",
-                click: true,
-                next: DynamicListPage,
-                icon: "paper"
-              }
-              ,
-              {
-                name: "3.2.2 Mẫu danh sách bảng, liệt kê & sắp xếp lại",
-                click: true,
-                next: DynamicListOrderPage,
-                icon: "reorder"
-              }
-              ,
-              {
-                name: "3.2.3 Mẫu danh sách theo cây FamilyTree",
-                click: true,
-                next: DynamicTreePage,
-                icon: "menu"
-              }
-            ]
+                {
+                  name: "3.2.1 Mẫu danh sách quẹt nút click",
+                  click: true,
+                  next: DynamicListPage,
+                  icon: "paper"
+                }
+                ,
+                {
+                  name: "3.2.2 Mẫu danh sách bảng, liệt kê & sắp xếp lại",
+                  click: true,
+                  next: DynamicListOrderPage,
+                  icon: "reorder"
+                }
+                ,
+                {
+                  name: "3.2.3 Mẫu danh sách theo cây FamilyTree",
+                  click: true,
+                  next: DynamicTreePage,
+                  icon: "menu"
+                }
+              ]
             }
             ,
             {
               name: "3.3 Các mẫu xử lý hình ảnh và file",
               size: "1.3em",
               subs: [
-              {
-                name: "3.3.1 Mẫu upload ảnh theo facebook",
-                click: true,
-                next: DynamicMediasPage,
-                icon: "images"
-              }
-              ,
-              {
-                name: "3.3.2 Mẫu hiển thị ảnh và tương tác mạng xã hội",
-                click: true,
-                next: DynamicCardSocialPage,
-                icon: "logo-facebook"
-              }
-              ,
-              {
-                name: "3.3.3 Mẫu vẽ tay lên màn hình trên nền di động",
-                click: true,
-                next: SignaturePage,
-                icon: "create"
-              }
-            ]
+                {
+                  name: "3.3.1 Mẫu upload ảnh theo facebook",
+                  click: true,
+                  next: DynamicMediasPage,
+                  icon: "images"
+                }
+                ,
+                {
+                  name: "3.3.2 Mẫu hiển thị ảnh và tương tác mạng xã hội",
+                  click: true,
+                  next: DynamicCardSocialPage,
+                  icon: "logo-facebook"
+                }
+                ,
+                {
+                  name: "3.3.3 Mẫu vẽ tay lên màn hình trên nền di động",
+                  click: true,
+                  next: SignaturePage,
+                  icon: "create"
+                }
+              ]
             }
             ,
             {
               name: "3.4 Các phôi pdf In",
               size: "1.3em",
-              subs: [ 
-                      {
-                        name: "3.4.1 Mẫu ma trận điểm A4",
-                        size: "1.3em",
-                        click: true,
-                        url: "https://c3.mobifone.vn/qld/db/matrix-a4",
-                        icon: "people"
-                      }
-                      ,
-                      {
-                        name: "3.4.2 Mẫu ma trận điểm A5",
-                        size: "1.3em",
-                        click: true,
-                        url: "https://c3.mobifone.vn/qld/db/matrix-a5",
-                        icon: "people"
-                      }
-                    ]
+              subs: [
+                {
+                  name: "3.4.1 Mẫu ma trận điểm A4",
+                  size: "1.3em",
+                  click: true,
+                  url: "https://c3.mobifone.vn/qld/db/matrix-a4",
+                  icon: "people"
+                }
+                ,
+                {
+                  name: "3.4.2 Mẫu ma trận điểm A5",
+                  size: "1.3em",
+                  click: true,
+                  url: "https://c3.mobifone.vn/qld/db/matrix-a5",
+                  icon: "people"
+                }
+              ]
             }
           ]
 
 
-          
+
 
         }
         ,
@@ -642,7 +645,7 @@ export class MyApp {
           icon: "log-in"
         }
       ]
-    }else{
+    } else {
       this.treeMenu = [
         {
           name: "1. Trang chủ",
@@ -694,7 +697,7 @@ export class MyApp {
       ]
     }
 
-    this.events.publish('event-main-login-checked',{
+    this.events.publish('event-main-login-checked', {
       token: this.token,
       user: this.userInfo,
       socket: this.socket
@@ -702,39 +705,39 @@ export class MyApp {
   }
 
 
-  callbackTree = function(item, idx, parent, isMore:boolean){
-    if (item.visible){
-      parent.forEach((el,i)=>{
-        if (idx!==i) this.expandCollapseAll(el,false)
+  callbackTree = function (item, idx, parent, isMore: boolean) {
+    if (item.visible) {
+      parent.forEach((el, i) => {
+        if (idx !== i) this.expandCollapseAll(el, false)
       })
     }
 
-    if (isMore){
+    if (isMore) {
       if (item.next) {
         this.navCtrl.push(item.next);
         this.menuCtrl.close();
-        if (item.next===HomeMenuPage){
-          
-          setTimeout(()=>{
+        if (item.next === HomeMenuPage) {
+
+          setTimeout(() => {
             console.log(item);
-            this.events.publish('event-main-login-checked',{
+            this.events.publish('event-main-login-checked', {
               token: this.token,
               user: this.userInfo,
               socket: this.socket
             });
-  
-            this.events.publish('event-main-received-users',this.users);
-            this.events.publish('event-main-received-rooms',this.rooms);
-          },1000)
+
+            this.events.publish('event-main-received-users', this.users);
+            this.events.publish('event-main-received-rooms', this.rooms);
+          }, 1000)
 
         }
 
       } else if (item.url) {
         //neu ios, browser, android??
-        if (this.platform.is('ios')){
+        if (this.platform.is('ios')) {
           const browser = this.inAppBrowser.create(item.url);
-        }else{
-          window.open(item.url,'_system');
+        } else {
+          window.open(item.url, '_system');
         }
       }
     }
@@ -743,58 +746,59 @@ export class MyApp {
 
 
 
-  onClickUser(){
+  onClickUser() {
     this.navCtrl.push(LoginPage);
     this.menuCtrl.close();
   }
 
 
-  callbackChangeImage = function (res:any){
-    return new Promise((resolve,reject)=>{
+  callbackChangeImage = function (res: any) {
+    return new Promise((resolve, reject) => {
       this.userChangeImage();
-      resolve({next:'CLOSE'})
+      resolve({ next: 'CLOSE' })
     })
   }.bind(this)
 
-  onClickUserImage(func){
+  onClickUserImage(func) {
     this.openModal(OwnerImagesPage,
       {
         parent: this
-        ,func: func
-        ,callback: this.callbackChangeImage
+        , func: func
+        , callback: this.callbackChangeImage
       });
   }
 
-  onClickLogin(){
+  onClickLogin() {
     this.navCtrl.push(LoginPage);
     this.menuCtrl.close();
   }
 
-  onClickHeader(btn){
-    if (btn.next==="EXPAND")this.treeMenu.forEach(el=>this.expandCollapseAll(el,true))
-    if (btn.next==="COLLAPSE")this.treeMenu.forEach(el=>this.expandCollapseAll(el,false))
+  onClickHeader(btn) {
+    if (btn.next === "EXPAND") this.treeMenu.forEach(el => this.expandCollapseAll(el, true))
+    if (btn.next === "COLLAPSE") this.treeMenu.forEach(el => this.expandCollapseAll(el, false))
   }
 
-  expandCollapseAll(el,isExpand:boolean){
-    if (el.subs){
-      el.visible=isExpand;
-      el.subs.forEach(el1=>{
-        this.expandCollapseAll(el1,isExpand)
+  expandCollapseAll(el, isExpand: boolean) {
+    if (el.subs) {
+      el.visible = isExpand;
+      el.subs.forEach(el1 => {
+        this.expandCollapseAll(el1, isExpand)
       })
     }
   }
 
-  openModal(form,data?:any) {
+  openModal(form, data?: any) {
     let modal = this.modalCtrl.create(form, data);
     modal.present();
   }
 
   //emit....
-  jointRooms(){
+  jointRooms() {
     this.socket.emit('client-joint-room'
-                    ,{ rooms: this.originRooms,
-                      last_time: this.last_time
-                    });
+      , {
+        rooms: this.originRooms,
+        last_time: this.last_time
+      });
   }
 
   //socket.on...
