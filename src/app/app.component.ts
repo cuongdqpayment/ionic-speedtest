@@ -588,8 +588,34 @@ export class MyApp {
                 icon: "create"
               }
             ]
-            }        
+            }
+            ,
+            {
+              name: "3.4 Các phôi pdf In",
+              size: "1.3em",
+              subs: [ 
+                      {
+                        name: "3.4.1 Mẫu ma trận điểm A4",
+                        size: "1.3em",
+                        click: true,
+                        url: "https://c3.mobifone.vn/qld/db/matrix-a4",
+                        icon: "people"
+                      }
+                      ,
+                      {
+                        name: "3.4.2 Mẫu ma trận điểm A5",
+                        size: "1.3em",
+                        click: true,
+                        url: "https://c3.mobifone.vn/qld/db/matrix-a5",
+                        icon: "people"
+                      }
+                    ]
+            }
           ]
+
+
+          
+
         }
         ,
         {
@@ -606,14 +632,6 @@ export class MyApp {
           click: true,
           next: GoogleMapPage,
           icon: "globe"
-        }
-        ,
-        {
-          name: "5. Test Link pdf open",
-          size: "1.3em",
-          click: true,
-          url: "https://c3.mobifone.vn/dbl/login",
-          icon: "people"
         }
         ,
         {
