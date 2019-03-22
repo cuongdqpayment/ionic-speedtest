@@ -282,19 +282,17 @@ export class LoginPage {
    * @param res 
    */
   callbackFunction = function (res?: { step?: string, data?: any, error?: any }) {
-    
-    console.log('callback error:', res);
-    
+      
     return new Promise((resolve, reject) => {
 
       if (res && res.error && res.error.error) {
         //console.log('callback error:', res.error.error);
-        this.presentAlert('Lỗi:<br>' + JSON.stringify(res.error.error.error));
+        this.presentAlert('Lỗi:<br>' + JSON.stringify(res));
         resolve();
       } else if (res && res.step === 'form-phone' && res.data) {
         // console.log('forward data:', res.data.database_out);
         if (res.data.database_out && res.data.database_out.status === 0) {
-          this.presentAlert('Chú ý:<br>' + JSON.stringify(res.data.database_out.message));
+          this.presentAlert('Chú ý:<br>' + JSON.stringify(res));
         }
         //gui nhu mot button forward
         resolve({
@@ -347,8 +345,7 @@ export class LoginPage {
             resolve();
           })
           .catch(err => {
-            console.log('err', err);
-            this.presentAlert('Lỗi xác thực - authorizeFromResource')
+            this.presentAlert('Lỗi xác thực - authorizeFromResource'+ JSON.stringify(err))
             loading.dismiss();
             resolve();
           })

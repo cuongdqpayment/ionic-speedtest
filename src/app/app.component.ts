@@ -609,6 +609,14 @@ export class MyApp {
         }
         ,
         {
+          name: "5. Test Link pdf open",
+          size: "1.3em",
+          click: true,
+          url: "https://c3.mobifone.vn/dbl/login",
+          icon: "people"
+        }
+        ,
+        {
           name: "5. Login",
           size: "1.3em",
           click: true,
