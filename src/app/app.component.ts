@@ -627,7 +627,7 @@ export class MyApp {
             }
             ,
             {
-              name: "4.4 Mở kiểu InAppBrowser",
+              name: "4.4 Mở kiểu InApp",
               size: "1.3em",
               click: true,
               in_app_browser: LinkPage, //Link page chi gia lap thoi
@@ -753,7 +753,7 @@ export class MyApp {
       } else if (item.in_app_browser&&item.url) {
         
           var target = "_blank"; //mo trong inappbrowser
-          var options = "hidden=no,toolbar=yes,toolbarposition:top,location=yes,presentationstyle=fullscreen,clearcache=yes,clearsessioncache=yes";
+          var options = "hidden=no,toolbar=yes,location=yes,presentationstyle=fullscreen,clearcache=yes,clearsessioncache=yes";
           this.inAppBrowser.create(item.url,target,options);
         
       } else if (item.popup_iframe&&item.url) {
