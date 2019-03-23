@@ -495,7 +495,7 @@ export class MyApp {
               name: "2.3 Chọn số Công ty 3",
               size: "1.3em",
               click: true,
-              popup: LinkPage, //su dung link web ko file
+              popup_iframe: LinkPage, //su dung link web ko file
               url: "https://chonsoc3.mobifone.vn/",
               icon: "keypad"
             }
@@ -504,7 +504,7 @@ export class MyApp {
               name: "2.4 Nối mạng Công ty 3 SSL4",
               size: "1.3em",
               click: true,
-              popup: LinkPage, //su dung link web ko file
+              popup_iframe: LinkPage, //su dung link web ko file
               url: "https://ssl4.c3.mobifone.vn/dana-na/auth/url_default/welcome.cgi",
               icon: "flash"
             }
@@ -694,7 +694,7 @@ export class MyApp {
           name: "4. Chọn số Công ty 3",
           size: "1.3em",
           click: true,
-          //popup: LinkPage, //su dung link web ko file
+          popup_iframe: LinkPage, //su dung link web ko file
           url: "https://chonsoc3.mobifone.vn/",
           icon: "keypad"
         }
@@ -703,7 +703,7 @@ export class MyApp {
           name: "5. Nối mạng Công ty 3 SSL4",
           size: "1.3em",
           click: true,
-          //popup: LinkPage, //su dung link web ko file
+          popup_iframe: LinkPage, //su dung link web ko file
           url: "https://ssl4.c3.mobifone.vn/dana-na/auth/url_default/welcome.cgi",
           icon: "flash"
         }
