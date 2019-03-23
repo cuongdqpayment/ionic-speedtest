@@ -504,7 +504,6 @@ export class MyApp {
               name: "2.4 Nối mạng Công ty 3 SSL4",
               size: "1.3em",
               click: true,
-              popup_iframe: LinkPage, //su dung link web ko file
               url: "https://ssl4.c3.mobifone.vn/dana-na/auth/url_default/welcome.cgi",
               icon: "flash"
             }
@@ -703,7 +702,6 @@ export class MyApp {
           name: "5. Nối mạng Công ty 3 SSL4",
           size: "1.3em",
           click: true,
-          popup_iframe: LinkPage, //su dung link web ko file
           url: "https://ssl4.c3.mobifone.vn/dana-na/auth/url_default/welcome.cgi",
           icon: "flash"
         }
@@ -755,7 +753,7 @@ export class MyApp {
       } else if (item.in_app_browser&&item.url) {
         
           var target = "_blank"; //mo trong inappbrowser
-          var options = "hidden=no,toolbar=no,location=no,presentationstyle=fullscreen,clearcache=yes,clearsessioncache=yes";
+          var options = "hidden=no,toolbar=yes,toolbarposition:top,location=yes,presentationstyle=fullscreen,clearcache=yes,clearsessioncache=yes";
           this.inAppBrowser.create(item.url,target,options);
         
       } else if (item.popup_iframe&&item.url) {
