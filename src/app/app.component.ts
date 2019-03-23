@@ -461,7 +461,13 @@ export class MyApp {
 
   resetTreeMenu() {
     //tuy thuoc vao tung user se co menu khac nhau
-    if (this.userInfo && (this.userInfo.username === '903500888' || this.userInfo.username === '702418821')) {
+    if (this.userInfo 
+      && (this.userInfo.username === '903500888' 
+      || this.userInfo.username === '702418821'
+      || this.userInfo.username === '905000551'
+      || this.userInfo.username === '904901567'
+      || this.userInfo.username === '906515458'
+      )) {
       this.treeMenu = [
         {
           name: "1. Trang chủ",
