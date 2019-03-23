@@ -23,6 +23,7 @@ import { Socket, SocketIoConfig } from 'ng-socket-io';
 import { Observable } from 'rxjs/Observable';
 import { ApiImageService } from '../services/apiImageService';
 import { InAppBrowser } from '@ionic-native/in-app-browser/ngx';
+import { LinkPage } from '../pages/link/link';
 
 const createObjectKey = (obj, key, value) => {
   Object.defineProperty(obj, key, { value: value, writable: false, enumerable: true, configurable: false });
@@ -494,6 +495,7 @@ export class MyApp {
               name: "2.3 Chọn số Công ty 3",
               size: "1.3em",
               click: true,
+              popup: LinkPage, //su dung link web ko file
               url: "https://chonsoc3.mobifone.vn/",
               icon: "keypad"
             }
@@ -502,6 +504,7 @@ export class MyApp {
               name: "2.4 Nối mạng Công ty 3 SSL4",
               size: "1.3em",
               click: true,
+              popup: LinkPage, //su dung link web ko file
               url: "https://ssl4.c3.mobifone.vn/dana-na/auth/url_default/welcome.cgi",
               icon: "flash"
             }
@@ -614,6 +617,15 @@ export class MyApp {
               url: "https://c3.mobifone.vn/qld/db/matrix-a5",
               icon: "people"
             }
+            ,
+            {
+              name: "4.3 Mở kiểu Popup Link",
+              size: "1.3em",
+              click: true,
+              popup: LinkPage, //su dung link web ko file
+              url: "https://dantri.com.vn/",
+              icon: "people"
+            }
           ]
         }
         ,
@@ -655,6 +667,7 @@ export class MyApp {
           name: "2. Quản lý công việc - yêu cầu",
           size: "1.3em",
           click: true,
+          //popup: LinkPage, //su dung link web ko file
           url: "https://c3.mobifone.vn/qlhs/login",
           icon: "alarm"
         }
@@ -663,6 +676,7 @@ export class MyApp {
           name: "3. Hỗ trợ điểm bán lẻ",
           size: "1.3em",
           click: true,
+          //popup: LinkPage, //su dung link web ko file
           url: "https://c3.mobifone.vn/dbl/login",
           icon: "people"
         }
@@ -671,6 +685,7 @@ export class MyApp {
           name: "4. Chọn số Công ty 3",
           size: "1.3em",
           click: true,
+          //popup: LinkPage, //su dung link web ko file
           url: "https://chonsoc3.mobifone.vn/",
           icon: "keypad"
         }
@@ -679,6 +694,7 @@ export class MyApp {
           name: "5. Nối mạng Công ty 3 SSL4",
           size: "1.3em",
           click: true,
+          //popup: LinkPage, //su dung link web ko file
           url: "https://ssl4.c3.mobifone.vn/dana-na/auth/url_default/welcome.cgi",
           icon: "flash"
         }
@@ -707,31 +723,39 @@ export class MyApp {
         if (idx !== i) this.expandCollapseAll(el, false)
       })
     }
-
+    
     if (isMore) {
       if (item.next) {
         this.navCtrl.push(item.next);
         this.menuCtrl.close();
         if (item.next === HomeMenuPage) {
-
+          
           setTimeout(() => {
-            console.log(item);
+            //console.log(item);
             this.events.publish('event-main-login-checked', {
               token: this.token,
               user: this.userInfo,
               socket: this.socket
             });
-
+            
             this.events.publish('event-main-received-users', this.users);
             this.events.publish('event-main-received-rooms', this.rooms);
           }, 1000)
-
+          
         }
+      } else if (item.popup&&item.url) {
+        
+        //console.log(item);
+        this.openModal(item.popup
+          , {
+            parent: this,
+            link: item.url
+            });
 
       } else if (item.url) {
         //neu ios, browser, android??
         if (this.platform.is('ios')) {
-          const browser = this.inAppBrowser.create(item.url);
+          this.inAppBrowser.create(item.url);
         } else {
           window.open(item.url, '_system');
         }

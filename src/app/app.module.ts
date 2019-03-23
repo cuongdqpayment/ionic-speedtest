@@ -12,9 +12,7 @@ import { InAppBrowser } from '@ionic-native/in-app-browser/ngx';
 import { MyApp } from './app.component';
 import { HomeSpeedtestPage } from '../pages/home-speedtest/home-speedtest';
 import { HomeMenuPage } from '../pages/home-menu/home-menu';
-import {TimeAgoPipe} from 'time-ago-pipe';
-
-import { ArraySortPipe } from '../pipes/arrayOrder'
+import { TimeAgoPipe} from 'time-ago-pipe';
 
 import { ApiSpeedTestService } from '../services/apiSpeedTestService';
 import { ApiAuthService } from '../services/apiAuthService';
@@ -48,6 +46,8 @@ import { OwnerImagesPage } from '../pages/owner-images/owner-images';
 import { HomeChatPage } from '../pages/home-chat/home-chat';
 import { ChattingPage } from '../pages/chatting/chatting';
 import { Autosize } from '../components/autosize';
+import { LinkPage } from '../pages/link/link';
+import { SafePipe } from '../pipes/safe-pipe';
 
 
 @NgModule({
@@ -55,6 +55,7 @@ import { Autosize } from '../components/autosize';
     MyApp,
     TreeView,
     LoginPage,
+    LinkPage,
     HomeSpeedtestPage,
     ResultsPage,
     TabsPage,
@@ -71,10 +72,10 @@ import { Autosize } from '../components/autosize';
     DynamicListOrderPage,
     GoogleMapPage,
     SignaturePage,
-    ArraySortPipe,
     HomeChatPage,
     ChattingPage,
     TimeAgoPipe,
+    SafePipe,
     Autosize
   ],
   imports: [
@@ -88,6 +89,7 @@ import { Autosize } from '../components/autosize';
     MyApp,
     TreeView,
     LoginPage,
+    LinkPage,
     HomeSpeedtestPage,
     ResultsPage,
     TabsPage,
