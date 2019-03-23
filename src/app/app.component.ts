@@ -619,10 +619,19 @@ export class MyApp {
             }
             ,
             {
-              name: "4.3 Mở kiểu Popup Link",
+              name: "4.3 Mở kiểu Popup iframe",
               size: "1.3em",
               click: true,
-              popup: LinkPage, //su dung link web ko file
+              popup_iframe: LinkPage, //su dung link web ko file
+              url: "https://dantri.com.vn/",
+              icon: "people"
+            }
+            ,
+            {
+              name: "4.4 Mở kiểu InAppBrowser",
+              size: "1.3em",
+              click: true,
+              in_app_browser: LinkPage, //Link page chi gia lap thoi
               url: "https://dantri.com.vn/",
               icon: "people"
             }
@@ -743,14 +752,23 @@ export class MyApp {
           }, 1000)
           
         }
-      } else if (item.popup&&item.url) {
+      } else if (item.in_app_browser&&item.url) {
         
-        //console.log(item);
-        this.openModal(item.popup
-          , {
-            parent: this,
-            link: item.url
-            });
+          var target = "_blank"; //mo trong inappbrowser
+          var options = "hidden=no,toolbar=no,location=no,presentationstyle=fullscreen,clearcache=yes,clearsessioncache=yes";
+          this.inAppBrowser.create(item.url,target,options);
+        
+      } else if (item.popup_iframe&&item.url) {
+        
+        if (this.platform.is('ios')) {
+          this.inAppBrowser.create(item.url,'_blank');
+        } else {
+          this.openModal(item.popup
+            , {
+              parent: this,
+              link: item.url
+              }); 
+        }
 
       } else if (item.url) {
         //neu ios, browser, android??
