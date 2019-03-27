@@ -44,7 +44,7 @@ export class HomeSpeedtestPage {
 
         setTimeout(() => {
           this.callForward();
-        }, 5000); //5 giay sau cho chay qua form moi
+        }, 3000); //5 giay sau cho chay qua form moi
 
       })
       .catch(err => {
