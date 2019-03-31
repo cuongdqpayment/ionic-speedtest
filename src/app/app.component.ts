@@ -24,6 +24,7 @@ import { Observable } from 'rxjs/Observable';
 import { ApiImageService } from '../services/apiImageService';
 import { InAppBrowser } from '@ionic-native/in-app-browser/ngx';
 import { LinkPage } from '../pages/link/link';
+import { QrBarScannerPage } from '../pages/qr-bar-scanner/qr-bar-scanner';
 
 const createObjectKey = (obj, key, value) => {
   Object.defineProperty(obj, key, { value: value, writable: false, enumerable: true, configurable: false });
@@ -660,7 +661,15 @@ export class MyApp {
         }
         ,
         {
-          name: "7. Login",
+          name: "7. Qr Bar Scanner",
+          size: "1.3em",
+          click: true,
+          next: QrBarScannerPage,
+          icon: "qr-scanner"
+        }
+        ,
+        {
+          name: "8. Login",
           size: "1.3em",
           click: true,
           next: LoginPage,
@@ -713,7 +722,15 @@ export class MyApp {
         }
         ,
         {
-          name: "6. Login",
+          name: "6. Qr Bar Scanner",
+          size: "1.3em",
+          click: true,
+          next: QrBarScannerPage,
+          icon: "qr-scanner"
+        }
+        ,
+        {
+          name: "7. Login",
           size: "1.3em",
           click: true,
           next: LoginPage,
