@@ -114,3 +114,11 @@ this.qrScanner.prepare()
      }
   })
   .catch((e: any) => console.log('Error is', e));
+
+
+  #DEPLOY-WEB:
+  ionic cordova build browser --prod --release
+  #yeu cau "@angular/compiler-cli": "^5.2.11" 
+  #neu version moi hon se bao loi
+  #cac page, component, service.. deu phai khai ngModule tuong ung neu khong se bi loi
+  

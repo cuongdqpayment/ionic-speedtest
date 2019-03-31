@@ -3,6 +3,5 @@
 #npm i
 
 #buid dang browser de dung cordova.js
-ionic cordova build browser
-# --prod --release
+ionic cordova build browser --prod --release
 node server.js
