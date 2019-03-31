@@ -14,6 +14,8 @@ import { HomeSpeedtestPage } from '../pages/home-speedtest/home-speedtest';
 import { HomeMenuPage } from '../pages/home-menu/home-menu';
 import { TimeAgoPipe} from 'time-ago-pipe';
 
+import { NgxQRCodeModule } from 'ngx-qrcode2';
+import { NgxBarcodeModule } from 'ngx-barcode';
 import { BarcodeScanner } from '@ionic-native/barcode-scanner';
 
 import { ApiSpeedTestService } from '../services/apiSpeedTestService';
@@ -51,6 +53,7 @@ import { Autosize } from '../components/autosize';
 import { LinkPage } from '../pages/link/link';
 import { SafePipe } from '../pipes/safe-pipe';
 import { QrBarScannerPage } from '../pages/qr-bar-scanner/qr-bar-scanner';
+import { QrBarCodePage } from '../pages/qr-bar-code/qr-bar-code';
 
 
 @NgModule({
@@ -58,6 +61,7 @@ import { QrBarScannerPage } from '../pages/qr-bar-scanner/qr-bar-scanner';
     MyApp,
     TreeView,
     LoginPage,
+    QrBarCodePage,
     QrBarScannerPage,
     LinkPage,
     HomeSpeedtestPage,
@@ -86,6 +90,8 @@ import { QrBarScannerPage } from '../pages/qr-bar-scanner/qr-bar-scanner';
     BrowserModule,
     HttpClientModule,
     StorageServiceModule,
+    NgxBarcodeModule,
+    NgxQRCodeModule,
     IonicModule.forRoot(MyApp)
   ],
   bootstrap: [IonicApp],
@@ -93,6 +99,7 @@ import { QrBarScannerPage } from '../pages/qr-bar-scanner/qr-bar-scanner';
     MyApp,
     TreeView,
     LoginPage,
+    QrBarCodePage,
     QrBarScannerPage,
     LinkPage,
     HomeSpeedtestPage,

@@ -8,6 +8,7 @@ import { ApiStorageService } from '../../services/apiStorageService';
 import { ApiAuthService } from '../../services/apiAuthService';
 import { ApiMediaService } from '../../services/apiMediaService';
 import { HomeMenuPage } from '../home-menu/home-menu';
+import { QrBarCodePage } from '../qr-bar-code/qr-bar-code';
 
 @Component({
   selector: 'page-login',
@@ -94,6 +95,9 @@ export class LoginPage {
 
     let data = {
       title: "Đã Login"
+      , buttons: [
+        {color:"primary", icon: "barcode", command: "CODE-GENERATOR" , next:"CALLBACK"} 
+      ]
       , items: [
         {
           type: "details",
@@ -228,11 +232,21 @@ export class LoginPage {
       }
       
       if (res.button&&res.button.command==="UPDATE"){
-          this.events.publish('user-log-in-ok'); //bao hieu refresh userInfo
-          this.navCtrl.setRoot(HomeMenuPage);
-          resolve({next:"CLOSE"}); //vi dung modal nen phai dong lai
+        this.events.publish('user-log-in-ok'); //bao hieu refresh userInfo
+        this.navCtrl.setRoot(HomeMenuPage);
+        resolve({next:"CLOSE"}); //vi dung modal nen phai dong lai
       }else{
         resolve();
+      }
+      
+      if (res.button&&res.button.command==="CODE-GENERATOR"){
+        this.openModal(QrBarCodePage
+            , {
+              parent: this,
+              type: 'QR',
+              visible: false,
+              data: this.apiStorageService.getToken()
+              });  
       }
 
       
