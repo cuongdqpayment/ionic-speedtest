@@ -1,0 +1,15 @@
+page-contacts {
+    .background-transparent{
+        background-color: transparent;
+        color:#e5e8f1f6;
+    }
+    
+    ion-searchbar{        
+        .searchbar-input-container{            
+            .searchbar-input{
+                border-radius:  2em !important;
+                font-size: 1.2em;
+            }
+        }
+     }
+}

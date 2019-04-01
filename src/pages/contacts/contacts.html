@@ -1,0 +1,31 @@
+<ion-header>
+  <ion-navbar>
+    <ion-item *ngIf="!isSearch" no-lines class="background-transparent" start>
+      <ion-title>CONTACTS</ion-title>
+    </ion-item>
+    <ion-buttons *ngIf="!isSearch">
+      <button ion-button icon-only color="royal" (click)="goSearch()">
+        <ion-icon name="search"></ion-icon>
+      </button>
+    </ion-buttons>
+    <ion-searchbar *ngIf="isSearch" placeholder="Tìm theo tên, loại hoặc số điện thoại đầu, cuối" [(ngModel)]="searchString"
+      [showCancelButton]="shouldShowCancel" (ionInput)="onInput($event)" (keyup.enter)="searchEnter()" (keyup.esc)="searchEnter()">
+    </ion-searchbar>
+
+
+  </ion-navbar>
+</ion-header>
+
+<ion-content padding>
+  <ion-list>
+    <button ion-item *ngFor="let contact of phoneContacts">
+      <ion-avatar item-start>
+        <img src="{{contact.photos?contact.photos[0].value:image_default}}">
+      </ion-avatar>
+      <h2>{{contact.displayName?contact.displayName:contact.name.formatted?contact.name.formatted:contact.name.familyName?contact.name.familyName:'Không
+        biết tên'}}</h2>
+      <p>{{contact.phoneNumbers?contact.phoneNumbers[0].value:'...'}}</p>
+      <ion-note>{{contact.urls?contact.urls[0].value:'#'}}</ion-note>
+    </button>
+  </ion-list>
+</ion-content>

@@ -22,6 +22,7 @@
     "@angular/platform-browser-dynamic": "5.2.11",
     "@ionic-native/barcode-scanner": "^4.20.0",
     "@ionic-native/camera": "^5.3.0",
+    "@ionic-native/contacts": "^5.3.0",
     "@ionic-native/core": "~4.17.0",
     "@ionic-native/geolocation": "^4.18.0",
     "@ionic-native/in-app-browser": "^5.3.0",
@@ -35,6 +36,7 @@
     "cordova-browser": "5.0.4",
     "cordova-ios": "4.5.5",
     "cordova-plugin-camera": "4.0.3",
+    "cordova-plugin-contacts": "3.0.1",
     "cordova-plugin-device": "^2.0.2",
     "cordova-plugin-geolocation": "^4.0.1",
     "cordova-plugin-inappbrowser": "3.0.0",
@@ -82,7 +84,8 @@
       "phonegap-plugin-barcodescanner": {
         "ANDROID_SUPPORT_V4_VERSION": "27.+"
       },
-      "cordova-plugin-camera": {}
+      "cordova-plugin-camera": {},
+      "cordova-plugin-contacts": {}
     },
     "platforms": [
       "browser",

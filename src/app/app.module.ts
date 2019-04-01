@@ -18,6 +18,8 @@ import { NgxQRCodeModule } from 'ngx-qrcode2';
 import { NgxBarcodeModule } from 'ngx-barcode';
 import { BarcodeScanner } from '@ionic-native/barcode-scanner';
 
+import { Contacts } from '@ionic-native/contacts';
+
 import { ApiSpeedTestService } from '../services/apiSpeedTestService';
 import { ApiAuthService } from '../services/apiAuthService';
 import { ApiImageService } from '../services/apiImageService';
@@ -54,6 +56,7 @@ import { LinkPage } from '../pages/link/link';
 import { SafePipe } from '../pipes/safe-pipe';
 import { QrBarScannerPage } from '../pages/qr-bar-scanner/qr-bar-scanner';
 import { QrBarCodePage } from '../pages/qr-bar-code/qr-bar-code';
+import { ContactsPage } from '../pages/contacts/contacts';
 
 
 @NgModule({
@@ -63,6 +66,7 @@ import { QrBarCodePage } from '../pages/qr-bar-code/qr-bar-code';
     LoginPage,
     QrBarCodePage,
     QrBarScannerPage,
+    ContactsPage,
     LinkPage,
     HomeSpeedtestPage,
     ResultsPage,
@@ -101,6 +105,7 @@ import { QrBarCodePage } from '../pages/qr-bar-code/qr-bar-code';
     LoginPage,
     QrBarCodePage,
     QrBarScannerPage,
+    ContactsPage,
     LinkPage,
     HomeSpeedtestPage,
     ResultsPage,
@@ -126,6 +131,7 @@ import { QrBarCodePage } from '../pages/qr-bar-code/qr-bar-code';
     SplashScreen,
     Geolocation,
     BarcodeScanner,
+    Contacts,
     SQLite,
     InAppBrowser,
     ApiGraphService,

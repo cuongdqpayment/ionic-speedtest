@@ -113,4 +113,5 @@
     <engine name="browser" spec="5.0.4" />
     <engine name="android" spec="7.1.4" />
     <engine name="ios" spec="4.5.5" />
+    <plugin name="cordova-plugin-contacts" spec="3.0.1" />
 </widget>

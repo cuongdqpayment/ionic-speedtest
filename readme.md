@@ -122,3 +122,27 @@ this.qrScanner.prepare()
   #neu version moi hon se bao loi
   #cac page, component, service.. deu phai khai ngModule tuong ung neu khong se bi loi
   
+
+
+
+  #CONTACTS - APP only
+  ionic cordova plugin add cordova-plugin-contacts
+  npm install @ionic-native/contacts
+
+
+
+  import { Contacts, Contact, ContactField, ContactName } from '@ionic-native/contacts/ngx';
+
+  constructor(private contacts: Contacts) { }
+
+  let contact: Contact = this.contacts.create();
+
+  contact.name = new ContactName(null, 'Smith', 'John');
+  contact.phoneNumbers = [new ContactField('mobile', '6471234567')];
+  contact.save().then(
+    () => console.log('Contact saved!', contact),
+    (error: any) => console.error('Error saving contact.', error)
+  );
+
+
+  
