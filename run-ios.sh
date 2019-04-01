@@ -16,6 +16,4 @@
 # buoc 3: chay truc tiep tu dong lenh, khong debug console log duoc
 #ionic cordova build ios -- --buildFlag="-UseModernBuildSystem=0"
 
-
-
 ionic cordova run ios -- --buildFlag="-UseModernBuildSystem=0"
