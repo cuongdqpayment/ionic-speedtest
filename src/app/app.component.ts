@@ -674,7 +674,7 @@ export class MyApp {
           size: "1.3em",
           click: true,
           next: ContactsPage,
-          icon: "qr-scanner"
+          icon: "contacts"
         }
         ,
         {
@@ -743,7 +743,7 @@ export class MyApp {
           size: "1.3em",
           click: true,
           next: ContactsPage,
-          icon: "qr-scanner"
+          icon: "contacts"
         }
         ,
         {

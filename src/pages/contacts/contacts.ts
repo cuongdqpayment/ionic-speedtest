@@ -3,13 +3,26 @@ import { NavController, LoadingController, ToastController } from 'ionic-angular
 
 import { Contacts, Contact, ContactField, ContactName } from '@ionic-native/contacts';
 
-import { MyApp } from '../../app/app.component';
-
 @Component({
   selector: 'page-contacts',
   templateUrl: 'contacts.html'
 })
 export class ContactsPage {
+
+
+  dynamicContacts:any ={
+                        title: "Danh bạ"
+                        , search_bar: {hint: "Tìm tên hoặc số"} 
+                        , buttons: [
+                            {color:"primary", icon:"person-add", next:"ADD"}    //doc danh ba, pickup 1 so addfriend
+                            , {color:"primary", icon:"contacts", next:"FRIENDS" //doc danh ba chinh thuc
+                                  , alerts:[
+                                  "903500888"
+                                  ]
+                            }
+                          , {color:"primary", icon:"sync", next:"SYNC"}          //doc danh ba tu may, day len may chu
+                          ]
+                        }
 
   phoneContacts: any = [];
   phoneContactsOrigin: any = [];
@@ -23,45 +36,24 @@ export class ContactsPage {
 
 
   ngOnInit(){
-    //lay danh ba tong hop
-    this.listContacts();
+    //doc tu bo nho ra danh ba cua ung dung
+    //let ke danh ba 
   }
 
-  createContact() {
 
-    let loading = this.loadingCtrl.create({
-      content: 'Đợi lưu vào danh bạ'
-    });
-    loading.present();
-
-    let contact: Contact = this.contacts.create();
-
-    /* if (!MyApp.isWeb) { //chi su dung cho device moi them duoc
-
-      contact.name = new ContactName(null, 'Doan', 'Quoc Cuong');
-
-      console.log('Contact name:', contact);
-
-      contact.phoneNumbers = [new ContactField('mobile', '0903500888')];
-      contact.save().then(
-        () => {
-          console.log('Contact saved!', contact);
-          Log.put('Contact saved!', contact);
-          this.showToast(loading, 'Danh bạ đã được lưu trữ thành công!', 0, 1);
-        },
-        (error: any) => {
-          console.error('Error saving contact.', error);
-          Log.put('Error saving contact.', error);
-          this.showToast(loading, 'Lỗi lưu trữ danh bạ!');
-        }
-      );
-    } else {
-      this.showToast(loading, 'Lỗi không được phép tạo danh bạ');
-    } */
-
+  onClickHeader(btn){
+    if (btn.next==="ADD"){
+      this.pickContacts();
+    }
+    if (btn.next==="SYNC"){
+      this.listContacts();
+    }
+    if (btn.next==="FRIENDS"){
+      //doc danh ba
+    }
 
   }
-
+  
   /** Goi menu he thong de mo danh ba ra
    * ket qua sau khi chon mot danh ba nao do thi se in ra
    */
@@ -71,8 +63,10 @@ export class ContactsPage {
     });
     loading.present();
 
+    //Goi menu he thong
     this.contacts.pickContact()
       .then((oneContact: Contact) => {
+        //ket qua chon duoc 1 danh ba trong danh sach
 
         this.showToast(loading, 'Bạn đã chọn được 1 danh bạ ' + (oneContact.displayName ? oneContact.displayName : oneContact.name.formatted ? oneContact.name.formatted : oneContact.name.familyName ? oneContact.name.familyName : 'Không biết tên'), 0, 1);
 
@@ -118,27 +112,21 @@ export class ContactsPage {
       content: 'Đợi lọc dữ liệu từ danh bạ'
     });
     loading.present();
-    // console.log('this.contacts: ',this.contacts);
-    // Log.put('this.contacts: ',this.contacts);      
-    //Lay toan bo danh ba trong may
-    this.contacts.find(['displayName', 'name', 'phoneNumbers', 'emails', 'photos', 'urls', 'organizations', 'addresses', 'birthday', 'ims'], { filter: "", multiple: true })
+    
+    this.contacts
+    .find(['displayName', 'name', 'phoneNumbers', 'emails', 'photos', 'urls', 'organizations', 'addresses', 'birthday', 'ims']
+                        , { filter: "", multiple: true })
       .then(data => {
-        //loading.dismiss();
-        this.showToast(loading, 'Đã đọc xong danh bạ ' + data.length + ' số', 0, 1);
-
         this.phoneContactsOrigin = data;
         this.phoneContacts = this.phoneContactsOrigin;
-        //console.log('this.contacts: ', data);
+        this.showToast(loading, 'Đã đọc xong danh bạ ' + data.length + ' số', 0, 1);
       })
       .catch(err => {
         this.showToast(loading, 'Lỗi đọc danh bạ: ' + JSON.stringify(err));
       });
-
-
   }
 
   showToast(ld: any, msg: string, dur?: 0 | 1 | 2, pos?: 0 | 1 | 2) {
-
     if (ld) ld.dismiss();
     this.toastCtrl.create({
       message: msg,
@@ -148,27 +136,11 @@ export class ContactsPage {
   }
 
   goSearch() {
-    //chi loc trong mang da doc du lieu ra 
     this.isSearch = true;
   }
 
   onInput(e) {
 
-    this.phoneContacts = this.phoneContactsOrigin.filter(x=>(
-      (x.displayName ? x.displayName : '').toLowerCase().indexOf(this.searchString.toLowerCase())>=0
-      ||
-      (x.name.formatted ? x.name.formatted : '').toLowerCase().indexOf(this.searchString.toLowerCase())>=0
-      ||
-      (x.name.familyName ? x.name.familyName : '').toLowerCase().indexOf(this.searchString.toLowerCase())>=0
-      ||
-      (x.name.givenName ? x.name.givenName : '').toLowerCase().indexOf(this.searchString.toLowerCase())>=0
-      ||
-      (x.phoneNumbers&&x.phoneNumbers.find(y=>y.value.indexOf(this.searchString)>=0))
-      ))
-  }
-
-  sendContacts(){
-    
   }
 
   searchEnter() {
