@@ -2,6 +2,8 @@ import { Component } from '@angular/core';
 import { NavController, LoadingController, ToastController } from 'ionic-angular';
 
 import { Contacts, Contact, ContactField, ContactName } from '@ionic-native/contacts';
+import { ApiAuthService } from '../../services/apiAuthService';
+import { ApiStorageService } from '../../services/apiStorageService';
 
 @Component({
   selector: 'page-contacts',
@@ -29,7 +31,8 @@ export class ContactsPage {
   isSearch: boolean = false;
   searchString: string = '';
 
-  constructor(public navCtrl: NavController,
+  constructor(
+    private apiAuth: ApiAuthService,
     private loadingCtrl: LoadingController,
     private toastCtrl: ToastController,
     private contacts: Contacts) { }
@@ -120,6 +123,24 @@ export class ContactsPage {
         this.phoneContactsOrigin = data;
         this.phoneContacts = this.phoneContactsOrigin;
         this.showToast(loading, 'Đã đọc xong danh bạ ' + data.length + ' số', 0, 1);
+
+        //luu danh ba len may chu
+        this.apiAuth.postDynamicForm(ApiStorageService.authenticationServer+"/save-your-contacts",data,true)
+        .then(res=>{
+          this.toastCtrl.create({
+            message: "res" + JSON.stringify(res),
+            duration: 3000,
+            position:'middle'
+          }).present();
+        })
+        .catch(err_=>{
+          this.toastCtrl.create({
+            message: "res" + JSON.stringify(err_),
+            duration: 3000,
+            position:'bottom'
+          }).present();
+        })
+
       })
       .catch(err => {
         this.showToast(loading, 'Lỗi đọc danh bạ: ' + JSON.stringify(err));
