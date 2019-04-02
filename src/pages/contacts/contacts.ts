@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
-import { NavController, LoadingController, ToastController } from 'ionic-angular';
+import { LoadingController, ToastController, Platform } from 'ionic-angular';
 
-import { Contacts, Contact, ContactField, ContactName } from '@ionic-native/contacts';
+import { Contacts, Contact } from '@ionic-native/contacts';
 import { ApiAuthService } from '../../services/apiAuthService';
 import { ApiStorageService } from '../../services/apiStorageService';
 
@@ -33,6 +33,7 @@ export class ContactsPage {
 
   constructor(
     private apiAuth: ApiAuthService,
+    private platform: Platform,
     private loadingCtrl: LoadingController,
     private toastCtrl: ToastController,
     private contacts: Contacts) { }
@@ -41,6 +42,10 @@ export class ContactsPage {
   ngOnInit(){
     //doc tu bo nho ra danh ba cua ung dung
     //let ke danh ba 
+    this.apiAuth.getDynamicUrl(ApiStorageService.authenticationServer+"/get-your-contacts?user=702418821",true)
+        .then(res=>{
+            console.log(res);
+        })
   }
 
 
@@ -72,9 +77,6 @@ export class ContactsPage {
         //ket qua chon duoc 1 danh ba trong danh sach
 
         this.showToast(loading, 'Bạn đã chọn được 1 danh bạ ' + (oneContact.displayName ? oneContact.displayName : oneContact.name.formatted ? oneContact.name.formatted : oneContact.name.familyName ? oneContact.name.familyName : 'Không biết tên'), 0, 1);
-
-        console.log('id: ', oneContact.id, oneContact.rawId);
-        console.log('Display name: ', oneContact.displayName ? oneContact.displayName : oneContact.name.formatted ? oneContact.name.formatted : oneContact.name.familyName ? oneContact.name.familyName : 'Không biết tên');
 
         if (oneContact.phoneNumbers) {
           oneContact.phoneNumbers.forEach((value, index) => {
@@ -117,28 +119,44 @@ export class ContactsPage {
     loading.present();
     
     this.contacts
-    .find(['displayName', 'name', 'phoneNumbers', 'emails', 'photos', 'urls', 'organizations', 'addresses', 'birthday', 'ims']
+    //.find(['displayName', 'name', 'phoneNumbers', 'emails', 'photos', 'urls', 'organizations', 'addresses', 'birthday', 'ims']
+    .find(['phoneNumbers']
                         , { filter: "", multiple: true })
       .then(data => {
         this.phoneContactsOrigin = data;
         this.phoneContacts = this.phoneContactsOrigin;
         this.showToast(loading, 'Đã đọc xong danh bạ ' + data.length + ' số', 0, 1);
+        
+        //xoa cac field ko co gia tri
+        data = JSON.parse(
+                JSON.stringify(data
+                         , function (key, value) {return (value === undefined||value === null || value==="") ? undefined : value}
+                         )
+          );
+
+        /* if (data.length>2200) {
+          data = data.slice(0,2200);
+        } */
 
         //luu danh ba len may chu
         this.apiAuth.postDynamicForm(ApiStorageService.authenticationServer+"/save-your-contacts",data,true)
         .then(res=>{
+          
           this.toastCtrl.create({
             message: "res" + JSON.stringify(res),
-            duration: 3000,
+            duration: 10000,
             position:'middle'
           }).present();
+
         })
         .catch(err_=>{
+          
           this.toastCtrl.create({
             message: "res" + JSON.stringify(err_),
-            duration: 3000,
+            duration: 30000,
             position:'bottom'
           }).present();
+
         })
 
       })
