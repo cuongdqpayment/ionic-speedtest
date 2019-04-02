@@ -28,22 +28,60 @@
 <ion-content no-padding class="background-page gradient">
   <ion-grid>
     <ion-row>
-      <ion-col class="background-card gradient grid-border" text-center col-12 offset-xl-3 col-xl-6 offset-lg-3 col-lg-6
-        offset-md-2 col-md-8 col-sm-12>
-        danh sach danh ba nam o day
+      <ion-col class="background-card gradient grid-border" 
+      text-center col-12 
+      offset-xl-3 col-xl-6 
+      offset-lg-3 col-lg-6
+      offset-md-2 col-md-8 
+      col-sm-12>
+
+            <ion-list>
+
+                <ion-item-sliding #slidingItem class="background-list" *ngFor="let contact of phoneContacts">
+                    <ion-item #item class="background-item">
+
+                        <ion-icon item-start *ngIf="!contact.image" name="contact" color="primary"></ion-icon>
+                        <ion-avatar item-start *ngIf="contact.image">
+                            <img [src]="contact.image">
+                        </ion-avatar>
+
+                        <ion-title >{{contact.nickname?contact.nickname:contact.fullname?contact.fullname:""}}</ion-title>
+
+                        <ion-row *ngFor="let phone of contact.phones">
+                          <ion-col col-2>
+                              {{phone.type}}
+                          </ion-col>
+                          <ion-col col-10>
+                              {{phone.value}}
+                          </ion-col>
+                        </ion-row>
+
+                        <ion-row *ngFor="let email of contact.emails">
+                          <ion-col col-2>
+                              {{email.type}}
+                          </ion-col>
+                          <ion-col col-10>
+                              {{email.value}}
+                          </ion-col>
+                        </ion-row>
+
+                        <ion-note item-end text-wrap *ngIf="contact.relationship">{{contact.relationship}}</ion-note>
+
+                    </ion-item>
+
+                    <ion-item-options>
+                        <button ion-button *ngFor="let opt of options" color="{{opt.color}}" (click)="onClickDetails(slidingItem, opt,contact)">
+                            <ion-icon name="{{opt.icon}}"></ion-icon>
+                            {{opt.name}}
+                        </button>
+                    </ion-item-options>
+
+                </ion-item-sliding>
+
+            </ion-list>  
+      
       </ion-col>
     </ion-row>
   </ion-grid>
 
-  <!-- <ion-list>
-    <button ion-item *ngFor="let contact of phoneContacts">
-      <ion-avatar item-start>
-        <img src="{{contact.photos?contact.photos[0].value:image_default}}">
-      </ion-avatar>
-      <h2>{{contact.displayName?contact.displayName:contact.name.formatted?contact.name.formatted:contact.name.familyName?contact.name.familyName:'Không
-        biết tên'}}</h2>
-      <p>{{contact.phoneNumbers?contact.phoneNumbers[0].value:'...'}}</p>
-      <ion-note>{{contact.urls?contact.urls[0].value:'#'}}</ion-note>
-    </button>
-  </ion-list> -->
 </ion-content>

@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { LoadingController, ToastController, Platform } from 'ionic-angular';
+import { LoadingController, ToastController, Platform, ItemSliding } from 'ionic-angular';
 
 import { Contacts, Contact } from '@ionic-native/contacts';
 import { ApiAuthService } from '../../services/apiAuthService';
@@ -26,10 +26,53 @@ export class ContactsPage {
                           ]
                         }
 
+  options = [
+    {color:"secondary",icon:"edit",name:"Sửa",next:"EDIT"}
+    ,{color:"danger",icon:"trash",name:"Xóa",next:"DELETE"}
+  ];
+
   phoneContacts: any = [];
+  /** of fullname:
+   * [
+   * {
+   *  fullname:
+   * , nickname:
+   * , image:
+   * , phones: [{value:, type:}] 
+   * , emails: [{value:, type:}]
+   * , relationship: [friend, closefriend, schoolmate, family, co-worker, partner, work, neigbor]
+   * }
+   * ]
+   */
+  
+   uniquePhones: any = {};
+  /** of username: -- chuyen doi thanh +8490...
+   * {"+84903500888": 
+   * {
+   *  fullname:
+   * , nickname:
+   * , image:
+   * , relationship: [friend, closefriend, schoolmate, family, co-worker, partner, work, neigbor]
+   * }
+   */
+
+  uniqueEmails: any = {};
+  /** of email:
+   * {"cuong.dq@mobifone.vn": 
+   * {
+   *  fullname:
+   * , nickname:
+   * , image:
+   * , relationship: [friend, closefriend, schoolmate, family, co-worker, partner, work, neigbor]
+   * }
+   */
+
   phoneContactsOrigin: any = [];
   isSearch: boolean = false;
   searchString: string = '';
+
+
+  
 
   constructor(
     private apiAuth: ApiAuthService,
@@ -42,12 +85,162 @@ export class ContactsPage {
   ngOnInit(){
     //doc tu bo nho ra danh ba cua ung dung
     //let ke danh ba 
-    this.apiAuth.getDynamicUrl(ApiStorageService.authenticationServer+"/get-your-contacts?user=702418821",true)
-        .then(res=>{
-            console.log(res);
-        })
+    this.refresh();
   }
 
+  //chuyen doi phone duy nhat
+  //neu so dau tien la + thi giu nguyen
+  //neu so dau tien la 00 thi thay bang +
+  //neu so dau tien la 0 thi thay bang +84 (ma quoc gia nuoc user)
+  //doi so: +84121-->+8471...
+
+  internationalFormat(phone, nation_callingcode, prefix_change){
+    let phoneReturn = phone;
+
+    if (phone.indexOf('+')===0){
+      phoneReturn = phone;
+    }
+
+    if (phone.indexOf('00')===0){
+      phoneReturn = '+'+phone.substring(2);
+    }
+
+    if (phone.indexOf('0')===0){
+      phoneReturn =  '+' + nation_callingcode + phone.substring(1);
+    }
+
+    if (prefix_change){
+      let found = prefix_change.find(x=>("+" + nation_callingcode + x.old_code)===phoneReturn.substring(0,("+" + nation_callingcode + x.old_code).length))
+      
+      if (found){
+        phoneReturn = "+" + nation_callingcode + found.new_code + phoneReturn.substring(("+" + nation_callingcode + found.old_code).length)
+        console.log(phoneReturn);
+      }
+    }
+
+    return phoneReturn;
+  }
+
+  async refresh(){
+
+    let loading = this.loadingCtrl.create({
+      content: 'Đợi đồng bộ danh bạ...'
+    });
+    loading.present();
+
+    let prefix_change = await this.apiAuth.getDynamicUrl("https://c3.mobifone.vn/api/ext-public/vn-prefix-change");
+    //console.log(prefix_change);
+
+    this.apiAuth.getDynamicUrl(ApiStorageService.authenticationServer+"/get-your-contacts?user=702418821",true)
+    .then(res=>{
+      
+      if (res.status===1&&res.result&&res.result.length>0){
+
+          this.phoneContacts = [];
+
+          res.result.forEach(contact => {
+
+            let nickname = contact._objectInstance&&contact._objectInstance.name&&contact._objectInstance.name.formatted?contact._objectInstance.name.formatted:contact._objectInstance.name.givenName;
+            let fullname = contact._objectInstance.displayName?contact._objectInstance.displayName:nickname;
+            let phones = [];
+            let emails = [];
+            let relationship = []; 
+            //tu nguoi dung dinh nghia bang cach chon
+            //: ['friend', 'closefriend', 'schoolmate', 'family', 'co-worker', 'partner', 'work', 'neigbor', 'doctor', 'teacher', 'vip', 'blacklist']
+            
+            if (contact._objectInstance.phoneNumbers){
+              contact._objectInstance.phoneNumbers.forEach(phone=>{
+                let phonenumber = phone.value.replace(/[^0-9+]+/g, "");
+
+                if (phonenumber&&phonenumber!==""){
+                  phonenumber = this.internationalFormat(phonenumber,'84', prefix_change);
+                  //dua vao uniquePhones
+                  
+                  if (!this.uniquePhones[phonenumber]){
+                    Object.defineProperty(this.uniquePhones, phonenumber, {value: {fullname: fullname 
+                                                                                  , nickname: nickname
+                                                                                  , relationship: relationship}, writable: false, enumerable: true, configurable: false});
+                    
+                    if (fullname){
+                      this.uniquePhones[phonenumber].name = {};
+                      Object.defineProperty(this.uniquePhones[phonenumber].name, fullname, {value: 1, writable: true, enumerable: true, configurable: false});
+                    }
+
+                    phones.push({value: phonenumber, type: phone.type})
+                  }else{
+                    
+                    if (fullname){
+                      if (this.uniquePhones[phonenumber].name[fullname]){
+                        this.uniquePhones[phonenumber].name[fullname] += 1;
+                      }else{
+                        Object.defineProperty(this.uniquePhones[phonenumber].name, fullname, {value: 1, writable: true, enumerable: true, configurable: false});
+                      }
+                    }                    
+
+                  }
+
+                }
+              })
+            }
+
+            if (contact._objectInstance.emails){
+              contact._objectInstance.emails.forEach(email=>{
+                if (!this.uniqueEmails[email.value]){
+                  Object.defineProperty(this.uniqueEmails, email.value, {value: {fullname: fullname 
+                                                                                , nickname: nickname
+                                                                                , relationship: relationship}, writable: false, enumerable: true, configurable: false});
+                  emails.push({value: email.value, type: email.type});
+
+                  if (fullname){
+                    this.uniqueEmails[email.value].name = {};
+                    Object.defineProperty(this.uniqueEmails[email.value].name, fullname, {value: 1, writable: true, enumerable: true, configurable: false});
+                  }
+
+                } else {
+                  
+                  if (fullname){
+                    if (this.uniqueEmails[email.value].name[fullname]){
+                      this.uniqueEmails[email.value].name[fullname] +=1; 
+                    }else{
+                      Object.defineProperty(this.uniqueEmails[email.value].name, fullname, {value: 1, writable: true, enumerable: true, configurable: false});
+                    }
+                  }     
+
+                }
+              })
+            }
+
+            if (fullname && (phones.length>0 || emails.length>0)){
+              this.phoneContacts.push({
+                                      fullname: fullname 
+                                      , nickname: nickname
+                                      , phones: phones
+                                      , emails: emails
+                                      , relationship: relationship
+                                    });
+            } 
+            
+
+          });
+        }
+      
+        loading.dismiss();
+    })
+    .catch(err=>{
+      loading.dismiss();
+    })
+  }
+
+  closeSwipeOptions(slidingItem: ItemSliding){
+    slidingItem.close();
+    slidingItem.setElementClass("active-sliding", false);
+    slidingItem.setElementClass("active-slide", false);
+    slidingItem.setElementClass("active-options-right", false);
+  }
+
+  onClickDetails(slidingItem: ItemSliding, btn: any, contact: any){
+    this.closeSwipeOptions(slidingItem);
+  }
 
   onClickHeader(btn){
     if (btn.next==="ADD"){
@@ -124,7 +317,6 @@ export class ContactsPage {
                         , { filter: "", multiple: true })
       .then(data => {
         this.phoneContactsOrigin = data;
-        this.phoneContacts = this.phoneContactsOrigin;
         this.showToast(loading, 'Đã đọc xong danh bạ ' + data.length + ' số', 0, 1);
         
         //xoa cac field ko co gia tri
