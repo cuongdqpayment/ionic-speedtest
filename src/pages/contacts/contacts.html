@@ -51,8 +51,11 @@
                           <ion-col col-2>
                               {{phone.type}}
                           </ion-col>
-                          <ion-col col-10>
+                          <ion-col col-8>
                               {{phone.value}}
+                          </ion-col>
+                          <ion-col col-2>
+                              {{this.uniquePhones[phone.value].name}}
                           </ion-col>
                         </ion-row>
 
@@ -60,8 +63,11 @@
                           <ion-col col-2>
                               {{email.type}}
                           </ion-col>
-                          <ion-col col-10>
+                          <ion-col col-8>
                               {{email.value}}
+                          </ion-col>
+                          <ion-col col-2>
+                              {{this.uniqueEmails[email.value].name}}
                           </ion-col>
                         </ion-row>
 
