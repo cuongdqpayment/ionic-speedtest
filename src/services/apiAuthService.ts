@@ -161,58 +161,8 @@ export class ApiAuthService {
     
     //get userInfo from token
     getUserInfo() {
-        //this.userInfo=null;
-        try {
-            this.userInfo = jwt.decode(this.userToken.token);
-            //console.log(this.userInfo);
-            //chuyen doi duong dan image de truy cap anh dai dien
-            if (this.userInfo.image
-                &&
-                this.userInfo.image.toLowerCase()
-                &&
-                this.userInfo.image.toLowerCase().indexOf('http://') < 0
-                &&
-                this.userInfo.image.toLowerCase().indexOf('https://') < 0) {
-                //chuyen doi duong dan lay tai nguyen tai he thong
-                this.userInfo.image = this.authenticationServer
-                    + '/get-avatar/'
-                    + this.userInfo.image
-                    + '?token=' + this.userToken.token;
-                //console.log(this.userInfo.image);
-            }
-        } catch (err) {
-            this.userInfo = null;
-        }
         return this.userInfo;
     }
-
-    getUserInfoSetting() {
-        if (this.userSetting.URL_IMAGE
-            &&
-            this.userSetting.URL_IMAGE.toLowerCase()
-            &&
-            this.userSetting.URL_IMAGE.toLowerCase().indexOf('http://') < 0
-            &&
-            this.userSetting.URL_IMAGE.toLowerCase().indexOf('https://') < 0) {
-            //chuyen doi duong dan lay tai nguyen tai he thong
-            this.userSetting.URL_IMAGE = this.authenticationServer
-                + '/get-avatar/'
-                + this.userSetting.URL_IMAGE
-                + '?token=' + this.userToken.token;
-            //console.log(this.userSetting.URL_IMAGE);
-        }
-        return this.userSetting;
-    }
-
-    /**
-     * Thiet lap token tu local xem nhu da login
-     * @param token 
-     */
-    /* pushToken(token){
-        //gan token cho user de xem nhu da login
-        this.userToken={token:token};
-    } */
-
 
     /**
      * Ham nay luu lai token cho phien lam viec sau do
@@ -244,10 +194,11 @@ export class ApiAuthService {
         }))
             .toPromise()
             .then(data => {
-                this.userToken={token:token};
                 let rtn:any;
-                    rtn = data;
-                    return rtn; 
+                rtn = data;
+                this.userToken={token: token};
+                this.userInfo = rtn.user_info;
+                return rtn; 
             })
     }
 
@@ -300,18 +251,6 @@ export class ApiAuthService {
                     throw 'Không đúng máy chủ<br>';
                 }
              });
-     }
-
-     sendUserInfo(jsonString){
-         //gui token + userInfo (pass encrypted) --ghi vao csdl
-         //tra ket qua cho user
-         return true;
-     }
-
-     sendImageBase64(jsonString){
-         //gui token + userInfo (pass encrypted) --ghi vao csdl
-         //tra ket qua cho user
-         return true;
      }
 
 

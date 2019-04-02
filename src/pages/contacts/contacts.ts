@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { LoadingController, ToastController, Platform, ItemSliding } from 'ionic-angular';
+import { LoadingController, ToastController, ItemSliding } from 'ionic-angular';
 
 import { Contacts, Contact } from '@ionic-native/contacts';
 import { ApiAuthService } from '../../services/apiAuthService';
@@ -17,13 +17,13 @@ export class ContactsPage {
                         , search_bar: {hint: "Tìm tên hoặc số"} 
                         , buttons: [
                             {color:"primary", icon:"person-add", next:"ADD"}    //doc danh ba, pickup 1 so addfriend
-                            , {color:"primary", icon:"contacts", next:"FRIENDS" //doc danh ba chinh thuc
+                            /* , {color:"primary", icon:"contacts", next:"FRIENDS" //doc danh ba chinh thuc
                                   , alerts:[
                                   "903500888"
                                   ]
-                            }
-                          , {color:"primary", icon:"sync", next:"SYNC"}          //doc danh ba tu may, day len may chu
-                          , {color:"primary", icon:"cog", next:"SETTINGS"}        //Thiet lap thong so
+                            } */
+                            , {color:"primary", icon:"sync", next:"SYNC"}          //doc danh ba tu may, day len may chu
+                          //, {color:"primary", icon:"cog", next:"SETTINGS"}        //Thiet lap thong so
                           ]
                         }
 
@@ -73,11 +73,13 @@ export class ContactsPage {
   searchString: string = '';
 
   prefix_change:any;
+
+  userInfo:any;
   
 
   constructor(
     private apiAuth: ApiAuthService,
-    private platform: Platform,
+    private apiStorage: ApiStorageService,
     private loadingCtrl: LoadingController,
     private toastCtrl: ToastController,
     private contacts: Contacts) { }
@@ -86,67 +88,24 @@ export class ContactsPage {
   ngOnInit(){
     //doc tu bo nho ra danh ba cua ung dung
     //let ke danh ba 
-    this.refresh();
+    this.userInfo = this.apiAuth.getUserInfo();
+
+    if (this.userInfo){
+      this.refresh();
+    }else{
+      alert("Please login first!")
+    }
+
   }
 
-  //chuyen doi phone duy nhat
-  //neu so dau tien la + thi giu nguyen
-  //neu so dau tien la 00 thi thay bang +
-  //neu so dau tien la 0 thi thay bang +84 (ma quoc gia nuoc user)
-  //doi so: +84121-->+8471...
-
-  vnChangePrefix(phoneReturn, nation_callingcode, prefix){
-    if (prefix){
-      let found = prefix.find(x=>("+" + nation_callingcode + x.old_code)===phoneReturn.substring(0,("+" + nation_callingcode + x.old_code).length))
-      if (found){
-        phoneReturn = "+" + nation_callingcode + found.new_code + phoneReturn.substring(("+" + nation_callingcode + found.old_code).length)
-      }
-    }
-    return phoneReturn;
-  }
-
-  internationalFormat(phone, nation_callingcode){
-    let phoneReturn = phone;
-
-    if (phone.indexOf('+')===0){
-      phoneReturn = phone;
-    }
-
-    if (phone.indexOf('00')===0){
-      phoneReturn = '+'+phone.substring(2);
-    }
-
-    if (phone.indexOf('0')===0){
-      phoneReturn =  '+' + nation_callingcode + phone.substring(1);
-    }
-
-    return phoneReturn;
-  }
-
+  
   async refresh(){
 
-    let loading = this.loadingCtrl.create({
-      content: 'Đợi đồng bộ danh bạ...'
-    });
-    loading.present();
     try{
       this.prefix_change = await this.apiAuth.getDynamicUrl("https://c3.mobifone.vn/api/ext-public/vn-prefix-change");
     }catch(e){}
 
-    //console.log(prefix_change);
-
-    this.apiAuth.getDynamicUrl(ApiStorageService.authenticationServer+"/get-your-contacts?user=702418821",true)
-    .then(res=>{
-      
-      if (res.status===1&&res.result&&res.result.length>0){
-          this.phoneContacts = this.processContacts(res.result);
-      }
-      
-        loading.dismiss();
-    })
-    .catch(err=>{
-      loading.dismiss();
-    })
+    this.listContacts();
   }
 
   closeSwipeOptions(slidingItem: ItemSliding){
@@ -156,18 +115,37 @@ export class ContactsPage {
     slidingItem.setElementClass("active-options-right", false);
   }
 
-  onClickDetails(slidingItem: ItemSliding, btn: any, contact: any){
+  onClickDetails(slidingItem: ItemSliding, btn: any, idx: any){
     this.closeSwipeOptions(slidingItem);
+    if (btn.next==="DELETE"){
+      this.phoneContacts.splice(idx,1);
+    }
+
   }
 
-  onClickHeader(btn){
+  async onClickHeader(btn){
     if (btn.next==="ADD"){
       this.pickContacts();
 
     }
 
     if (btn.next==="SYNC"){
-      this.listContacts();
+      let loading = this.loadingCtrl.create({
+        content: 'Đồng bộ danh bạ đã tinh chỉnh...'
+      });
+      loading.present();
+      //luu danh ba xuong dia
+      //luu nguoc tro lai may chu
+      if (this.phoneContacts.length>0&&this.userInfo){
+        try{
+          await this.apiStorage.saveUserContacts(this.userInfo, this.phoneContacts);
+          //await this.saveContacts2Server(this.phoneContacts); //sua server de lay session
+        }catch(e){}
+        loading.dismiss();
+      }
+      
+      //hoi xem co dong bo lai danh ba vao may khong?
+      //neu co thi luu lai danh ba (xoa het danh ba va luu lai danh ba moi)
 
     }
 
@@ -233,14 +211,46 @@ export class ContactsPage {
   }
 
 
-  processContacts(data){
+//chuyen doi phone duy nhat
+  //neu so dau tien la + thi giu nguyen
+  //neu so dau tien la 00 thi thay bang +
+  //neu so dau tien la 0 thi thay bang +84 (ma quoc gia nuoc user)
+  //doi so: +84121-->+8471...
 
-      data = JSON.parse(
-        JSON.stringify(data
-                , function (key, value) {return (value === undefined||value === null || value==="") ? undefined : value}
-                )
-      );
-    
+  vnChangePrefix(phoneReturn, nation_callingcode, prefix){
+    if (prefix){
+      let found = prefix.find(x=>("+" + nation_callingcode + x.old_code)===phoneReturn.substring(0,("+" + nation_callingcode + x.old_code).length))
+      if (found){
+        phoneReturn = "+" + nation_callingcode + found.new_code + phoneReturn.substring(("+" + nation_callingcode + found.old_code).length)
+      }else{
+        found = prefix.find(x=>("0" + x.old_code)===phoneReturn.substring(0,("0" + x.old_code).length))
+        if (found){
+          phoneReturn = "0" + found.new_code + phoneReturn.substring(("0" + found.old_code).length)
+        }
+      }
+    }
+    return phoneReturn;
+  }
+
+  internationalFormat(phone, nation_callingcode){
+    let phoneReturn = phone;
+
+    if (phone.indexOf('+')===0){
+      phoneReturn = phone;
+    }
+
+    if (phone.indexOf('00')===0){
+      phoneReturn = '+'+phone.substring(2);
+    }else if (phone.indexOf('0')===0){
+      phoneReturn =  '+' + nation_callingcode + phone.substring(1);
+    }
+
+    return phoneReturn;
+  }
+
+
+  processContacts(data){
+      
       let _phoneContacts = [];
 
       data.forEach(contact => {
@@ -259,28 +269,28 @@ export class ContactsPage {
 
             if (phonenumber&&phonenumber!==""){
               
-              phonenumber = this.internationalFormat(phonenumber,'84');
-                  //dua vao uniquePhones
+              let intPhonenumber = this.internationalFormat(phonenumber,'84');
+                 
               phonenumber = this.vnChangePrefix(phonenumber,'84',this.prefix_change);
               
-              if (!this.uniquePhones[phonenumber]){
-                Object.defineProperty(this.uniquePhones, phonenumber, {value: {fullname: fullname 
+              if (!this.uniquePhones[intPhonenumber]){
+                Object.defineProperty(this.uniquePhones, intPhonenumber, {value: {fullname: fullname 
                                                                               , nickname: nickname
                                                                               , relationship: relationship}, writable: false, enumerable: true, configurable: false});
                 
                 if (fullname){
-                  this.uniquePhones[phonenumber].name = {};
-                  Object.defineProperty(this.uniquePhones[phonenumber].name, fullname, {value: 1, writable: true, enumerable: true, configurable: false});
+                  this.uniquePhones[intPhonenumber].name = {};
+                  Object.defineProperty(this.uniquePhones[intPhonenumber].name, fullname, {value: 1, writable: true, enumerable: true, configurable: false});
                 }
 
-                phones.push({value: phonenumber, type: phone.type, count: 1})
+                phones.push({value: phonenumber, type: phone.type, int: intPhonenumber})
               }else{
                 
                 if (fullname){
-                  if (this.uniquePhones[phonenumber].name[fullname]){
-                    this.uniquePhones[phonenumber].name[fullname] += 1;
+                  if (this.uniquePhones[intPhonenumber].name[fullname]){
+                    this.uniquePhones[intPhonenumber].name[fullname] += 1;
                   }else{
-                    Object.defineProperty(this.uniquePhones[phonenumber].name, fullname, {value: 1, writable: true, enumerable: true, configurable: false});
+                    Object.defineProperty(this.uniquePhones[intPhonenumber].name, fullname, {value: 1, writable: true, enumerable: true, configurable: false});
                   }
                 }
                 
@@ -318,6 +328,28 @@ export class ContactsPage {
         }
 
         if (fullname && (phones.length>0 || emails.length>0)){
+
+          //let countPhone = 0;
+          for (let phone in this.uniquePhones){
+            //countPhone++;
+            let countInContact = 0;
+            for (let name in this.uniquePhones[phone].name){
+              countInContact += this.uniquePhones[phone].name[name]
+            }
+            this.uniquePhones[phone].count = countInContact;
+          }
+          
+          //let emailCount = 0;
+          for (let email in this.uniqueEmails){
+            //emailCount++;
+            let countInContact = 0;
+            for (let name in this.uniqueEmails[email].name){
+              countInContact += this.uniqueEmails[email].name[name]
+            }
+            this.uniqueEmails[email].count = countInContact;
+          }
+
+          
           _phoneContacts.push({
                                   fullname: fullname 
                                   , nickname: nickname
@@ -333,6 +365,66 @@ export class ContactsPage {
 
   }
 
+
+  listContactsFromServer(){
+    let loading = this.loadingCtrl.create({
+      content: 'Đọc danh bạ từ máy chủ...'
+    });
+    loading.present();
+
+    this.apiAuth.getDynamicUrl(ApiStorageService.authenticationServer+"/get-your-contacts?user=702418821",true)
+    .then(res=>{
+      
+      if (res.status===1&&res.result&&res.result.length>0){
+          
+        this.phoneContacts = this.processContacts(res.result);
+        //danh ba moi se lay truc tiep khong xu ly nua
+        //hoac chi xu ly tao ds rieng
+
+      }
+      
+        loading.dismiss();
+    })
+    .catch(err=>{
+      loading.dismiss();
+    })
+  }
+
+  saveContacts2Server(contacts){
+    //luu danh ba len may chu
+    this.apiAuth.postDynamicForm(ApiStorageService.authenticationServer+"/save-your-contacts",contacts,true)
+    .then(res=>{
+      
+      this.toastCtrl.create({
+        message: "res" + JSON.stringify(res),
+        duration: 10000,
+        position:'middle'
+      }).present();
+
+    })
+    .catch(err_=>{
+      
+      this.toastCtrl.create({
+        message: "res" + JSON.stringify(err_),
+        duration: 30000,
+        position:'bottom'
+      }).present();
+
+    })
+  }
+
+  /**
+   * vao contact thi doc danh ba va load len ds sau khi tinh chinh
+   * luu ds len may chu ngay sau khi doc (chi luu ds so goc duy nhat)
+   * 1/mot nut luu lai danh ba sau khi da chinh sua
+   * 2/truong hop web khong co danh ba cordova..
+   * doc du lieu tu may chu (dong bo tu app)
+   * truong hop chua dong bo thi danh ba trong
+   * truong hop da dong bo thi doc ra ds va hien thi ra
+   * cho phep chinh sua, xoa
+   * luu lai len may chu va luu xuong session
+   * tren mobile
+   */
   listContacts() {
 
     let loading = this.loadingCtrl.create({
@@ -348,34 +440,14 @@ export class ContactsPage {
         this.phoneContactsOrigin = data;
         this.showToast(loading, 'Đã đọc xong danh bạ ' + data.length + ' số', 0, 1);
         
-        //xoa cac field ko co gia tri
-        
         this.phoneContacts = this.processContacts(data);
 
-        //luu danh ba len may chu
-        this.apiAuth.postDynamicForm(ApiStorageService.authenticationServer+"/save-your-contacts",this.phoneContacts,true)
-        .then(res=>{
-          
-          this.toastCtrl.create({
-            message: "res" + JSON.stringify(res),
-            duration: 10000,
-            position:'middle'
-          }).present();
-
-        })
-        .catch(err_=>{
-          
-          this.toastCtrl.create({
-            message: "res" + JSON.stringify(err_),
-            duration: 30000,
-            position:'bottom'
-          }).present();
-
-        })
+        this.saveContacts2Server(this.phoneContacts);
 
       })
       .catch(err => {
         this.showToast(loading, 'Lỗi đọc danh bạ: ' + JSON.stringify(err));
+        this.listContactsFromServer();
       });
   }
 
