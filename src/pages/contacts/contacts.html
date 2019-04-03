@@ -1,6 +1,6 @@
 <ion-header>
   <ion-navbar>
-    <ion-buttons start *ngIf="!isSearch && dynamicContacts?.search_bar">
+    <ion-buttons end *ngIf="!isSearch && dynamicContacts?.search_bar">
       <button ion-button icon-only color="primary" (click)="goSearch()">
         <ion-icon name="search"></ion-icon>
       </button>

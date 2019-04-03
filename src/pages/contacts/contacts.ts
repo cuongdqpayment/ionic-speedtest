@@ -118,7 +118,7 @@ export class ContactsPage {
     }catch(e){}
 
     //doc tu dia len, neu co thi liet ke ra luon
-    let phoneContacts = this.apiStorage.getUserContacts(this.userInfo);
+    let phoneContacts; // = this.apiStorage.getUserContacts(this.userInfo);
     if (phoneContacts){
       this.phoneContacts = this.processServerContacts(phoneContacts);
     }else{
