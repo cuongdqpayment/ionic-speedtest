@@ -126,7 +126,7 @@ export class MyApp {
         ;
     })
       .then(() => {
-        this.contacts = this.apiStorageService.getUserContacts(this.userInfo);
+        //this.contacts = this.apiStorageService.getUserContacts(this.userInfo);
         if (!this.contacts[this.userInfo.username]) {
           createObjectKey(this.contacts, this.userInfo.username, {
             fullname: this.userInfo.data.fullname
@@ -135,7 +135,7 @@ export class MyApp {
             , background: this.userInfo.data.background
             , status: 0
           })
-          this.apiStorageService.saveUserContacts(this.userInfo, this.contacts);
+          //this.apiStorageService.saveUserContacts(this.userInfo, this.contacts);
         } else {
           this.contacts[this.userInfo.username] = {
             fullname: this.userInfo.data.fullname
@@ -144,7 +144,7 @@ export class MyApp {
             , background: this.userInfo.data.background
             , status: 0 //owner user
           }
-          this.apiStorageService.saveUserContacts(this.userInfo, this.contacts);
+          //this.apiStorageService.saveUserContacts(this.userInfo, this.contacts);
         }
       })
       .catch(err => { })
@@ -174,7 +174,7 @@ export class MyApp {
               , image: user.image
               , status: 1 //user online chat
             })
-            this.apiStorageService.saveUserContacts(this.userInfo, this.contacts);
+            //this.apiStorageService.saveUserContacts(this.userInfo, this.contacts);
           } else {
             this.contacts[user.username] = {
               fullname: user.data.fullname
@@ -182,7 +182,7 @@ export class MyApp {
               , image: user.image
               , status: 1 //user online chat
             }
-            this.apiStorageService.saveUserContacts(this.userInfo, this.contacts);
+            //this.apiStorageService.saveUserContacts(this.userInfo, this.contacts);
           }
         })
         .catch(err => { })
@@ -685,7 +685,7 @@ export class MyApp {
           icon: "log-in"
         }
       ]
-    } else {
+    } else if (this.userInfo){
       this.treeMenu = [
         {
           name: "1. Trang chủ",
@@ -748,6 +748,68 @@ export class MyApp {
         ,
         {
           name: "8. Login",
+          size: "1.3em",
+          click: true,
+          next: LoginPage,
+          icon: "log-in"
+        }
+      ]
+
+    } else {
+      this.treeMenu = [
+        {
+          name: "1. Trang chủ",
+          size: "1.3em",
+          click: true,
+          next: this.rootPage,
+          icon: "home"
+        }
+        ,
+        {
+          name: "2. Quản lý công việc - yêu cầu",
+          size: "1.3em",
+          click: true,
+          //popup: LinkPage, //su dung link web ko file
+          url: "https://c3.mobifone.vn/qlhs/login",
+          icon: "alarm"
+        }
+        ,
+        {
+          name: "3. Hỗ trợ điểm bán lẻ",
+          size: "1.3em",
+          click: true,
+          //popup: LinkPage, //su dung link web ko file
+          url: "https://c3.mobifone.vn/dbl/login",
+          icon: "people"
+        }
+        ,
+        {
+          name: "4. Chọn số Công ty 3",
+          size: "1.3em",
+          click: true,
+          popup_iframe: LinkPage, //su dung link web ko file
+          url: "https://chonsoc3.mobifone.vn/",
+          icon: "keypad"
+        }
+        ,
+        {
+          name: "5. Nối mạng Công ty 3 SSL4",
+          size: "1.3em",
+          click: true,
+          url: "https://ssl4.c3.mobifone.vn/dana-na/auth/url_default/welcome.cgi",
+          icon: "flash"
+        }
+        ,
+        {
+          name: "6. Qr Bar Scanner",
+          size: "1.3em",
+          click: true,
+          next: QrBarScannerPage,
+          icon: "qr-scanner"
+        }
+        ,
+        {
+          name: "7. Login",
           size: "1.3em",
           click: true,
           next: LoginPage,
