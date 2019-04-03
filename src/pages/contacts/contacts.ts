@@ -68,7 +68,8 @@ export class ContactsPage {
    * }
    */
 
-  phoneContactsOrigin: any = [];
+  //phoneContactsOrigin: any = [];
+
   isSearch: boolean = false;
   searchString: string = '';
 
@@ -141,9 +142,9 @@ export class ContactsPage {
           await this.apiStorage.saveUserContacts(this.userInfo, this.phoneContacts);
           //await this.saveContacts2Server(this.phoneContacts); //sua server de lay session
         }catch(e){}
-        loading.dismiss();
       }
       
+      loading.dismiss();
       //hoi xem co dong bo lai danh ba vao may khong?
       //neu co thi luu lai danh ba (xoa het danh ba va luu lai danh ba moi)
 
@@ -254,6 +255,8 @@ export class ContactsPage {
       let _phoneContacts = [];
 
       data.forEach(contact => {
+        
+        //console.log(contact);
 
         let nickname = contact._objectInstance&&contact._objectInstance.name&&contact._objectInstance.name.formatted?contact._objectInstance.name.formatted:contact._objectInstance.name.givenName;
         let fullname = contact._objectInstance.displayName?contact._objectInstance.displayName:nickname;
@@ -263,8 +266,12 @@ export class ContactsPage {
         //tu nguoi dung dinh nghia bang cach chon
         //: ['friend', 'closefriend', 'schoolmate', 'family', 'co-worker', 'partner', 'work', 'neigbor', 'doctor', 'teacher', 'vip', 'blacklist']
         
+        //console.log(fullname);
+
+
         if (contact._objectInstance.phoneNumbers){
           contact._objectInstance.phoneNumbers.forEach(phone=>{
+            
             let phonenumber = phone.value.replace(/[^0-9+]+/g, "");
 
             if (phonenumber&&phonenumber!==""){
@@ -272,18 +279,20 @@ export class ContactsPage {
               let intPhonenumber = this.internationalFormat(phonenumber,'84');
                  
               phonenumber = this.vnChangePrefix(phonenumber,'84',this.prefix_change);
+
               
               if (!this.uniquePhones[intPhonenumber]){
                 Object.defineProperty(this.uniquePhones, intPhonenumber, {value: {fullname: fullname 
-                                                                              , nickname: nickname
-                                                                              , relationship: relationship}, writable: false, enumerable: true, configurable: false});
+                                                                                  , nickname: nickname
+                                                                                  , relationship: relationship}, writable: false, enumerable: true, configurable: false});
+                   
+                                                                                  
+                phones.push({value: phonenumber, type: phone.type, int: intPhonenumber})
                 
+                this.uniquePhones[intPhonenumber].name = {};
                 if (fullname){
-                  this.uniquePhones[intPhonenumber].name = {};
                   Object.defineProperty(this.uniquePhones[intPhonenumber].name, fullname, {value: 1, writable: true, enumerable: true, configurable: false});
                 }
-
-                phones.push({value: phonenumber, type: phone.type, int: intPhonenumber})
               }else{
                 
                 if (fullname){
@@ -300,16 +309,25 @@ export class ContactsPage {
           })
         }
 
+        
+        //console.log(fullname);
+
         if (contact._objectInstance.emails){
+
+          
           contact._objectInstance.emails.forEach(email=>{
+            
+            //console.log(this.uniqueEmails[email.value]); 
+
             if (!this.uniqueEmails[email.value]){
+              
               Object.defineProperty(this.uniqueEmails, email.value, {value: {fullname: fullname 
                                                                             , nickname: nickname
                                                                             , relationship: relationship}, writable: false, enumerable: true, configurable: false});
               emails.push({value: email.value, type: email.type});
-
+              this.uniqueEmails[email.value].name = {};
+              
               if (fullname){
-                this.uniqueEmails[email.value].name = {};
                 Object.defineProperty(this.uniqueEmails[email.value].name, fullname, {value: 1, writable: true, enumerable: true, configurable: false});
               }
 
@@ -329,6 +347,7 @@ export class ContactsPage {
 
         if (fullname && (phones.length>0 || emails.length>0)){
 
+          
           //let countPhone = 0;
           for (let phone in this.uniquePhones){
             //countPhone++;
@@ -351,15 +370,20 @@ export class ContactsPage {
 
           
           _phoneContacts.push({
-                                  fullname: fullname 
-                                  , nickname: nickname
-                                  , phones: phones
-                                  , emails: emails
-                                  , relationship: relationship
-                                });
+                                fullname: fullname 
+                                , nickname: nickname
+                                , phones: phones
+                                , emails: emails
+                                , relationship: relationship
+                              });
+
+          //console.log(fullname,_phoneContacts);
+
         } 
         
       });
+
+    
 
     return _phoneContacts;
 
@@ -372,11 +396,13 @@ export class ContactsPage {
     });
     loading.present();
 
-    this.apiAuth.getDynamicUrl(ApiStorageService.authenticationServer+"/get-your-contacts?user=702418821",true)
+    this.apiAuth.getDynamicUrl(ApiStorageService.authenticationServer+"/get-your-contacts?user=903500888",true)
     .then(res=>{
       
       if (res.status===1&&res.result&&res.result.length>0){
-          
+        
+        
+
         this.phoneContacts = this.processContacts(res.result);
         //danh ba moi se lay truc tiep khong xu ly nua
         //hoac chi xu ly tao ds rieng
@@ -434,10 +460,12 @@ export class ContactsPage {
     
     this.contacts
     //.find(['displayName', 'name', 'phoneNumbers', 'emails', 'photos', 'urls', 'organizations', 'addresses', 'birthday', 'ims']
-    .find(['phoneNumbers']
+    .find(['displayName', 'name', 'phoneNumbers', 'emails',]
                         , { filter: "", multiple: true })
       .then(data => {
-        this.phoneContactsOrigin = data;
+
+        //this.phoneContactsOrigin = data;
+
         this.showToast(loading, 'Đã đọc xong danh bạ ' + data.length + ' số', 0, 1);
         
         this.phoneContacts = this.processContacts(data);
@@ -447,6 +475,7 @@ export class ContactsPage {
       })
       .catch(err => {
         this.showToast(loading, 'Lỗi đọc danh bạ: ' + JSON.stringify(err));
+
         this.listContactsFromServer();
       });
   }
