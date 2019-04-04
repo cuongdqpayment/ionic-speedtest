@@ -15,8 +15,18 @@ export class ContactsPage {
   dynamicContacts:any ={};
   options: any = [];
 
+  isLoaded:boolean = true;
 
   count_delete: any = 0;
+
+  //tham so chi cho phep hien thi 20 bang ghi thoi
+  contactViews: any = [];
+  maxCountContact:number = 0;
+  countView: number = 10;
+  currentPage: number = 1;
+  currentMax: number = 0;
+  maxPage: number = 0;
+
 
   phoneContacts: any = [];
   /** of fullname:
@@ -85,6 +95,22 @@ export class ContactsPage {
 
   }
 
+
+  setViewConctactsPage(next:1|-1){
+    let start = this.currentMax;
+    let length = this.currentPage * this.countView;
+
+    if (next===1){
+      this.currentMax = length;
+      this.currentPage++;
+    }else{
+      this.currentMax = start;
+      this.currentPage--;
+    }
+
+    this.contactViews = this.phoneContacts.slice(start,length);
+  }
+
   
   async refresh(){
 
@@ -140,6 +166,8 @@ export class ContactsPage {
       }
     }
 
+    //hien thi chi 20 bang ghi thoi
+    this.setViewConctactsPage(1);
 
     loading.dismiss();
 
@@ -672,7 +700,28 @@ export class ContactsPage {
     await alert.present();
   }
 
+  doInfinite(infiniteScroll,direction) {
+    if (direction==='UP'){
+      //console.log('UP');
+      this.setViewConctactsPage(-1);
+      
+      setTimeout(() => {
+        this.isLoaded = !this.isLoaded;
+        infiniteScroll.complete();
+      }, 500);
 
+    }else{
+      //console.log('DOWN');
+      this.setViewConctactsPage(1);
+
+      setTimeout(() => {
+        this.isLoaded = !this.isLoaded;
+        infiniteScroll.complete();
+      }, 500);
+
+    }
+
+  }
 
   goSearch() {
     this.isSearch = true;

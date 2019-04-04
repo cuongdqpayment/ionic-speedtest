@@ -26,6 +26,14 @@
 </ion-header>
 
 <ion-content no-padding class="background-page gradient">
+
+  <ion-infinite-scroll *ngIf="!isLoaded" position="top" (ionInfinite)="doInfinite($event,'UP')"  threshold="100%">
+    <ion-infinite-scroll-content 
+    loadingSpinner="bubbles"
+    loadingText="Load dữ liệu mới hơn...">
+    </ion-infinite-scroll-content>
+  </ion-infinite-scroll>
+
   <ion-grid>
     <ion-row>
       <ion-col class="background-card gradient grid-border" 
@@ -33,11 +41,11 @@
       offset-xl-3 col-xl-6 
       offset-lg-3 col-lg-6
       offset-md-2 col-md-8 
-      col-sm-12 *ngIf="phoneContacts&&phoneContacts.length>0">
+      col-sm-12 *ngIf="contactViews&&contactViews.length>0">
 
             <ion-list>
 
-                <ion-item-sliding #slidingItem class="background-list" *ngFor="let contact of phoneContacts; let idx = index">
+                <ion-item-sliding #slidingItem class="background-list" *ngFor="let contact of contactViews; let idx = index">
                     <ion-item #item class="background-item">
 
                         <ion-icon item-start *ngIf="!contact.image" name="contact" color="primary"></ion-icon>
@@ -89,5 +97,12 @@
       </ion-col>
     </ion-row>
   </ion-grid>
+
+  <ion-infinite-scroll *ngIf="isLoaded" (ionInfinite)="doInfinite($event,'DOWN')" threshold="100%">
+    <ion-infinite-scroll-content 
+    loadingSpinner="bubbles" 
+    loadingText="Load dữ liệu cũ hơn...">
+    </ion-infinite-scroll-content>
+  </ion-infinite-scroll>
 
 </ion-content>
