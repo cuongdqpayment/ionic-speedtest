@@ -15,17 +15,18 @@ export class ContactsPage {
   dynamicContacts:any ={};
   options: any = [];
 
-  isLoaded:boolean = true;
+  isLoaded:boolean = false;
 
   count_delete: any = 0;
 
   //tham so chi cho phep hien thi 20 bang ghi thoi
   contactViews: any = [];
-  maxCountContact:number = 0;
-  countView: number = 10;
-  currentPage: number = 1;
   currentMax: number = 0;
-  maxPage: number = 0;
+  maxCount1Page: number = 20;
+
+  //maxCountContact:number = 0;
+  //currentPage: number = 0;
+  //maxPage: number = 0;
 
 
   phoneContacts: any = [];
@@ -93,21 +94,28 @@ export class ContactsPage {
       this.presentAlert("Please login first!");
     }
 
+    setTimeout(() => {
+      this.isLoaded = true;
+    }, 5000);
+
   }
 
 
   setViewConctactsPage(next:1|-1){
-    let start = this.currentMax;
-    let length = this.currentPage * this.countView;
+    let start = 0;
+    let length = this.currentMax  + this.maxCount1Page;
 
     if (next===1){
-      this.currentMax = length;
-      this.currentPage++;
-    }else{
-      this.currentMax = start;
-      this.currentPage--;
-    }
+      if (length<this.phoneContacts.length){
+        this.currentMax = length;
+      }
 
+    }else{
+      if (start>0){
+        this.currentMax = start - this.maxCount1Page;
+      }
+    }
+    //console.log(next,this.currentPage,start,length);
     this.contactViews = this.phoneContacts.slice(start,length);
   }
 
@@ -701,25 +709,22 @@ export class ContactsPage {
   }
 
   doInfinite(infiniteScroll,direction) {
+
+    this.isLoaded = false;
+
     if (direction==='UP'){
-      //console.log('UP');
-      this.setViewConctactsPage(-1);
-      
-      setTimeout(() => {
-        this.isLoaded = !this.isLoaded;
-        infiniteScroll.complete();
-      }, 500);
-
+      console.log('UP');
+      //this.setViewConctactsPage(-1);
     }else{
-      //console.log('DOWN');
+      console.log('DOWN');
       this.setViewConctactsPage(1);
-
-      setTimeout(() => {
-        this.isLoaded = !this.isLoaded;
-        infiniteScroll.complete();
-      }, 500);
-
+      
     }
+
+    setTimeout(() => {
+      this.isLoaded = true;
+      infiniteScroll.complete();
+    }, 1000);
 
   }
 
