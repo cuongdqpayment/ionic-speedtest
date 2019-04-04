@@ -1,9 +1,10 @@
 import { Component } from '@angular/core';
-import { LoadingController, ToastController, ItemSliding, AlertController } from 'ionic-angular';
+import { LoadingController, ToastController, ItemSliding, AlertController, ModalController } from 'ionic-angular';
 
 import { Contacts, Contact } from '@ionic-native/contacts';
 import { ApiAuthService } from '../../services/apiAuthService';
 import { ApiStorageService } from '../../services/apiStorageService';
+import { DynamicFormWebPage } from '../dynamic-form-web/dynamic-form-web';
 
 @Component({
   selector: 'page-contacts',
@@ -14,6 +15,8 @@ export class ContactsPage {
 
   dynamicContacts:any ={};
   options: any = [];
+
+  orginContacts: number = 1;
 
   isLoaded:boolean = false;
 
@@ -81,6 +84,7 @@ export class ContactsPage {
     private loadingCtrl: LoadingController,
     private alertController: AlertController,
     private toastCtrl: ToastController,
+    private modalCtrl: ModalController,
     private contacts: Contacts) { }
 
 
@@ -153,6 +157,9 @@ export class ContactsPage {
 
     //doc tu dia len, neu co thi liet ke ra luon
     let phoneContacts = this.apiStorage.getPhoneContacts(this.userInfo);
+    
+    //console.log(phoneContacts);
+
     if (phoneContacts){
       this.phoneContacts = this.processServerContacts(phoneContacts);
     }else{
@@ -192,13 +199,24 @@ export class ContactsPage {
     this.closeSwipeOptions(slidingItem);
     if (btn.next==="DELETE"){
 
-      let remove = this.phoneContacts.splice(idx,1);
+      let remove = this.contactViews.splice(idx,1);
+                   this.phoneContacts.splice(idx,1);
+
       let btnHeader = this.dynamicContacts.buttons.find(x=>x.next==="SYNC");
       if (btnHeader&&btnHeader.alerts) btnHeader.alerts.push(remove);
 
     }
 
   }
+
+
+  callbackSettings = function (res){
+    return new Promise((resolve,reject)=>{
+      console.log(res.data);
+
+      resolve({next:"CLOSE"})
+    })
+  }.bind(this)
 
   async onClickHeader(btn){
     if (btn.next==="ADD"){
@@ -207,7 +225,36 @@ export class ContactsPage {
     }
 
     if (btn.next==="SYNC"){
-      let loading = this.loadingCtrl.create({
+      let form = {
+        title: "ĐỒNG BỘ"
+        , buttons: [
+            {color:"danger", icon:"close", next:"CLOSE"} 
+          ]
+        , items: [
+              { type: "title",          name: "Chọn nguồn đồng bộ"}
+              , { type: "select", key: "origin", name: "Danh bạ từ:", value: this.orginContacts, options: [{ name: "Bộ nhớ", value: 1 }, { name: "Máy chủ", value: 2 }, { name: "Danh bạ của máy", value: 3 }] }
+              , { type: "select", key: "change_prefix", name: "Đổi đầu số:", value: 0, options: [{ name: "Không đổi số", value: 0 }, { name: "Đối số cố định", value: 1 }, { name: "Đổi số di động", value: 2 }, { name: "Đổi số tất cả", value: 3 }] }
+              , 
+                { 
+                    type: "button"
+                  , options: [
+                    { name: "Đồng bộ", next: "CALLBACK"}
+                  ]
+                }
+          ]
+          
+
+      }
+      //cho popup cửa sổ chọn các tham số
+      this.openModal(DynamicFormWebPage,{
+        parent:this,
+        callback: this.callbackSettings,
+        form: form
+      })
+
+
+
+     /*  let loading = this.loadingCtrl.create({
         content: 'Đồng bộ danh bạ đã tinh chỉnh...'
       });
       loading.present();
@@ -230,7 +277,7 @@ export class ContactsPage {
       
       loading.dismiss();
       //hoi xem co dong bo lai danh ba vao may khong?
-      //neu co thi luu lai danh ba (xoa het danh ba va luu lai danh ba moi)
+      //neu co thi luu lai danh ba (xoa het danh ba va luu lai danh ba moi) */
 
     }
 
@@ -739,6 +786,12 @@ export class ContactsPage {
   searchEnter() {
     this.isSearch = false;
   }
+
+  openModal(form, data?: any) {
+    let modal = this.modalCtrl.create(form, data);
+    modal.present();
+  }
+
 }
 
 
