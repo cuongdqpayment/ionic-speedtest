@@ -8,12 +8,12 @@ const sessionStorageAvailable = isStorageAvailable(sessionStorage);
 export class ApiStorageService {
  
     public static token;
-    public static mapServer = 'https://c3.mobifone.vn/api/location'; 
+    //public static mapServer = 'https://c3.mobifone.vn/api/location'; 
     //public static chatServer = 'http://localhost:8080'; 
     public static chatServer = 'https://c3.mobifone.vn'; 
     public static mediaServer = 'https://c3.mobifone.vn/media'; 
     public static resourceServer = 'https://c3.mobifone.vn/qld'; 
-    public static authenticationServer = 'https://c3.mobifone.vn/api/ext-auth';
+    public static authenticationServer = 'https://c3.mobifone.vn/api';
 
     constructor(@Inject(LOCAL_STORAGE) private storage: StorageService) {
     }
@@ -100,6 +100,19 @@ export class ApiStorageService {
             return results?results:{};
         }catch(e){
             return {};
+        }
+    }
+
+    savePhoneContacts(user,contacts){
+        this.save('#phone-contacts#'+user.username,JSON.stringify(contacts));
+    }
+
+    getPhoneContacts(user){
+        try{
+            let results = JSON.parse(this.read('#phone-contacts#'+user.username));
+            return results?results:null;
+        }catch(e){
+            return null;
         }
     }
 

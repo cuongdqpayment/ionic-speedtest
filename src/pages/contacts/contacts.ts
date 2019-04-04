@@ -114,11 +114,11 @@ export class ContactsPage {
                   ];
 
     try{
-      this.prefix_change = await this.apiAuth.getDynamicUrl("https://c3.mobifone.vn/api/ext-public/vn-prefix-change");
+      this.prefix_change = await this.apiAuth.getDynamicUrl(ApiStorageService.authenticationServer+"/ext-public/vn-prefix-change");
     }catch(e){}
 
     //doc tu dia len, neu co thi liet ke ra luon
-    let phoneContacts; // = this.apiStorage.getUserContacts(this.userInfo);
+    let phoneContacts = this.apiStorage.getPhoneContacts(this.userInfo);
     if (phoneContacts){
       this.phoneContacts = this.processServerContacts(phoneContacts);
     }else{
@@ -181,7 +181,7 @@ export class ContactsPage {
       if (this.phoneContacts.length>0&&this.userInfo){
         try{
 
-          await this.apiStorage.saveUserContacts(this.userInfo, this.phoneContacts);
+          await this.apiStorage.savePhoneContacts(this.userInfo, this.phoneContacts);
 
           await this.saveContacts2Server(this.phoneContacts);
           //neu danh ba doc duoc tu may thi hoi yeu cau ghi de len danh ba cu???
@@ -190,8 +190,6 @@ export class ContactsPage {
           if (btnHeader&&btnHeader.alerts) btnHeader.alerts=[]; //reset ve 0
 
         }catch(e){}
-
-        loading.dismiss();
       }
       
       loading.dismiss();
@@ -572,7 +570,7 @@ export class ContactsPage {
       });
       loading.present();
   
-      this.apiAuth.getDynamicUrl(ApiStorageService.authenticationServer+"/get-your-contacts",true)
+      this.apiAuth.getDynamicUrl(ApiStorageService.authenticationServer+"/ext-auth/get-your-contacts",true)
       .then(res=>{
         if (res.status===1&&res.result&&res.result.length>0){
           resolve(res.result);
@@ -592,12 +590,12 @@ export class ContactsPage {
 
   saveContacts2Server(contacts){
     //luu danh ba len may chu
-    this.apiAuth.postDynamicForm(ApiStorageService.authenticationServer+"/save-your-contacts",contacts,true)
+    this.apiAuth.postDynamicForm(ApiStorageService.authenticationServer+"/ext-auth/save-your-contacts",contacts,true)
     .then(res=>{
       
       this.toastCtrl.create({
         message: "Đã lưu lại thành công!",
-        duration: 10000,
+        duration: 3000,
         position:'middle'
       }).present();
 
@@ -606,7 +604,7 @@ export class ContactsPage {
       
       this.toastCtrl.create({
         message: "res" + JSON.stringify(err_),
-        duration: 30000,
+        duration: 10000,
         position:'bottom'
       }).present();
 

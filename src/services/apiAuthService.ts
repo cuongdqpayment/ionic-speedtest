@@ -49,7 +49,7 @@ export class ApiAuthService {
             
         } else {
             //console.log('get Public key from server');
-            return this.httpClient.get(this.authenticationServer + '/key-json')
+            return this.httpClient.get(this.authenticationServer + '/ext-auth/key-json')
             .toPromise()
             .then(jsonData => {
                 this.publicKey = jsonData;
@@ -71,7 +71,7 @@ export class ApiAuthService {
 
     login(formData) {
         this.reqInterceptor.setRequestToken(null); //login nguoi khac
-        return this.httpClient.post(this.authenticationServer + '/login', formData)
+        return this.httpClient.post(this.authenticationServer + '/ext-auth/login', formData)
             .toPromise()
             .then(data => {
                 this.userToken = data;
@@ -88,7 +88,7 @@ export class ApiAuthService {
         if (this.userToken && this.userToken.token) {
                 //truong hop user co luu tren session thi xoa session di
             this.reqInterceptor.setRequestToken(this.userToken.token); //login nguoi khac
-            return this.httpClient.get(this.authenticationServer + '/logout')
+            return this.httpClient.get(this.authenticationServer + '/ext-auth/logout')
                 .toPromise()
                 .then(data => {
                     //console.log(data);
@@ -112,7 +112,7 @@ export class ApiAuthService {
     }
 
     register(formData) {
-        return this.httpClient.post(this.authenticationServer + '/register', formData)
+        return this.httpClient.post(this.authenticationServer + '/ext-auth/register', formData)
             .toPromise()
             .then(data => {
                 console.log(data);
@@ -128,7 +128,7 @@ export class ApiAuthService {
     editUser(formData) {
         //them token vao truoc khi edit
         this.reqInterceptor.setRequestToken(this.userToken.token);
-        return this.httpClient.post(this.authenticationServer + '/edit', formData)
+        return this.httpClient.post(this.authenticationServer + '/ext-auth/edit', formData)
             .toPromise()
             .then(data => {
                 console.log(data);
@@ -145,7 +145,7 @@ export class ApiAuthService {
         if (this.userToken && this.userToken.token) {
             //them token vao truoc khi edit
             this.reqInterceptor.setRequestToken(this.userToken.token);
-            return this.httpClient.get(this.authenticationServer + '/get-user')
+            return this.httpClient.get(this.authenticationServer + '/ext-auth/get-user')
                 .toPromise()
                 .then(jsonData => {
                     this.userSetting = jsonData;
@@ -189,7 +189,7 @@ export class ApiAuthService {
      * @param token 
      */
     authorize(token){
-        return this.httpClient.post(this.authenticationServer + '/authorize-token',JSON.stringify({
+        return this.httpClient.post(this.authenticationServer + '/ext-auth/authorize-token',JSON.stringify({
             token: token
         }))
             .toPromise()
@@ -205,7 +205,7 @@ export class ApiAuthService {
 
     //send sms
     sendSMS(isdn,sms){
-       return this.httpClient.post(this.authenticationServer + '/send-sms', JSON.stringify({
+       return this.httpClient.post(this.authenticationServer + '/ext-auth/send-sms', JSON.stringify({
             isdn:isdn,
             sms:sms
             }))
@@ -223,7 +223,7 @@ export class ApiAuthService {
      */
     requestIsdn(jsonString){
         //chuyen len bang form co ma hoa
-        return this.httpClient.post(this.authenticationServer + '/request-isdn', jsonString)
+        return this.httpClient.post(this.authenticationServer + '/ext-auth/request-isdn', jsonString)
              .toPromise()
              .then(data => {
                 let rtn:any;
@@ -239,7 +239,7 @@ export class ApiAuthService {
       */
     confirmKey(jsonString){
          //chuyen di bang form co ma hoa
-        return this.httpClient.post(this.authenticationServer + '/confirm-key', jsonString)
+        return this.httpClient.post(this.authenticationServer + '/ext-auth/confirm-key', jsonString)
              .toPromise()
              .then(data => {
                  this.userToken = data;

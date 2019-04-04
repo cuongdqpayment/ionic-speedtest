@@ -197,7 +197,7 @@ export class LoginPage {
             type: "button"
           , options: [
             { name: "Bỏ qua", command:"CLOSE" , next: "CLOSE"}
-            , { name: "Cập nhập", command:"UPDATE", url: ApiStorageService.authenticationServer+"/save-user-info", token:true, next: "CALLBACK"}
+            , { name: "Cập nhập", command:"UPDATE", url: ApiStorageService.authenticationServer+"/ext-auth/save-user-info", token:true, next: "CALLBACK"}
           ]
         }
         ]
