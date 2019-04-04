@@ -63,7 +63,7 @@
                               {{phone.value}}
                           </ion-col>
                           <ion-col col-2 style="text-align: right;">
-                              {{this.uniquePhones[phone.int].count}}
+                              {{uniquePhones[phone.int]?.count}}
                           </ion-col>
                         </ion-row>
 
@@ -75,7 +75,7 @@
                               {{email.value}}
                           </ion-col>
                           <ion-col col-2 style="text-align: right;">
-                              {{this.uniqueEmails[email.value].count}}
+                              {{uniqueEmails[email.value]?.count}}
                           </ion-col>
                         </ion-row>
 
