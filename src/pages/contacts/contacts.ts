@@ -397,6 +397,22 @@ export class ContactsPage {
     return phoneReturn;
   }
 
+
+  checkPhoneType(phone,nation_callingcode,net_code){
+    if (net_code) {
+      let found = net_code.find(x => ("+" + nation_callingcode + x.code) === phone.substring(0, ("+" + nation_callingcode + x.code).length))
+      if (found) {
+        return found
+      } else {
+        found = net_code.find(x => ("0" + x.code) === phone.substring(0, ("0" + x.code).length))
+        if (found) {
+          return found
+        }
+      }
+    }
+    return null;
+  }
+
   internationalFormat(phone, nation_callingcode) {
     let phoneReturn = phone;
 
@@ -445,6 +461,9 @@ export class ContactsPage {
 
             if (phonenumber && phonenumber !== "") {
 
+              let netCode = this.checkPhoneType(phonenumber,'84',this.vn_prefix_code);
+              //console.log(netCode);
+
               if (this.changeFixType){
                 phonenumber = this.vnChangePrefix(phonenumber, '84', this.prefix_change, this.changeFixType);
               }
@@ -463,7 +482,7 @@ export class ContactsPage {
                 });
 
 
-                phones.push({ value: phonenumber, type: phone.type, int: intPhonenumber })
+                phones.push({ value: phonenumber, type: netCode&&netCode.f_or_m?netCode.f_or_m:'#', int: intPhonenumber, net: netCode&&netCode.network?netCode.network:'#'})
 
                 _uniquePhones[intPhonenumber].name = {};
                 if (fullname) {
@@ -504,7 +523,7 @@ export class ContactsPage {
                   , relationship: relationship
                 }, writable: false, enumerable: true, configurable: false
               });
-              emails.push({ value: email.value, type: email.type });
+              emails.push({ value: email.value, type: 'E' });
               _uniqueEmails[email.value].name = {};
 
               if (fullname) {
@@ -596,10 +615,13 @@ export class ContactsPage {
 
         if (contact.phones) {
           contact.phones.forEach(phone => {
-
+            
             let phonenumber = phone.value.replace(/[^0-9+]+/g, "");
 
             if (phonenumber && phonenumber !== "") {
+              
+              let netCode = this.checkPhoneType(phonenumber,'84',this.vn_prefix_code);
+              //console.log(netCode);
               
               if (this.changeFixType){
                 phonenumber = this.vnChangePrefix(phonenumber, '84', this.prefix_change,this.changeFixType);
@@ -622,7 +644,7 @@ export class ContactsPage {
                   Object.defineProperty(_uniquePhones[intPhonenumber].name, fullname, { value: 1, writable: true, enumerable: true, configurable: false });
                 }
 
-                phones.push({ value: phonenumber, type: phone.type, int: intPhonenumber })
+                phones.push({ value: phonenumber, type: netCode&&netCode.f_or_m?netCode.f_or_m:'#', int: intPhonenumber, net: netCode&&netCode.network?netCode.network:'#'})
               } else {
 
                 if (fullname) {
@@ -649,7 +671,8 @@ export class ContactsPage {
                   , relationship: relationship
                 }, writable: false, enumerable: true, configurable: false
               });
-              emails.push({ value: email.value, type: email.type });
+
+              emails.push({ value: email.value, type: 'E' });
 
               if (fullname) {
                 _uniqueEmails[email.value].name = {};
@@ -868,7 +891,7 @@ export class ContactsPage {
   }
 
   onInput(e) {
-
+    console.log(this.searchString);
   }
 
   searchEnter() {
