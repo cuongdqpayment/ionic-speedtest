@@ -75,6 +75,7 @@ export class ContactsPage {
   searchString: string = '';
 
   prefix_change: any;
+  vn_prefix_code: any;
 
   userInfo: any;
 
@@ -155,6 +156,7 @@ export class ContactsPage {
 
     try {
       this.prefix_change = await this.apiAuth.getDynamicUrl(ApiStorageService.authenticationServer + "/ext-public/vn-prefix-change");
+      this.vn_prefix_code = await this.apiAuth.getDynamicUrl(ApiStorageService.authenticationServer + "/ext-public/vn-net-code");
     } catch (e) { }
 
     //doc tu dia len, neu co thi liet ke ra luon
