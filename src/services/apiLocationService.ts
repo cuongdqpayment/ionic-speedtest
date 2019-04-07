@@ -33,60 +33,80 @@ export class ApiLocationService {
 
 
     getPlatform(){
-        console.log('Platform', this.platform);
+        return {
+                platforms: this.platform.platforms(),
+                is_cordova: this.platform.is('cordova'),
+                is_web: this.platform.is('core'),
+                is_ios: this.platform.is('ios'),
+                is_android: this.platform.is('android'),
+                is_mobile: this.platform.is('mobile')
+            }
     }
 
     getDevice(){
-        console.log('Device ', this.device);
+        return {
+                cordova: this.device.cordova,
+                is_virtual: this.device.isVirtual,
+                manufacturer: this.device.manufacturer,
+                model: this.device.model,
+                serial: this.device.serial,
+                platform: this.device.platform,
+                uuid: this.device.uuid,
+                version: this.device.version
+               }
     }
 
     getNetwork(){
-        console.log('network', this.network);
+        return {
+                type:  this.network.type,
+                downlinkMax:  this.network.downlinkMax
+               }
+        
     }
 
     getSim(){
-        this.sim.getSimInfo()
-        .then(data=>{
-            console.log('sim',data);
-        })
-        .catch(err=>{
-            console.log('sim',err);
-        })
+       return this.sim.getSimInfo()
+       .then(info=>{
+        return {
+            carrier_name: info.carrierName,
+            country_code: info.countryCode,
+            phone: info.phoneNumber,
+            mcc: info.mcc,
+            mnc: info.mnc,
+            imsi: info.subscriberId
+         }
+       })
+       .catch(err=>{
+        return {error: err}
+       })
     }
-
-
-
         
     getCurrentLocation(){
-        this.stopTracking();
-        this.startTracking();
-        return this.currenLocation;
-    }
-
-    initPosition() {
-        return this.geoLocation.getCurrentPosition()
+       return this.geoLocation.getCurrentPosition({
+                                                    enableHighAccuracy: true,
+                                                    timeout: 5000,
+                                                    maximumAge: 3000
+                                                    })
         .then(pos => {
-                console.log('debug',pos);
-                this.currenLocation = pos;
-                return {lat:pos.coords.latitude,
-                        lon:pos.coords.longitude,
-                        timestamp:pos.timestamp,
-                        time_tracking: new Date().getTime()
-                        };
-                    })
+            return {lat:pos.coords.latitude,
+                    lon:pos.coords.longitude,
+                    timestamp:pos.timestamp
+                    };
+        })
         .catch((err) => {
-                console.log('error get current loc',err);
-                throw err;
-            })
-
+            return {error:err}    
+        })
     }
+
     //Theo dõi thay đổi vị trí
     startTracking() {
-        this.locationTracking = this.geoLocation.watchPosition({
+        this.locationTracking = this.geoLocation.watchPosition(
+            {
             enableHighAccuracy: true,
             timeout: 5000,
             maximumAge: 3000
-        })
+            }
+        )
             .subscribe((pos) => {
                 this.currenLocation = { lat:pos.coords.latitude,
                                         lon:pos.coords.longitude,
