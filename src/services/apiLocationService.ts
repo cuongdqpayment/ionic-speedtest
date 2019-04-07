@@ -77,7 +77,7 @@ export class ApiLocationService {
          }
        })
        .catch(err=>{
-        return {error: err}
+        return {error: JSON.stringify(err)}
        })
     }
         
@@ -88,13 +88,14 @@ export class ApiLocationService {
                                                     maximumAge: 3000
                                                     })
         .then(pos => {
+            this.currenLocation = pos;
             return {lat:pos.coords.latitude,
                     lon:pos.coords.longitude,
                     timestamp:pos.timestamp
                     };
         })
         .catch((err) => {
-            return {error:err}    
+            return {error:JSON.stringify(err)}    
         })
     }
 

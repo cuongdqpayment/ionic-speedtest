@@ -31,6 +31,7 @@ export class CordovaPage {
     let device = this.apiLocation.getDevice();
     let deviceDetails = [];
     for (let key in device) {
+      if (device[key])
       deviceDetails.push({ name: key, value: device[key] })
     }
     this.dynamicForm.items.push({
@@ -43,6 +44,7 @@ export class CordovaPage {
     let sim = await this.apiLocation.getSim();
     let simDetails = [];
     for (let key in sim) {
+      if (sim[key])
       simDetails.push({ name: key, value: sim[key] })
     }
     this.dynamicForm.items.push({
@@ -55,6 +57,7 @@ export class CordovaPage {
     let network=this.apiLocation.getNetwork();
     let networkDetails = [];
     for (let key in network) {
+      if (network[key])
       networkDetails.push({ name: key, value: network[key] })
     }
     this.dynamicForm.items.push({
@@ -76,7 +79,7 @@ export class CordovaPage {
       type: "details",
       details: locationDetails
     });
-    
+
   }
 
   onClickClose() {
