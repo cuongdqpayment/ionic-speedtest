@@ -26,6 +26,7 @@ import { InAppBrowser } from '@ionic-native/in-app-browser/ngx';
 import { LinkPage } from '../pages/link/link';
 import { QrBarScannerPage } from '../pages/qr-bar-scanner/qr-bar-scanner';
 import { ContactsPage } from '../pages/contacts/contacts';
+import { CordovaPage } from '../pages/cordova-info/cordova-info';
 
 const createObjectKey = (obj, key, value) => {
   Object.defineProperty(obj, key, { value: value, writable: false, enumerable: true, configurable: false });
@@ -67,7 +68,7 @@ export class MyApp {
     private apiImage: ApiImageService,
     private auth: ApiAuthService,
     private events: Events,
-    private inAppBrowser: InAppBrowser,
+    private inAppBrowser: InAppBrowser, //goi trong callback
     private platform: Platform,
     statusBar: StatusBar,
     splashScreen: SplashScreen
@@ -83,7 +84,7 @@ export class MyApp {
     this.callbackTreeMenu = this.callbackTree;
 
     this.ionViewDidLoad_main();
-
+    
   }
 
   ionViewDidLoad_main() {
@@ -614,7 +615,7 @@ export class MyApp {
               size: "1.3em",
               click: true,
               url: "https://c3.mobifone.vn/qld/db/matrix-a4",
-              icon: "people"
+              icon: "list"
             }
             ,
             {
@@ -622,7 +623,7 @@ export class MyApp {
               size: "1.3em",
               click: true,
               url: "https://c3.mobifone.vn/qld/db/matrix-a5",
-              icon: "people"
+              icon: "list"
             }
             ,
             {
@@ -631,7 +632,7 @@ export class MyApp {
               click: true,
               popup_iframe: LinkPage, //su dung link web ko file
               url: "https://dantri.com.vn/",
-              icon: "people"
+              icon: "list"
             }
             ,
             {
@@ -640,7 +641,7 @@ export class MyApp {
               click: true,
               in_app_browser: LinkPage, //Link page chi gia lap thoi
               url: "https://dantri.com.vn/",
-              icon: "people"
+              icon: "list"
             }
           ]
         }
@@ -678,7 +679,15 @@ export class MyApp {
         }
         ,
         {
-          name: "9. Login",
+          name: "9. Cordova",
+          size: "1.3em",
+          click: true,
+          next: CordovaPage,
+          icon: "heart"
+        }
+        ,
+        {
+          name: "10. Login",
           size: "1.3em",
           click: true,
           next: LoginPage,
@@ -747,7 +756,15 @@ export class MyApp {
         }
         ,
         {
-          name: "8. Login",
+          name: "8. Cordova",
+          size: "1.3em",
+          click: true,
+          next: CordovaPage,
+          icon: "heart"
+        }
+        ,
+        {
+          name: "9. Login",
           size: "1.3em",
           click: true,
           next: LoginPage,
@@ -809,7 +826,15 @@ export class MyApp {
         }
         ,
         {
-          name: "7. Login",
+          name: "7. Cordova",
+          size: "1.3em",
+          click: true,
+          next: CordovaPage,
+          icon: "heart"
+        }
+        ,
+        {
+          name: "8. Login",
           size: "1.3em",
           click: true,
           next: LoginPage,

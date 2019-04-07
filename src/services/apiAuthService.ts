@@ -5,7 +5,7 @@ import { ApiStorageService } from './apiStorageService';
 
 import { RequestInterceptor } from '../interceptors/requestInterceptor';
 
-import 'rxjs/add/operator/map'
+/* import 'rxjs/add/operator/map' */
 
 import NodeRSA from 'node-rsa';
 import jwt from 'jsonwebtoken';
@@ -28,6 +28,25 @@ export class ApiAuthService {
                 private reqInterceptor: RequestInterceptor) {
         //key nay de test thu noi bo
         this.midleKey.importKey(this.clientKey.exportKey('public'));
+    }
+
+
+    /**
+     * Neu da luu tru trong may roi thi lay ra
+     * neu chua thi tao ra va luu vao may va luu len may chu
+     * 
+     * @param user 
+     */
+    generatorKeyPair(user){
+        let userKey;
+        userKey = this.apiStorageService.getUserKey(user);
+        if (userKey) return userKey;
+        const key = new NodeRSA({b: 512}, { signingScheme: 'pkcs1-sha256' });
+        const publicKey = key.exportKey("public").replace('-----BEGIN PUBLIC KEY-----\n','').replace('-----END PUBLIC KEY-----','').replace(/[\n\r]/g, '');
+        const privateKey = key.exportKey("private").replace('-----BEGIN RSA PRIVATE KEY-----\n','').replace('-----END RSA PRIVATE KEY-----','').replace(/[\n\r]/g, '');
+        userKey = {id: publicKey, key: privateKey}
+        this.apiStorageService.saveUserKey(user,userKey);
+        return userKey;
     }
 
     /**

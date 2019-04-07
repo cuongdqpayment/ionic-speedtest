@@ -90,6 +90,19 @@ export class ApiStorageService {
     }
 
 
+    saveUserKey(user,key){
+        this.save('#key#'+user.username,JSON.stringify(key));
+    }
+
+    getUserKey(user){
+        try{
+            let results = JSON.parse(this.read('#key#'+user.username));
+            return results?results:null;
+        }catch(e){
+            return null;
+        }
+    }
+
     saveUserContacts(user,contacts){
         this.save('#contacts#'+user.username,JSON.stringify(contacts));
     }

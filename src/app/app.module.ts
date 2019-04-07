@@ -18,6 +18,11 @@ import { NgxQRCodeModule } from 'ngx-qrcode2';
 import { NgxBarcodeModule } from 'ngx-barcode';
 import { BarcodeScanner } from '@ionic-native/barcode-scanner';
 
+
+import {Device} from '@ionic-native/device';
+import {Sim} from '@ionic-native/sim';
+import {Network} from '@ionic-native/network';
+
 import { Contacts } from '@ionic-native/contacts';
 
 import { ApiSpeedTestService } from '../services/apiSpeedTestService';
@@ -57,6 +62,7 @@ import { SafePipe } from '../pipes/safe-pipe';
 import { QrBarScannerPage } from '../pages/qr-bar-scanner/qr-bar-scanner';
 import { QrBarCodePage } from '../pages/qr-bar-code/qr-bar-code';
 import { ContactsPage } from '../pages/contacts/contacts';
+import { CordovaPage } from '../pages/cordova-info/cordova-info';
 
 
 @NgModule({
@@ -68,6 +74,7 @@ import { ContactsPage } from '../pages/contacts/contacts';
     QrBarScannerPage,
     ContactsPage,
     LinkPage,
+    CordovaPage,
     HomeSpeedtestPage,
     ResultsPage,
     TabsPage,
@@ -107,6 +114,7 @@ import { ContactsPage } from '../pages/contacts/contacts';
     QrBarScannerPage,
     ContactsPage,
     LinkPage,
+    CordovaPage,
     HomeSpeedtestPage,
     ResultsPage,
     TabsPage,
@@ -132,6 +140,9 @@ import { ContactsPage } from '../pages/contacts/contacts';
     Geolocation,
     BarcodeScanner,
     Contacts,
+    Device,
+    Sim,
+    Network,
     SQLite,
     InAppBrowser,
     ApiGraphService,
