@@ -12,7 +12,7 @@ import { DynamicMediasPage } from '../pages/dynamic-medias/dynamic-medias';
 import { DynamicCardSocialPage } from '../pages/dynamic-card-social/dynamic-card-social';
 import { GoogleMapPage } from '../pages/google-map/google-map';
 import { LoginPage } from '../pages/login/login';
-import { SignaturePage } from '../pages/signature/signature';
+import { HandDrawPage } from '../pages/hand-draw/hand-draw';
 import { ApiStorageService } from '../services/apiStorageService';
 import { ApiAuthService } from '../services/apiAuthService';
 import { HomeMenuPage } from '../pages/home-menu/home-menu';
@@ -598,7 +598,7 @@ export class MyApp {
                 {
                   name: "3.3.3 Mẫu vẽ tay lên màn hình trên nền di động",
                   click: true,
-                  next: SignaturePage,
+                  next: HandDrawPage,
                   icon: "create"
                 }
               ]

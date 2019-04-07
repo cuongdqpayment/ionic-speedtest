@@ -1,11 +1,11 @@
-import { Component, ViewChild, Renderer } from '@angular/core';
-import { Platform, NavController, Content } from 'ionic-angular';
+import { Component, ViewChild } from '@angular/core';
+import { Platform, Content } from 'ionic-angular';
 
 @Component({
-  selector: 'page-signature',
-  templateUrl: 'signature.html'
+  selector: 'page-hand-draw',
+  templateUrl: 'hand-draw.html'
 })
-export class SignaturePage {
+export class HandDrawPage {
   @ViewChild('imageCanvas') canvas: any;
   
   @ViewChild(Content) content: Content;
@@ -13,7 +13,7 @@ export class SignaturePage {
   @ViewChild('fixedContainer') fixedContainer: any;
 
   signatureForm:any = {
-    //title:"Ký",
+    title:"Hand draw",
     colors: [
       {name:'dr-dark',    color:"#0f0f0f"}
       ,{name:'dr-green',  color:"#1abc9c"}
@@ -23,27 +23,26 @@ export class SignaturePage {
       ,{name:'dr-red',    color:"#e74c3c"}          
     ]
     ,buttons:[
-      {color:"primary", icon:"add", next:"ADD"}
-      , {color:"primary", icon:"contacts", next:"FRIENDS"}
-      , {color:"primary", icon:"notifications", next:"NOTIFY"
-      , alerts:[
-        "cuong.dq"
-      ]
-    }
-    , {color:"royal", icon:"cog", next:"SETTINGS"}
+      {color:"danger", icon:"trash", next:"DEL"}
+    , {color:"primary", icon:"camera", next:"SAVE"}
   ]
   ,brushes:[
-            {size:5, color:"dark", style:"0.25em", icon:"radio-button-on"}
-            ,{size:10, color:"dark", style:"0.5em", icon:"radio-button-on"}
-            ,{size:20, color:"dark", style:"1em", icon:"radio-button-on"}
-            ,{size:50, color:"dark", style:"2em", icon:"radio-button-on"}
-            ,{size:100, color:"dark", style:"3em", icon:"radio-button-on"}
+            {size:2.5, color:"dark", style:"0.25em", icon:"radio-button-on"}
+            ,{size:5, color:"dark", style:"0.5em", icon:"radio-button-on"}
+            ,{size:10, color:"dark", style:"1em", icon:"radio-button-on"}
+            ,{size:20, color:"dark", style:"2em", icon:"radio-button-on"}
   ]
 }
 
   canvasElement: any;
   lastX: number;
   lastY: number;
+
+  brush:any = {
+    size:2.5,
+    color:"dark",
+    style: "0.25em"
+  }
 
   currentColor: string;
   brushSize: number;
@@ -59,6 +58,32 @@ export class SignaturePage {
     
   }
 
+  changeColor(cl) {
+    this.currentColor = cl.color;
+    this.signatureForm.brushes.forEach(el => {
+      el.color = cl.name;
+    });
+  }
+
+  changeSize(size) {
+    this.brushSize = size;
+  }
+
+  onClickHeader(btn){
+    if (btn.next==="DEL"){
+      this.clearCanvas();
+    }
+    if (btn.next==="SAVE"){
+      //luu thanh file
+      this.clearCanvas();
+    }
+    if (btn.next==="SETTINGS"){
+      //chon mau va net but
+
+    }
+
+  }
+
   ionViewDidEnter(){
     let itemHeight = this.fixedContainer.nativeElement.offsetHeight;
     let scroll = this.content.getScrollElement();
@@ -70,17 +95,6 @@ export class SignaturePage {
     this.canvasElement = this.canvas.nativeElement;
     this.canvasElement.width = this.platform.width() + '';
     this.canvasElement.height = this.platform.height() + '';//"200";
-  }
-
-  changeColor(cl) {
-    this.currentColor = cl.color;
-    this.signatureForm.brushes.forEach(el => {
-      el.color = cl.name;
-    });
-  }
-
-  changeSize(size) {
-    this.brushSize = size;
   }
 
   handleStart(ev) {

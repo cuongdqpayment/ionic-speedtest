@@ -1,0 +1,32 @@
+<ion-header>
+  <ion-toolbar>
+
+    <ion-title >Draw Settings</ion-title>
+
+    <ion-buttons right>
+      <button ion-button icon-only color="danger" (click)="onClickClose()">
+        <ion-icon name="close"></ion-icon>
+      </button>
+    </ion-buttons>
+  </ion-toolbar>
+
+</ion-header>
+
+<ion-content>
+      <!-- radio select -->
+      <ion-list radio-group [(ngModel)]="Colorvalue">
+        <ion-item *ngFor="let color of signatureForm.colors">
+          <ion-icon ion-start color="{{color.name}}" name="brush"></ion-icon>
+          <ion-label color="{{color.name}}" text-wrap style="text-align: justify;">{{color.name}}</ion-label>
+          <ion-radio value="{{color.value}}"></ion-radio>
+        </ion-item>
+      </ion-list>
+      <!-- radio select -->
+      <ion-list radio-group [(ngModel)]="Sizevalue">
+        <ion-item *ngFor="let brush of signatureForm.brushes">
+          <ion-icon ion-start [style.font-size]="brush.style" name="radio-button-on"></ion-icon>
+          <ion-label color="{{brush.name}}" text-wrap style="text-align: justify;">{{brush.name}}</ion-label>
+          <ion-radio value="{{brush.value}}"></ion-radio>
+        </ion-item>
+      </ion-list>
+</ion-content>

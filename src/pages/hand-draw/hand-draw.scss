@@ -1,9 +1,8 @@
-page-signature {
+page-hand-draw {
     
     canvas {
         display: block;
         border: 1px solid rgb(187,178,178);
-
     }
 
     .background-page {
@@ -13,15 +12,15 @@ page-signature {
     
     .draw-background {
         position: absolute;
-        top: 10px;
     }
 
+/* 
     .draw-area{
         background-color: white;
         height: 100%;
         width: 100%;
         display: block;
-    }
+    } */
 
 
     .badge-background {

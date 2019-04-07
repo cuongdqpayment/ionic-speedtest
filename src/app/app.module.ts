@@ -39,7 +39,7 @@ import { DynamicFormMobilePage } from '../pages/dynamic-form-mobile/dynamic-form
 import { DynamicCardSocialPage } from '../pages/dynamic-card-social/dynamic-card-social';
 import { DynamicMediasPage } from '../pages/dynamic-medias/dynamic-medias';
 import { DynamicListOrderPage } from '../pages/dynamic-list-order/dynamic-list-order';
-import { SignaturePage } from '../pages/signature/signature';
+import { HandDrawPage } from '../pages/hand-draw/hand-draw';
 import { ApiHttpPublicService } from '../services/apiHttpPublicServices';
 import { ApiResourceService } from '../services/apiResourceServices';
 import { RequestInterceptor } from '../interceptors/requestInterceptor';
@@ -63,6 +63,7 @@ import { QrBarScannerPage } from '../pages/qr-bar-scanner/qr-bar-scanner';
 import { QrBarCodePage } from '../pages/qr-bar-code/qr-bar-code';
 import { ContactsPage } from '../pages/contacts/contacts';
 import { CordovaPage } from '../pages/cordova-info/cordova-info';
+import { HandDrawSettingsPage } from '../pages/hand-draw-settings/hand-draw-settings';
 
 
 @NgModule({
@@ -90,9 +91,10 @@ import { CordovaPage } from '../pages/cordova-info/cordova-info';
     DynamicMediasPage,
     DynamicListOrderPage,
     GoogleMapPage,
-    SignaturePage,
     HomeChatPage,
     ChattingPage,
+    HandDrawPage,
+    HandDrawSettingsPage,
     TimeAgoPipe,
     SafePipe,
     Autosize
@@ -132,7 +134,8 @@ import { CordovaPage } from '../pages/cordova-info/cordova-info';
     GoogleMapPage,
     HomeChatPage,
     ChattingPage,
-    SignaturePage
+    HandDrawPage,
+    HandDrawSettingsPage
   ],
   providers: [
     StatusBar,
