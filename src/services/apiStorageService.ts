@@ -90,6 +90,19 @@ export class ApiStorageService {
     }
 
 
+    saveDeviceKey(key){
+        this.save('#key#device#',JSON.stringify(key));
+    }
+
+    getDeviceKey(){
+        try{
+            let results = JSON.parse(this.read('#key#device#'));
+            return results?results:null;
+        }catch(e){
+            return null;
+        }
+    }
+
     saveUserKey(user,key){
         this.save('#key#'+user.username,JSON.stringify(key));
     }

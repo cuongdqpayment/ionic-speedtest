@@ -27,10 +27,10 @@ export class HandDrawPage {
     , {color:"primary", icon:"camera", next:"SAVE"}
   ]
   ,brushes:[
-            {size:2.5, color:"dark", style:"0.25em", icon:"radio-button-on"}
-            ,{size:5, color:"dark", style:"0.5em", icon:"radio-button-on"}
-            ,{size:10, color:"dark", style:"1em", icon:"radio-button-on"}
-            ,{size:20, color:"dark", style:"2em", icon:"radio-button-on"}
+            {size:2.5, color:"dr-dark", style:"0.25em", icon:"radio-button-on"}
+            ,{size:5, color:"dr-dark", style:"0.5em", icon:"radio-button-on"}
+            ,{size:10, color:"dr-dark", style:"1em", icon:"radio-button-on"}
+            ,{size:20, color:"dr-dark", style:"2em", icon:"radio-button-on"}
   ]
 }
 
@@ -38,7 +38,7 @@ export class HandDrawPage {
   lastX: number;
   lastY: number;
 
-  brush:any = {
+  brush = {
     size:2.5,
     color:"dark",
     style: "0.25em"
@@ -47,6 +47,7 @@ export class HandDrawPage {
   currentColor: string;
   brushSize: number;
 
+  isSelect: boolean = false;
 
   storedImages = [];
 
@@ -63,10 +64,22 @@ export class HandDrawPage {
     this.signatureForm.brushes.forEach(el => {
       el.color = cl.name;
     });
+    this.brush.color = cl.name;
+
+    this.onClickSelect()
   }
 
-  changeSize(size) {
-    this.brushSize = size;
+  changeSize(sz) {
+    this.brushSize = sz.size;
+    
+    this.brush.size = sz.size;
+    this.brush.style = sz.style;
+
+    this.onClickSelect()
+  }
+  
+  onClickSelect(){
+    this.isSelect = !this.isSelect;
   }
 
   onClickHeader(btn){
@@ -77,11 +90,7 @@ export class HandDrawPage {
       //luu thanh file
       this.clearCanvas();
     }
-    if (btn.next==="SETTINGS"){
-      //chon mau va net but
-
-    }
-
+    
   }
 
   ionViewDidEnter(){

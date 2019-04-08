@@ -22,22 +22,47 @@ export class ApiAuthService {
     public userSetting: any;
     public userInfo: any;
 
-
     constructor(private httpClient: HttpClient,
                 private apiStorageService: ApiStorageService,
                 private reqInterceptor: RequestInterceptor) {
-        //key nay de test thu noi bo
-        this.midleKey.importKey(this.clientKey.exportKey('public'));
     }
-
 
     /**
      * Neu da luu tru trong may roi thi lay ra
-     * neu chua thi tao ra va luu vao may va luu len may chu
+     * cap khoa nay duoc tao ra cho ung dung nay
+     * su dung de ky thong tin chuyen di (ky nhan tu may nay)
      * 
-     * @param user 
      */
-    generatorKeyPair(user){
+    generatorKeyPairDevice(){
+        let deviceKey;
+        deviceKey = this.apiStorageService.getDeviceKey();
+        if (deviceKey) return deviceKey;
+        const key = new NodeRSA({b: 512}, { signingScheme: 'pkcs1-sha256' });
+        const publicKey = key.exportKey("public").replace('-----BEGIN PUBLIC KEY-----\n','').replace('-----END PUBLIC KEY-----','').replace(/[\n\r]/g, '');
+        const privateKey = key.exportKey("private").replace('-----BEGIN RSA PRIVATE KEY-----\n','').replace('-----END RSA PRIVATE KEY-----','').replace(/[\n\r]/g, '');
+        deviceKey = {id: publicKey, key: privateKey}
+        this.apiStorageService.saveDeviceKey(deviceKey);
+        return deviceKey;
+    }
+
+    /**
+     * id = public key, key = private key
+     * tra ve rsaKey dung cho sign, verify, encrypted, decrypted
+     * @param keySave 
+     * @param keyType 
+     */
+    importKey(keySave:{id:string,key:string},keyType:'public'|'private'){
+        const rsaKey = new NodeRSA(null, { signingScheme: 'pkcs1-sha256' });
+        if (keyType==='private'){
+            rsaKey.importKey('-----BEGIN RSA PRIVATE KEY-----\n'+keySave.key+'\n-----END RSA PRIVATE KEY-----');
+        }else{
+            rsaKey.importKey('-----BEGIN PUBLIC KEY-----\n'+rsaKey.id+'\n-----END PUBLIC KEY-----');
+        }
+        return rsaKey;
+    }
+
+    generatorKeyPairUser(user){
+        if (!user) return null;
         let userKey;
         userKey = this.apiStorageService.getUserKey(user);
         if (userKey) return userKey;

@@ -1,9 +1,10 @@
 <ion-header>
+
   <ion-toolbar>
 
     <ion-buttons left>
-        <button color="{{brush.color}}" ion-button icon-only >
-          <ion-icon [style.font-size]="brush.style" name="radio-button-on"></ion-icon>
+        <button ion-button icon-only (click)="onClickSelect()">
+          <ion-icon [style.font-size]="brush.style" color="{{brush.color}}" name="radio-button-on"></ion-icon>
         </button>
     </ion-buttons>
 
@@ -18,24 +19,23 @@
     </ion-buttons>
   </ion-toolbar>
 
+  <ion-row *ngIf="isSelect">
+    <ion-col col-12>
+        <button style="background-color: transparent;" *ngFor="let color of signatureForm.colors" ion-button (click)="changeColor(color)">
+            <ion-icon color="{{color.name}}" name="brush"></ion-icon>
+        </button>
+    </ion-col>
+    <ion-col col-12>
+        <button style="background-color: transparent;"  *ngFor="let size of signatureForm.brushes" ion-button (click)="changeSize(size)">
+          <ion-icon [style.font-size]="size.style" color="{{size.color}}" name="{{size.icon}}"></ion-icon>
+        </button>
+    </ion-col>
+  </ion-row>
+  
 </ion-header>
 
 <ion-content padding no-bounce>
   <div class="draw-background" #fixedContainer ion-fixed>
     <canvas #imageCanvas (touchstart)="handleStart($event)" (touchmove)="handleMove($event)"></canvas>
   </div>
-  <!-- <ion-list *ngIf="storedImages.length > 0">
-      <ion-list-header>Previous Drawings</ion-list-header>
-      <ion-card *ngFor="let obj of storedImages; let i = index">
-        <ion-card-content>
-          <img [src]="obj.img">
-        </ion-card-content>
-        <ion-row>
-          <button ion-button full icon-only color="danger" (click)="removeImageAtIndex(i)">
-            <ion-icon name="trash"></ion-icon>
-          </button>
-        </ion-row>
-      </ion-card>
-    </ion-list> -->
-
 </ion-content>

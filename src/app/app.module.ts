@@ -63,7 +63,6 @@ import { QrBarScannerPage } from '../pages/qr-bar-scanner/qr-bar-scanner';
 import { QrBarCodePage } from '../pages/qr-bar-code/qr-bar-code';
 import { ContactsPage } from '../pages/contacts/contacts';
 import { CordovaPage } from '../pages/cordova-info/cordova-info';
-import { HandDrawSettingsPage } from '../pages/hand-draw-settings/hand-draw-settings';
 
 
 @NgModule({
@@ -94,7 +93,6 @@ import { HandDrawSettingsPage } from '../pages/hand-draw-settings/hand-draw-sett
     HomeChatPage,
     ChattingPage,
     HandDrawPage,
-    HandDrawSettingsPage,
     TimeAgoPipe,
     SafePipe,
     Autosize
@@ -134,8 +132,7 @@ import { HandDrawSettingsPage } from '../pages/hand-draw-settings/hand-draw-sett
     GoogleMapPage,
     HomeChatPage,
     ChattingPage,
-    HandDrawPage,
-    HandDrawSettingsPage
+    HandDrawPage
   ],
   providers: [
     StatusBar,
