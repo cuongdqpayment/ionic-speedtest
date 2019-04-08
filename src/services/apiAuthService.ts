@@ -56,7 +56,7 @@ export class ApiAuthService {
         if (keyType==='private'){
             rsaKey.importKey('-----BEGIN RSA PRIVATE KEY-----\n'+keySave.key+'\n-----END RSA PRIVATE KEY-----');
         }else{
-            rsaKey.importKey('-----BEGIN PUBLIC KEY-----\n'+rsaKey.id+'\n-----END PUBLIC KEY-----');
+            rsaKey.importKey('-----BEGIN PUBLIC KEY-----\n'+keySave.id+'\n-----END PUBLIC KEY-----');
         }
         return rsaKey;
     }
@@ -83,11 +83,9 @@ export class ApiAuthService {
         if (this.publicKey && this.publicKey.public_key) {
             //console.log('Public key from in session');
             return (new Promise((resolve, reject) => {
-                try {
-                    this.serverKey.importKey(this.publicKey.public_key);
-                } catch (err) {
-                    reject(err); //bao loi khong import key duoc
-                }
+                this.serverKey = this.importKey({id:this.publicKey.public_key,
+                                                 key:""},"public");
+
                 resolve(this.serverKey);
             }));
             
@@ -99,11 +97,8 @@ export class ApiAuthService {
                 this.publicKey = jsonData;
                     //console.log('Public key: ', jsonData);
                     if (this.publicKey && this.publicKey.public_key) {
-                        try {
-                            this.serverKey.importKey(this.publicKey.public_key);
-                        } catch (err) {
-                            throw err;
-                        }
+                        this.serverKey = this.importKey({id:this.publicKey.public_key,
+                            key:""},"public");
                         return this.serverKey;
                     } else {
                         throw new Error('No public_key exists!');
