@@ -28,8 +28,9 @@ import { QrBarScannerPage } from '../pages/qr-bar-scanner/qr-bar-scanner';
 import { ContactsPage } from '../pages/contacts/contacts';
 import { CordovaPage } from '../pages/cordova-info/cordova-info';
 
+
 const createObjectKey = (obj, key, value) => {
-  Object.defineProperty(obj, key, { value: value, writable: false, enumerable: true, configurable: false });
+  Object.defineProperty(obj, key, { value: value, writable: true, enumerable: true, configurable: false });
   return obj;
 }
 
@@ -117,53 +118,42 @@ export class MyApp {
    * login ok get image and background
    * add to contacts
    */
-  userChangeImage() {
-    let count_process = 0;
-    new Promise((resolve, reject) => {
-      this.apiImage
-        .createBase64Image(ApiStorageService.mediaServer + "/db/get-private?func=avatar&token=" + this.apiStorageService.getToken(), 120)
-        .then(base64 => {
-          this.userInfo.data.image = base64;
-          if (++count_process >= 2) resolve()
-        })
-        .catch(err => reject(err))
-        ;
+  async userChangeImage() {
+    //du lieu da duoc dang ky
+    if (this.userInfo.data){
+      try{
+        this.userInfo.data.image = await this.apiImage
+          .createBase64Image(ApiStorageService.mediaServer + "/db/get-private?func=avatar&token=" + this.apiStorageService.getToken(), 120)
+          
+        this.userInfo.data.background = await this.apiImage
+          .createBase64Image(ApiStorageService.mediaServer + "/db/get-private?func=background&token=" + this.apiStorageService.getToken(), 300)
+      }catch(e){}
+          
+      //this.contacts = this.apiStorageService.getUserContacts(this.userInfo);
+      if (!this.contacts[this.userInfo.username]) {
+            createObjectKey(this.contacts, this.userInfo.username, {
+              fullname: this.userInfo.data.fullname
+              , nickname: this.userInfo.data.nickname
+              , image: this.userInfo.data.image
+              , background: this.userInfo.data.background
+              , status: 0
+            })
+            //this.apiStorageService.saveUserContacts(this.userInfo, this.contacts);
+      } else {
+            this.contacts[this.userInfo.username] = {
+              fullname: this.userInfo.data.fullname
+              , nickname: this.userInfo.data.nickname
+              , image: this.userInfo.data.image
+              , background: this.userInfo.data.background
+              , status: 0 //owner user
+            }
+            //this.apiStorageService.saveUserContacts(this.userInfo, this.contacts);
+      }
+    }else{
+      //du lieu chua dang ky user 
+      //yeu cau dang ky user
+    }
 
-      this.apiImage
-        .createBase64Image(ApiStorageService.mediaServer + "/db/get-private?func=background&token=" + this.apiStorageService.getToken(), 300)
-        .then(base64 => {
-          this.userInfo.data.background = base64;
-          if (++count_process >= 2) resolve()
-        })
-        .catch(err => reject(err))
-        ;
-    })
-      .then(() => {
-        //this.contacts = this.apiStorageService.getUserContacts(this.userInfo);
-        if (!this.contacts[this.userInfo.username]) {
-          createObjectKey(this.contacts, this.userInfo.username, {
-            fullname: this.userInfo.data.fullname
-            , nickname: this.userInfo.data.nickname
-            , image: this.userInfo.data.image
-            , background: this.userInfo.data.background
-            , status: 0
-          })
-          //this.apiStorageService.saveUserContacts(this.userInfo, this.contacts);
-        } else {
-          this.contacts[this.userInfo.username] = {
-            fullname: this.userInfo.data.fullname
-            , nickname: this.userInfo.data.nickname
-            , image: this.userInfo.data.image
-            , background: this.userInfo.data.background
-            , status: 0 //owner user
-          }
-          //this.apiStorageService.saveUserContacts(this.userInfo, this.contacts);
-        }
-      })
-      .catch(err => { })
-    /* .then(()=>{
-      console.log('xong user owner',this.contacts)
-    }) */
   }
 
   prepareContactsNewUser(user) {
@@ -224,13 +214,23 @@ export class MyApp {
 
               this.userInfo = data.user_info;
               //Tiêm token cho các phiên làm việc lấy số liệu cần xác thực
-              if (this.userInfo) this.auth.injectToken();
-              
-              this.initChatting();
+              if (this.userInfo&&this.userInfo.data) {
+                
+                this.auth.injectToken();
+                
+                this.initChatting();
+  
+                this.userChangeImage();
 
-              this.userChangeImage();
+              } else {
+
+                this.navCtrl.push(LoginPage);
+
+              } 
 
               this.resetTreeMenu();
+
+              //
 
               loading.dismiss();
             })
@@ -250,6 +250,7 @@ export class MyApp {
     } else {
       this.userInfo = undefined;
       this.resetTreeMenu();
+      //yc login??
     }
 
   }

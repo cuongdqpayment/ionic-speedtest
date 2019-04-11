@@ -56,7 +56,6 @@ export class LoginPage {
             .then(pk => {
 
               let userInfo = this.auth.getUserInfo();
-
               //neu co data tuc co khai bao user roi
               if (userInfo.data) this.auth.injectToken(); //Tiêm token cho các phiên làm việc lấy số liệu cần xác thực
               this.callLoginOk(data.user_info);
@@ -99,8 +98,6 @@ export class LoginPage {
     this.userInfo = userInfo;
     
     if (userInfo.data){
-
-      this.events.publish('user-log-in-ok');
 
       let data = {
         title: "Đã Login"
@@ -248,10 +245,13 @@ export class LoginPage {
       }
       
       if (res.button&&res.button.command==="UPDATE"){
+        
         this.events.publish('user-log-in-ok'); 
-        //bao hieu refresh userInfo
-        //luu token khi login ok and update user data
-        this.apiStorageService.saveToken(this.token);
+        
+        if (this.token){
+          this.apiStorageService.saveToken(this.token);
+        }
+
         this.navCtrl.setRoot(HomeMenuPage);
         resolve({next:"CLOSE"}); //vi dung modal nen phai dong lai
       }else{
@@ -272,9 +272,6 @@ export class LoginPage {
     });
 
   }.bind(this);
-
-
-  
 
 
   ionViewDidLoad_Login() {
@@ -367,7 +364,10 @@ export class LoginPage {
               
               this.token = res.data.token;
 
-              if (login.user_info.data) this.apiStorageService.saveToken(this.token);
+              if (login.user_info.data) {
+                this.apiStorageService.saveToken(this.token);
+                this.events.publish('user-log-in-ok');
+              }
               //da login thanh cong, kiem tra token 
               this.callLoginOk(login.user_info);
               
