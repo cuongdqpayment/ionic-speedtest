@@ -44,7 +44,8 @@ export class MyApp {
   keyCode:any;
   @HostListener('document:keyup',['$event']) handleKeyboardEvent(event:KeyboardEvent){
     this.keyCode = event.keyCode;
-    console.log('key',this.keyCode);
+    //console.log('key',this.keyCode);
+    //se cho tat ca cac hotkey go duoc
   }
 
   rootPage: any = HomeMenuPage;
@@ -55,7 +56,11 @@ export class MyApp {
   token: any;
 
   mySocket: any;
-  contacts = {}      //users with all info include image private
+
+  friends:any = []; //danh sach ban be de lien ket
+  follows:any = []; //danh sach follow de lay tin ()
+
+  contacts:any = {}      //users with all info include image private
   //login vao thi lay user cua minh
   //lien lac voi chat thi lay user new online
   //doc danh ba tu dien thoai thi tao user offline
@@ -220,16 +225,21 @@ export class MyApp {
               this.userInfo = data.user_info;
               //Tiêm token cho các phiên làm việc lấy số liệu cần xác thực
               if (this.userInfo) this.auth.injectToken();
+              
               this.initChatting();
+
               this.userChangeImage();
+
               this.resetTreeMenu();
 
               loading.dismiss();
             })
             .catch(err => {
+
               this.resetTreeMenu();
               //console.log('Error get Public key',err);
               loading.dismiss();
+
             });
         })
         .catch(err => {

@@ -17,6 +17,7 @@ import { QrBarCodePage } from '../qr-bar-code/qr-bar-code';
 export class LoginPage {
 
   userInfo:any;
+  token: any;
 
   constructor(
     private navCtrl: NavController
@@ -53,9 +54,11 @@ export class LoginPage {
           if (data.user_info){
             this.auth.getServerPublicRSAKey()
             .then(pk => {
+
               let userInfo = this.auth.getUserInfo();
-              if (userInfo) this.auth.injectToken(); //Tiêm token cho các phiên làm việc lấy số liệu cần xác thực
-              
+
+              //neu co data tuc co khai bao user roi
+              if (userInfo.data) this.auth.injectToken(); //Tiêm token cho các phiên làm việc lấy số liệu cần xác thực
               this.callLoginOk(data.user_info);
   
               loading.dismiss();
@@ -85,98 +88,111 @@ export class LoginPage {
   }
 
 
+  /**
+   * Khi xac thuc duoc otp thong tin nay se hien thi
+   * Tuy nhien, neu userInfo.data khong co du lieu, tuc chua dang ky user
+   * thi se tu dong bat len cua so nhap thong tin ca nhan xem nhu chua cho phep login
+   * @param userInfo 
+   */
   callLoginOk(userInfo) {
-    
-    //console.log(userInfo);
-    //truy van thong tin may chu lay userInfo khong phai user don dieu nhu nay
-    //co dia chi, email, nickname,...
 
     this.userInfo = userInfo;
+    
+    if (userInfo.data){
 
-    let data = {
-      title: "Đã Login"
-      , buttons: [
-        {color:"primary", icon: "barcode", command: "CODE-GENERATOR" , next:"CALLBACK"} 
-      ]
-      , items: [
-        {
-          type: "details",
-          details: [
-            {
-              name: "Username(*)",
-              value: userInfo.username
-            },
-            {
-              name: "Họ và tên(*)",
-              value: userInfo.data?userInfo.data.fullname:""
-            },
-            {
-              name: "Nickname(*)",
-              value: userInfo.data?userInfo.data.nickname:""
-            },
-            {
-              name: "Địa chỉ(*)",
-              value: userInfo.data?userInfo.data.address:""
-            },
-            {
-              name: "Điện thoại(*)",
-              value: userInfo.data?userInfo.data.phone:""
-            },
-            {
-              name: "Email(*)",
-              value: userInfo.data?userInfo.data.email:""
-            },
-            {
-              name: "Địa chỉ ip",
-              value: userInfo.req_ip
-            },
-            {
-              name: "Địa chỉ nguồn",
-              value: userInfo.origin
-            },
-            {
-              name: "Thiết bị",
-              value: userInfo.req_device
-            },
-            {
-              name: "Mức xác thực",
-              value: userInfo.level
-            },
-            {
-              name: "Thời gian khởi tạo",
-              value: userInfo.iat * 1000,
-              pipe_date: "HH:mm:ss dd/MM/yyyy"
-            },
-            {
-              name: "Thời gian hết hạn",
-              value: userInfo.exp * 1000,
-              pipe_date: "HH:mm:ss dd/MM/yyyy"
-            },
-            {
-              name: "Giờ GMT",
-              value: userInfo.local_time,
-              pipe_date: "HH:mm:ss dd/MM/yyyy"
-            }
+      this.events.publish('user-log-in-ok');
+
+      let data = {
+        title: "Đã Login"
+        , buttons: [
+          {color:"primary", icon: "barcode", command: "CODE-GENERATOR" , next:"CALLBACK"} 
+        ]
+        , items: [
+          {
+            type: "details",
+            details: [
+              {
+                name: "Username(*)",
+                value: userInfo.username
+              },
+              {
+                name: "Họ và tên(*)",
+                value: userInfo.data?userInfo.data.fullname:""
+              },
+              {
+                name: "Nickname(*)",
+                value: userInfo.data?userInfo.data.nickname:""
+              },
+              {
+                name: "Địa chỉ(*)",
+                value: userInfo.data?userInfo.data.address:""
+              },
+              {
+                name: "Điện thoại(*)",
+                value: userInfo.data?userInfo.data.phone:""
+              },
+              {
+                name: "Email(*)",
+                value: userInfo.data?userInfo.data.email:""
+              },
+              {
+                name: "Địa chỉ ip",
+                value: userInfo.req_ip
+              },
+              {
+                name: "Địa chỉ nguồn",
+                value: userInfo.origin
+              },
+              {
+                name: "Thiết bị",
+                value: userInfo.req_device
+              },
+              {
+                name: "Mức xác thực",
+                value: userInfo.level
+              },
+              {
+                name: "Thời gian khởi tạo",
+                value: userInfo.iat * 1000,
+                pipe_date: "HH:mm:ss dd/MM/yyyy"
+              },
+              {
+                name: "Thời gian hết hạn",
+                value: userInfo.exp * 1000,
+                pipe_date: "HH:mm:ss dd/MM/yyyy"
+              },
+              {
+                name: "Giờ GMT",
+                value: userInfo.local_time,
+                pipe_date: "HH:mm:ss dd/MM/yyyy"
+              }
+            ]
+          },
+          { 
+            type: "button"
+          , options: [
+            { name: "Sửa (*)", command:"EDIT" , next: "CALLBACK"}
+            ,{ name: "Logout", command:"EXIT" , next: "CALLBACK"}
+            ,{ name: "Quay về", command:"HOME" , next: "CALLBACK"}
           ]
-        },
-        { 
-          type: "button"
-        , options: [
-          { name: "Sửa (*)", command:"EDIT" , next: "CALLBACK"}
-          ,{ name: "Logout", command:"EXIT" , next: "CALLBACK"}
-          ,{ name: "Quay về", command:"HOME" , next: "CALLBACK"}
+        }
         ]
       }
-      ]
+      
+      this.navCtrl.setRoot(DynamicFormWebPage
+        , {
+          parent: this, //bind this for call
+          callback: this.callbackUserInfo,
+          step: 'form-user-info',
+          form: data
+        });
+    }else{
+      //khi chua co thong tin ca nhan
+      //yeu cau nhap thong tin ca nhan
+      this.callEditForm(); 
+
     }
-    
-    this.navCtrl.setRoot(DynamicFormWebPage
-      , {
-        parent: this, //bind this for call
-        callback: this.callbackUserInfo,
-        step: 'form-user-info',
-        form: data
-      });
+
   }
 
 
@@ -188,11 +204,11 @@ export class LoginPage {
         title: "Sửa thông tin cá nhân"
         , items: [
            {          name: "THÔNG TIN CHO USER " + this.userInfo.username, type: "title"}
-          , { key: "nickname", name: "Tên thường gọi", type: "text", input_type: "text", icon: "heart", value: this.userInfo.data?this.userInfo.data.nickname:""}
-          , { key: "name", name: "Họ và tên", type: "text", input_type: "text", icon: "person", value: this.userInfo.data?this.userInfo.data.fullname:""}
-          , { key: "address", name: "Địa chỉ", type: "text", input_type: "text", icon: "pin", value: this.userInfo.data?this.userInfo.data.address:""}
-          , { key: "phone", name: "Điện thoại", hint: "Yêu cầu định dạng số điện thoại nhé", type: "text", input_type: "tel", icon: "call", validators: [{ pattern: "^[0-9]*$" }], value: this.userInfo.data&&this.userInfo.data.phone?this.userInfo.data.phone:this.userInfo.username}
-          , { key: "email", name: "email", hint: "Yêu cầu định dạng email nhé", type: "text", input_type: "email", icon: "mail", validators: [{ pattern: "^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$" }], value: this.userInfo.data?this.userInfo.data.email:""}
+          , { key: "nickname", name: "Biệt danh(*)", hint:"Nickname", type: "text", input_type: "text", icon: "heart", value: this.userInfo.data?this.userInfo.data.nickname:"", validators: [{required: true, min: 1}]}
+          , { key: "name", name: "Họ và tên (*)", hint:"Họ và tên đầy đủ", type: "text", input_type: "text", icon: "person", value: this.userInfo.data?this.userInfo.data.fullname:"", validators: [{required: true, min: 5}]}
+          , { key: "address", name: "Địa chỉ (*)", hint:"Địa chỉ đầy đủ", type: "text", input_type: "text", icon: "pin", value: this.userInfo.data?this.userInfo.data.address:"", validators: [{required: true, min: 5}]}
+          , { key: "phone", name: "Điện thoại (*)", hint: "Yêu cầu định dạng số điện thoại nhé", type: "text", input_type: "tel", icon: "call", validators: [{ pattern: "^[0-9]*$" }], value: this.userInfo.data&&this.userInfo.data.phone?this.userInfo.data.phone:this.userInfo.username}
+          , { key: "email", name: "email(*)", hint: "Yêu cầu định dạng email nhé", type: "text", input_type: "email", icon: "mail", validators: [{ pattern: "^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$" }], value: this.userInfo.data?this.userInfo.data.email:""}
           , { 
             type: "button"
           , options: [
@@ -214,7 +230,7 @@ export class LoginPage {
 
   }
 
-  callbackUserInfo = function (res?: { step?: string, button?: any, data?: any, error?: any }) {
+  callbackUserInfo = function (res) {
     //console.log('Goi logout',res);
     return new Promise((resolve, reject) => {
       if (res.button&&res.button.command==="EXIT"){
@@ -232,7 +248,10 @@ export class LoginPage {
       }
       
       if (res.button&&res.button.command==="UPDATE"){
-        this.events.publish('user-log-in-ok'); //bao hieu refresh userInfo
+        this.events.publish('user-log-in-ok'); 
+        //bao hieu refresh userInfo
+        //luu token khi login ok and update user data
+        this.apiStorageService.saveToken(this.token);
         this.navCtrl.setRoot(HomeMenuPage);
         resolve({next:"CLOSE"}); //vi dung modal nen phai dong lai
       }else{
@@ -295,7 +314,7 @@ export class LoginPage {
    *  ham goi lai gui ket qua new button next
    * @param res 
    */
-  callbackFunction = function (res?: { step?: string, data?: any, error?: any }) {
+  callbackFunction = function (res) {
       
     return new Promise((resolve, reject) => {
 
@@ -345,12 +364,13 @@ export class LoginPage {
               && login.user_info
               && login.token
             ) {
-              this.apiStorageService.saveToken(res.data.token);
+              
+              this.token = res.data.token;
+
+              if (login.user_info.data) this.apiStorageService.saveToken(this.token);
               //da login thanh cong, kiem tra token 
               this.callLoginOk(login.user_info);
-              //this.checkTokenLogin();
-              this.events.publish('user-log-in-ok');
-
+              
             } else {
               this.presentAlert('Dữ liệu xác thực không đúng <br>' + JSON.stringify(login))
             }
