@@ -1,4 +1,4 @@
-import { Component, ViewChild } from '@angular/core';
+import { Component, ViewChild, HostListener } from '@angular/core';
 import { Platform, Nav, MenuController, ModalController, Events, LoadingController } from 'ionic-angular';
 import { StatusBar } from '@ionic-native/status-bar';
 import { SplashScreen } from '@ionic-native/splash-screen';
@@ -39,6 +39,13 @@ const createObjectKey = (obj, key, value) => {
 })
 export class MyApp {
   @ViewChild(Nav) navCtrl: Nav;
+
+  //ham nhan key press tren web
+  key:any;
+  @HostListener('document:keypress',['$event']) handleKeyboardEvent(event:KeyboardEvent){
+    this.key = event.key;
+    console.log('key',this.key);
+  }
 
   rootPage: any = HomeMenuPage;
 
