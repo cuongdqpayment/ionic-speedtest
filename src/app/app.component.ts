@@ -41,10 +41,10 @@ export class MyApp {
   @ViewChild(Nav) navCtrl: Nav;
 
   //ham nhan key press tren web
-  key:any;
-  @HostListener('document:keypress',['$event']) handleKeyboardEvent(event:KeyboardEvent){
-    this.key = event.key;
-    console.log('key',this.key);
+  keyCode:any;
+  @HostListener('document:keyup',['$event']) handleKeyboardEvent(event:KeyboardEvent){
+    this.keyCode = event.keyCode;
+    console.log('key',this.keyCode);
   }
 
   rootPage: any = HomeMenuPage;
@@ -477,6 +477,7 @@ export class MyApp {
       || this.userInfo.username === '905000551'
       || this.userInfo.username === '904901567'
       || this.userInfo.username === '906515458'
+      || this.userInfo.username === '766777123'
       )) {
       this.treeMenu = [
         {
