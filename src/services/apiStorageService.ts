@@ -89,11 +89,17 @@ export class ApiStorageService {
         this.delete('token');
     }
 
-
+    /**
+     * Luu tru cap key cua thiet bi nay
+     * @param key 
+     */
     saveDeviceKey(key){
         this.save('#key#device#',JSON.stringify(key));
     }
 
+    /**
+     * lay cap key cua thiet bi nay duy nhat khi khoi dong
+     */
     getDeviceKey(){
         try{
             let results = JSON.parse(this.read('#key#device#'));
@@ -103,6 +109,13 @@ export class ApiStorageService {
         }
     }
 
+    /**
+     * luu tru cap key duy nhat cua user tren thiet bi nay
+     * khoa rieng phai duoc ma hoa bang mat khau
+     * de su dung phai nhap mat khau moi lay duoc khoa rieng
+     * @param user 
+     * @param key 
+     */
     saveUserKey(user,key){
         this.save('#key#'+user.username,JSON.stringify(key));
     }
@@ -110,6 +123,19 @@ export class ApiStorageService {
     getUserKey(user){
         try{
             let results = JSON.parse(this.read('#key#'+user.username));
+            return results?results:null;
+        }catch(e){
+            return null;
+        }
+    }
+
+    saveUserFriends(user,friends){
+        this.save('#friends#'+user.username,JSON.stringify(friends));
+    }
+
+    getUserFriends(user){
+        try{
+            let results = JSON.parse(this.read('#friends#'+user.username));
             return results?results:null;
         }catch(e){
             return null;

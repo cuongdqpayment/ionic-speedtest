@@ -58,8 +58,9 @@ export class MyApp {
 
   mySocket: any;
 
-  friends:any = []; //danh sach ban be de lien ket
-  follows:any = []; //danh sach follow de lay tin ()
+  keyPair:any;
+  friends:any; //danh sach ban be de lien ket
+  follows:any; //danh sach follow de lay tin ()
 
   contacts:any = {}      //users with all info include image private
   //login vao thi lay user cua minh
@@ -152,8 +153,65 @@ export class MyApp {
     }else{
       //du lieu chua dang ky user 
       //yeu cau dang ky user
+      this.navCtrl.push(LoginPage);
     }
 
+  }
+
+
+  /**
+   * thu tuc nay goi khi login thanh cong, co day du thong tin user
+   * thuc hien doc tren local cac thong tin
+   * friends, id, pass 
+   * neu chua co 
+   */
+  async prepareFriends(){
+    if (this.userInfo){
+      this.friends = this.apiStorageService.getUserFriends(this.userInfo);
+      if (!this.friends){
+        //doc danh ba,
+        /* try {
+          this.prefix_change = await this.auth.getDynamicUrl(ApiStorageService.authenticationServer + "/ext-public/vn-prefix-change");
+          this.vn_prefix_code = await this.auth.getDynamicUrl(ApiStorageService.authenticationServer + "/ext-public/vn-net-code");
+        } catch (e) { } */
+    
+        //doc tu dia len, neu co thi liet ke ra luon
+        let phoneContacts = this.apiStorageService.getPhoneContacts(this.userInfo);
+    
+        if (phoneContacts) {
+          this.phoneContacts = this.processServerContacts(phoneContacts);
+        } else {
+    
+          try {
+            //truong hop chua co thi doc tu may chu
+            phoneContacts = await this.listContactsFromServer();
+    
+            if (phoneContacts) {
+              this.phoneContacts = this.processServerContacts(phoneContacts);
+            } else {
+              this.phoneContacts = await this.listContacts();
+            }
+    
+          } catch (e) {
+            //doc tu may len
+            //neu khong co tu may chu thi doc tu dien thoai ra
+            this.phoneContacts = await this.listContacts();
+          }
+        }
+        //doc ds tren server tu danh ba
+        //neu co thi tu dong ket ban
+      }
+
+      this.keyPair = this.apiStorageService.getUserKey(this.userInfo);
+      if (this.keyPair){
+        //nhap pass de giai ma private key
+        
+      }else{
+        //lay pass tren server (hoac lay private key tren server)
+        //tao pass, luu key
+        //luu server 
+      }
+    }
   }
 
   prepareContactsNewUser(user) {
@@ -221,6 +279,9 @@ export class MyApp {
                 this.initChatting();
   
                 this.userChangeImage();
+
+                //login ok ... contacts, friends, ids, pass
+                this.prepareFriends();
 
               } else {
 
