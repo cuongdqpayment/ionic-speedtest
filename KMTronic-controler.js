@@ -1,6 +1,5 @@
-"use strict"
 
-//npm i request node-cron xml-js
+"use strict"
 
 var request = require('request'),
     username = "cuongdq",
@@ -59,9 +58,18 @@ class KMTronic{
 const control = new KMTronic();
 
 const schedulers = {
-    relay1:[{start:parseInt("0700"), end:parseInt("1700")}],
-    relay2:[{start:parseInt("0700"), end:parseInt("0730")},
-            {start:parseInt("1100"), end:parseInt("1200")}]
+    relay1:[
+                {start:"0700", end:"0900"},
+                {start:"1000", end:"1200"},
+                {start:"1300", end:"1400"},
+                {start:"1500", end:"1600"},
+                {start:"1700", end:"1800"}
+            ],
+    relay2:[
+                {start:"0700", end:"0730"},
+                {start:"1100", end:"1200"},
+                {start:"1700", end:"1730"}
+            ]
 }
 
 const cron = require("node-cron");
@@ -74,33 +82,34 @@ cron.schedule("*/5 * * * * *", function() {
         let xmlParser = require('xml-js');
         let json = JSON.parse(xmlParser.xml2json(xml,{compact: true, spaces: 3}))
         let curDate =new Date(); 
-        let hh24mi = parseInt(curDate.getHours()+""+curDate.getMinutes());
+        let hh24mi =  (""+curDate.getHours()).padStart(2,0)+(""+curDate.getMinutes()).padStart(2,0);
         
-        console.log("running a task every 5 seconds");
-        console.log(
-            json.response.relay0._text
-           ,json.response.relay1._text
-           ,json.response.relay2._text);
-
+        //console.log("running a task every 5 seconds", hh24mi);
+        
         let hasOn = false;
         schedulers.relay1.forEach(el=>{
-            console.log(el.start,hh24mi,el.end,json.response.relay1._text)
             if (el.start<=hh24mi&&hh24mi<el.end)
             {
                 if (json.response.relay1._text==="0"){
-                     //bat len
-                     control.switchRelay(1).then(data=> console.log('1 on'));
-                 }     
-                 el.current_in = true;   
-                 hasOn = true;  
-             }
-        })
-
-        if (!hasOn&&json.response.relay1._text==="1"){
-            //tat di
-            control.switchRelay(1).then(data=>{
-                console.log('1 off')
-            });
+                    //bat len
+                    // console.log(
+                    //     json.response.relay0._text
+                    //    ,json.response.relay1._text
+                    //    ,json.response.relay2._text);
+                       control.switchRelay(1).then(data=> 
+                           console.log(el.start,hh24mi,el.end,json.response.relay1._text,'Relay 1 on')
+                        );
+                    }     
+                    el.current_in = true;   
+                    hasOn = true;  
+                }
+            })
+            
+            if (!hasOn&&json.response.relay1._text==="1"){
+                //tat di
+                control.switchRelay(1).then(data=>
+                    console.log(hh24mi,json.response.relay1._text,'Relay 1 off')
+            );
         }
 
         hasOn = false;
@@ -109,7 +118,9 @@ cron.schedule("*/5 * * * * *", function() {
             {
                if (json.response.relay2._text==="0"){
                     //bat len
-                    control.switchRelay(2).then(data=> console.log('2 on'));
+                    control.switchRelay(2).then(data=> 
+                        console.log(el.start,hh24mi,el.end,json.response.relay2._text,'Relay 2 on')
+                        );
                 }     
                 el.current_in = true;   
                 hasOn = true;  
@@ -118,9 +129,9 @@ cron.schedule("*/5 * * * * *", function() {
 
         if (!hasOn&&json.response.relay2._text==="1"){
             //tat di
-            control.switchRelay(2).then(data=>{
-                console.log('2 off')
-            });
+            control.switchRelay(2).then(data=>
+                console.log(hh24mi,json.response.relay2._text,'Relay 2 off')
+            );
         }
 
         
