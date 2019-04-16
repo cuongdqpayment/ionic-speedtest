@@ -241,10 +241,10 @@ export class MyApp {
                         //lay danh sach user ket hop voi danh ba se ra duoc
                         //danh sach ban be ket noi nhau
                         //ghi nhan so dien thoai quoc te nhe
-                        
+
                         
                       }else{
-                        console.log('no user in',friends);
+                        //console.log('no user in',friends);
                         
                       }
                     });
