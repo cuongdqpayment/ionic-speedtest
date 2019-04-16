@@ -241,7 +241,7 @@ export class MyApp {
                         //lay danh sach user ket hop voi danh ba se ra duoc
                         //danh sach ban be ket noi nhau
                         //ghi nhan so dien thoai quoc te nhe
-
+                       this.friends.
                         
                       }else{
                         //console.log('no user in',friends);
@@ -1571,7 +1571,7 @@ export class MyApp {
 
   listUserFromServer(friends) {
 
-    return new Promise((resolve, reject) => {
+    return new Promise<any>((resolve, reject) => {
 
       //console.log('doc tu may chu day');
       let loading = this.loadingCtrl.create({
