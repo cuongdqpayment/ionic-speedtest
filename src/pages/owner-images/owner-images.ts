@@ -15,7 +15,7 @@ export class OwnerImagesPage {
 
   dynamicMedias: any; 
   dynamicMediasOrigin: any = {
-    title:"Quản trị ảnh cá nhân"
+    title:"THÊM ẢNH CÁ NHÂN"
     ,buttons: [
         {color:"dark", icon:"close",  next:"CLOSE"}
       ]
@@ -74,8 +74,10 @@ export class OwnerImagesPage {
     this.func = this.navParams.get("func");
 
     //console.log(this.func,this.navParams);
-    if (this.func) this.getMyImages();
-
+    if (this.func) {
+      this.getMyImages();
+      this.dynamicMediasOrigin.title='CHỌN ẢNH '+(this.func==='avatar'?'ĐẠI DIỆN':'NỀN')
+    }
     this.callback = this.navParams.get("callback");
     this.step = this.navParams.get("step");
     this.parent = this.navParams.get("parent");
@@ -139,7 +141,7 @@ export class OwnerImagesPage {
 
   onClickSelected(item){
     const confirm = this.alertCtrl.create({
-      title: 'CHỌN ẢNH ĐẠI DIỆN',
+      title: 'CHỌN ẢNH '+(this.func==='avatar'?'ĐẠI DIỆN':'NỀN'),
       message: 'Có phải bạn muốn chọn ảnh này làm ảnh đại diện?<br><img width="200" height="200" src='+item.image+'></div>',
       buttons: [
         {

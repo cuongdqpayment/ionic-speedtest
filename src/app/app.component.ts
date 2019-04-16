@@ -42,8 +42,8 @@ export class MyApp {
   @ViewChild(Nav) navCtrl: Nav;
 
   //ham nhan key press tren web
-  keyCode:any;
-  @HostListener('document:keyup',['$event']) handleKeyboardEvent(event:KeyboardEvent){
+  keyCode: any;
+  @HostListener('document:keyup', ['$event']) handleKeyboardEvent(event: KeyboardEvent) {
     this.keyCode = event.keyCode;
     //console.log('key',this.keyCode);
     //se cho tat ca cac hotkey go duoc
@@ -58,11 +58,11 @@ export class MyApp {
 
   mySocket: any;
 
-  keyPair:any;
-  friends:any; //danh sach ban be de lien ket
-  follows:any; //danh sach follow de lay tin ()
+  keyPair: any;
+  friends: any; //danh sach ban be de lien ket
+  follows: any; //danh sach follow de lay tin ()
 
-  contacts:any = {}      //users with all info include image private
+  contacts: any = {}      //users with all info include image private
   //login vao thi lay user cua minh
   //lien lac voi chat thi lay user new online
   //doc danh ba tu dien thoai thi tao user offline
@@ -99,7 +99,7 @@ export class MyApp {
     this.callbackTreeMenu = this.callbackTree;
 
     this.ionViewDidLoad_main();
-    
+
   }
 
   ionViewDidLoad_main() {
@@ -122,36 +122,36 @@ export class MyApp {
    */
   async userChangeImage() {
     //du lieu da duoc dang ky
-    if (this.userInfo.data){
-      try{
+    if (this.userInfo.data) {
+      try {
         this.userInfo.data.image = await this.apiImage
           .createBase64Image(ApiStorageService.mediaServer + "/db/get-private?func=avatar&token=" + this.apiStorageService.getToken(), 120)
-          
+
         this.userInfo.data.background = await this.apiImage
           .createBase64Image(ApiStorageService.mediaServer + "/db/get-private?func=background&token=" + this.apiStorageService.getToken(), 300)
-      }catch(e){}
-          
+      } catch (e) { }
+
       //this.contacts = this.apiStorageService.getUserContacts(this.userInfo);
       if (!this.contacts[this.userInfo.username]) {
-            createObjectKey(this.contacts, this.userInfo.username, {
-              fullname: this.userInfo.data.fullname
-              , nickname: this.userInfo.data.nickname
-              , image: this.userInfo.data.image
-              , background: this.userInfo.data.background
-              , status: 0
-            })
-            //this.apiStorageService.saveUserContacts(this.userInfo, this.contacts);
+        createObjectKey(this.contacts, this.userInfo.username, {
+          fullname: this.userInfo.data.fullname
+          , nickname: this.userInfo.data.nickname
+          , image: this.userInfo.data.image
+          , background: this.userInfo.data.background
+          , status: 0
+        })
+        //this.apiStorageService.saveUserContacts(this.userInfo, this.contacts);
       } else {
-            this.contacts[this.userInfo.username] = {
-              fullname: this.userInfo.data.fullname
-              , nickname: this.userInfo.data.nickname
-              , image: this.userInfo.data.image
-              , background: this.userInfo.data.background
-              , status: 0 //owner user
-            }
-            //this.apiStorageService.saveUserContacts(this.userInfo, this.contacts);
+        this.contacts[this.userInfo.username] = {
+          fullname: this.userInfo.data.fullname
+          , nickname: this.userInfo.data.nickname
+          , image: this.userInfo.data.image
+          , background: this.userInfo.data.background
+          , status: 0 //owner user
+        }
+        //this.apiStorageService.saveUserContacts(this.userInfo, this.contacts);
       }
-    }else{
+    } else {
       //du lieu chua dang ky user 
       //yeu cau dang ky user
       this.navCtrl.push(LoginPage);
@@ -166,10 +166,10 @@ export class MyApp {
    * friends, id, pass 
    * neu chua co 
    */
-  async prepareFriends(){
-    if (this.userInfo){
+  async prepareFriends() {
+    if (this.userInfo) {
       this.friends = this.apiStorageService.getUserFriends(this.userInfo);
-      if (!this.friends){
+      if (!this.friends) {
         //doc danh ba,
         let vn_prefix_code;
         let contactsProcessed;
@@ -177,38 +177,38 @@ export class MyApp {
         try {
           vn_prefix_code = await this.auth.getDynamicUrl(ApiStorageService.authenticationServer + "/ext-public/vn-net-code");
         } catch (e) { }
-    
+
         //doc tu dia len, neu co thi liet ke ra luon
         let phoneContacts = this.apiStorageService.getPhoneContacts(this.userInfo);
-    
+
         if (phoneContacts) {
-          contactsProcessed = this.processContactsFromServer(phoneContacts,vn_prefix_code);
-          console.log('uniquePhones storage', contactsProcessed.uniquePhones);
+          contactsProcessed = this.processContactsFromServer(phoneContacts, vn_prefix_code);
+          //console.log('uniquePhones storage', contactsProcessed.uniquePhones);
         } else {
-          
+
           try {
             //truong hop chua co thi doc tu may chu
             phoneContacts = await this.listContactsFromServer();
-            
+
             if (phoneContacts) {
-              contactsProcessed = this.processContactsFromServer(phoneContacts,vn_prefix_code);
-              console.log('uniquePhones server', contactsProcessed.uniquePhones);
+              contactsProcessed = this.processContactsFromServer(phoneContacts, vn_prefix_code);
+              //console.log('uniquePhones server', contactsProcessed.uniquePhones);
             } else {
               //doc danh ba tu dien thoai
               phoneContacts = await this.listContactsFromSmartPhone();
               if (phoneContacts) {
-                contactsProcessed = this.processContactsFromSmartPhone(phoneContacts,vn_prefix_code);
-                console.log('uniquePhones smartphone', contactsProcessed.uniquePhones);
+                contactsProcessed = this.processContactsFromSmartPhone(phoneContacts, vn_prefix_code);
+                //console.log('uniquePhones smartphone', contactsProcessed.uniquePhones);
               }
             }
-    
+
           } catch (e) {
             //doc tu may len
             //neu khong co tu may chu thi doc tu dien thoai ra
             phoneContacts = await this.listContactsFromSmartPhone();
             if (phoneContacts) {
-              contactsProcessed = this.processContactsFromSmartPhone(phoneContacts,vn_prefix_code);
-              console.log('uniquePhones smartphone', contactsProcessed.uniquePhones);
+              contactsProcessed = this.processContactsFromSmartPhone(phoneContacts, vn_prefix_code);
+              //console.log('uniquePhones smartphone', contactsProcessed.uniquePhones);
             }
           }
         }
@@ -216,59 +216,75 @@ export class MyApp {
         //neu co thi tu dong ket ban
 
         //chuyen doi contactsProcessed sang friend
-        if (contactsProcessed&&contactsProcessed.uniquePhones){
+        if (contactsProcessed && contactsProcessed.uniquePhones) {
           //da tim thay danh ba
           //loc lay du lieu tu server cac user da dang ky
           // dang username '90'
           //neu danh ba co luu thi tao thanh friends
           let friends;
-          let count=0;
-          for (let key in contactsProcessed.uniquePhones){
+          let count = 0;
+          for (let key in contactsProcessed.uniquePhones) {
             //dang so dien thoai luu lai la +8490
             //nen cat di +84 de lay danh ba tu may chu
             //console.log(key.indexOf("+84"),contactsProcessed.uniquePhones[key].type);
-
             //la dien thoai di dong thi moi xem xet
-            if (key.indexOf("+84")===0
-                &&contactsProcessed.uniquePhones[key].type==="M"
-                ){
-                  friends = (friends?friends+",":"") + "'"+key.slice(3)+"'"
-                  if (++count>=500){
-                    this.listUserFromServer(friends)
-                    .then(users=>{
-                      if (users){
-                        console.log('lay user nay',users);
-                        //lay danh sach user ket hop voi danh ba se ra duoc
-                        //danh sach ban be ket noi nhau
-                        //ghi nhan so dien thoai quoc te nhe
-                       this.friends.
-                        
-                      }else{
-                        //console.log('no user in',friends);
-                        
-                      }
-                    });
-                    count=0;
-                    friends = null;
-                  }
+            if (key.indexOf("+84") === 0
+              && contactsProcessed.uniquePhones[key].type === "M"
+            ) {
+              friends = (friends ? friends + "," : "") + "'" + key.slice(3) + "'"
+              if (++count >= 500) {
+                let users = await this.listUserFromServer(friends);
+
+                if (users) {
+                  //console.log('lay user nay', users);
+                  //lay danh sach user ket hop voi danh ba se ra duoc
+                  //danh sach ban be ket noi nhau
+                  //ghi nhan so dien thoai quoc te nhe
+                  users.forEach(el => {
+                    let existFriend = this.friends ? this.friends.find(x => x.username === el.username) : null;
+                    if (existFriend) {
+                      //doi ten ghi lai ten duoc doi tren server
+                      //doi avatar??
+                    } else {
+                      if (!this.friends) this.friends = [];
+                      this.friends.push(el);
+                    }
+                  });
+                }
+                //delay ???
+                count = 0;
+                friends = null;
+              }
             }
           }
 
-          //console.log('friends',friends);
-
-          //co duoc danh ba roi, loc lay tu server danh sach
-          //tu dong ket ban tu danh ba
-          
-
+          if (count > 0 && friends) {
+            let users = await this.listUserFromServer(friends);
+            if (users) {
+              users.forEach(el => {
+                let existFriend = this.friends ? this.friends.find(x => x.username === el.username) : null;
+                if (existFriend) {
+                  //doi ten ghi lai ten duoc doi tren server
+                  //doi avatar??
+                } else {
+                  if (!this.friends) this.friends = [];
+                  this.friends.push(el);
+                }
+              });
+            }
+          }          
         }
-
       }
+      
+
+      console.log('friends', this.friends);
+      //phan luu avatar ?? khi luu user tu dong luu avatar base64 co nho???
 
       this.keyPair = this.apiStorageService.getUserKey(this.userInfo);
-      if (this.keyPair){
+      if (this.keyPair) {
         //nhap pass de giai ma private key
-        
-      }else{
+
+      } else {
         //lay pass tren server (hoac lay private key tren server)
         //tao pass, luu key
         //luu server 
@@ -283,7 +299,7 @@ export class MyApp {
       //luon lam moi thong tin cua user moi lan login
       new Promise((resolve, reject) => {
         this.apiImage
-          .createBase64Image(ApiStorageService.mediaServer + "/db/get-private?func=avatar&user=" + user.username + "&token=" + this.apiStorageService.getToken(), 60)
+          .createBase64Image(ApiStorageService.mediaServer + "/db/get-private?func=avatar&user=" + user.username + "&token=" + this.apiStorageService.getToken(), 64)
           .then(base64 => {
             user.image = base64;
             resolve()
@@ -335,12 +351,12 @@ export class MyApp {
 
               this.userInfo = data.user_info;
               //Tiêm token cho các phiên làm việc lấy số liệu cần xác thực
-              if (this.userInfo&&this.userInfo.data) {
-                
+              if (this.userInfo && this.userInfo.data) {
+
                 this.auth.injectToken();
-                
+
                 this.initChatting();
-  
+
                 this.userChangeImage();
 
                 //login ok ... contacts, friends, ids, pass
@@ -350,7 +366,7 @@ export class MyApp {
 
                 this.navCtrl.push(LoginPage);
 
-              } 
+              }
 
               this.resetTreeMenu();
 
@@ -606,13 +622,13 @@ export class MyApp {
 
   resetTreeMenu() {
     //tuy thuoc vao tung user se co menu khac nhau
-    if (this.userInfo 
-      && (this.userInfo.username === '903500888' 
-      || this.userInfo.username === '702418821'
-      || this.userInfo.username === '905000551'
-      || this.userInfo.username === '904901567'
-      || this.userInfo.username === '906515458'
-      || this.userInfo.username === '766777123'
+    if (this.userInfo
+      && (this.userInfo.username === '903500888'
+        || this.userInfo.username === '702418821'
+        || this.userInfo.username === '905000551'
+        || this.userInfo.username === '904901567'
+        || this.userInfo.username === '906515458'
+        || this.userInfo.username === '766777123'
       )) {
       this.treeMenu = [
         {
@@ -837,7 +853,7 @@ export class MyApp {
           icon: "log-in"
         }
       ]
-    } else if (this.userInfo){
+    } else if (this.userInfo) {
       this.treeMenu = [
         {
           name: "1. Trang chủ",
@@ -1000,13 +1016,13 @@ export class MyApp {
         if (idx !== i) this.expandCollapseAll(el, false)
       })
     }
-    
+
     if (isMore) {
       if (item.next) {
         this.navCtrl.push(item.next);
         this.menuCtrl.close();
         if (item.next === HomeMenuPage) {
-          
+
           setTimeout(() => {
             //console.log(item);
             this.events.publish('event-main-login-checked', {
@@ -1014,28 +1030,28 @@ export class MyApp {
               user: this.userInfo,
               socket: this.socket
             });
-            
+
             this.events.publish('event-main-received-users', this.users);
             this.events.publish('event-main-received-rooms', this.rooms);
           }, 1000)
-          
+
         }
-      } else if (item.in_app_browser&&item.url) {
-        
-          var target = "_blank"; //mo trong inappbrowser
-          var options = "hidden=no,toolbar=yes,location=yes,presentationstyle=fullscreen,clearcache=yes,clearsessioncache=yes";
-          this.inAppBrowser.create(item.url,target,options);
-        
-      } else if (item.popup_iframe&&item.url) {
-        
+      } else if (item.in_app_browser && item.url) {
+
+        var target = "_blank"; //mo trong inappbrowser
+        var options = "hidden=no,toolbar=yes,location=yes,presentationstyle=fullscreen,clearcache=yes,clearsessioncache=yes";
+        this.inAppBrowser.create(item.url, target, options);
+
+      } else if (item.popup_iframe && item.url) {
+
         if (this.platform.is('ios')) {
-          this.inAppBrowser.create(item.url,'_blank');
+          this.inAppBrowser.create(item.url, '_blank');
         } else {
           this.openModal(item.popup
             , {
               parent: this,
               link: item.url
-              }); 
+            });
         }
 
       } else if (item.url) {
@@ -1172,7 +1188,7 @@ export class MyApp {
    * 
    */
 
-  processContactsFromServer(data,vn_prefix_code) {
+  processContactsFromServer(data, vn_prefix_code) {
 
     let _phoneContacts = [];
     let _uniquePhones = {};
@@ -1193,12 +1209,12 @@ export class MyApp {
 
         if (contact.phones) {
           contact.phones.forEach(phone => {
-            
+
             let phonenumber = phone.value.replace(/[^0-9+]+/g, "");
 
             if (phonenumber && phonenumber !== "") {
-              
-              let netCode = this.checkPhoneType(phonenumber,'84',vn_prefix_code);
+
+              let netCode = this.checkPhoneType(phonenumber, '84', vn_prefix_code);
 
               let intPhonenumber = this.internationalFormat(phonenumber, '84');
 
@@ -1207,7 +1223,7 @@ export class MyApp {
                   value: {
                     fullname: fullname
                     , nickname: nickname
-                    , type: netCode&&netCode.f_or_m?netCode.f_or_m:'#'
+                    , type: netCode && netCode.f_or_m ? netCode.f_or_m : '#'
                     , relationship: relationship
                   }, writable: false, enumerable: true, configurable: false
                 });
@@ -1217,7 +1233,7 @@ export class MyApp {
                   Object.defineProperty(_uniquePhones[intPhonenumber].name, fullname, { value: 1, writable: true, enumerable: true, configurable: false });
                 }
 
-                phones.push({ value: phonenumber, type: netCode&&netCode.f_or_m?netCode.f_or_m:'#', int: intPhonenumber, net: netCode&&netCode.network?netCode.network:'#'})
+                phones.push({ value: phonenumber, type: netCode && netCode.f_or_m ? netCode.f_or_m : '#', int: intPhonenumber, net: netCode && netCode.network ? netCode.network : '#' })
               } else {
 
                 if (fullname) {
@@ -1295,14 +1311,16 @@ export class MyApp {
             , emails: emails
             , relationship: relationship
           });
-          
+
         }
 
       });
     }
-    return {contacts:_phoneContacts,
-            uniquePhones: _uniquePhones,
-            uniqueEmails: _uniqueEmails};
+    return {
+      contacts: _phoneContacts,
+      uniquePhones: _uniquePhones,
+      uniqueEmails: _uniqueEmails
+    };
 
   }
 
@@ -1337,7 +1355,7 @@ export class MyApp {
 
             if (phonenumber && phonenumber !== "") {
 
-              let netCode = this.checkPhoneType(phonenumber,'84',vn_prefix_code);
+              let netCode = this.checkPhoneType(phonenumber, '84', vn_prefix_code);
               //console.log(netCode);
 
               let intPhonenumber = this.internationalFormat(phonenumber, '84');
@@ -1349,13 +1367,13 @@ export class MyApp {
                   value: {
                     fullname: fullname
                     , nickname: nickname
-                    , type: netCode&&netCode.f_or_m?netCode.f_or_m:'#'
+                    , type: netCode && netCode.f_or_m ? netCode.f_or_m : '#'
                     , relationship: relationship
                   }, writable: false, enumerable: true, configurable: false
                 });
 
 
-                phones.push({ value: phonenumber, type: netCode&&netCode.f_or_m?netCode.f_or_m:'#', int: intPhonenumber, net: netCode&&netCode.network?netCode.network:'#'})
+                phones.push({ value: phonenumber, type: netCode && netCode.f_or_m ? netCode.f_or_m : '#', int: intPhonenumber, net: netCode && netCode.network ? netCode.network : '#' })
 
                 _uniquePhones[intPhonenumber].name = {};
                 if (fullname) {
@@ -1448,9 +1466,11 @@ export class MyApp {
 
     }
 
-    return {contacts:_phoneContacts,
-            uniquePhones: _uniquePhones,
-            uniqueEmails: _uniqueEmails};
+    return {
+      contacts: _phoneContacts,
+      uniquePhones: _uniquePhones,
+      uniqueEmails: _uniqueEmails
+    };
 
   }
 
@@ -1479,7 +1499,7 @@ export class MyApp {
    * lay ma mang dien thoai (co dinh, di dong)
    * Cac dau so luu trong danh ba kieu + hoac 0
    */
-  checkPhoneType(phone,nation_callingcode,net_code){
+  checkPhoneType(phone, nation_callingcode, net_code) {
     if (net_code) {
       let found = net_code.find(x => ("+" + nation_callingcode + x.code) === phone.substring(0, ("+" + nation_callingcode + x.code).length))
       if (found) {
@@ -1550,7 +1570,7 @@ export class MyApp {
           }).present();
 
           resolve(data);
-          
+
         })
         .catch(err => {
           loading.dismiss()
@@ -1579,7 +1599,7 @@ export class MyApp {
       });
       loading.present();
 
-      this.auth.getDynamicUrl(ApiStorageService.authenticationServer + "/ext-auth/get-users-info?users="+friends, true)
+      this.auth.getDynamicUrl(ApiStorageService.authenticationServer + "/ext-auth/get-users-info?users=" + friends, true)
         .then(res => {
           //console.log('ket qua get-users-info?users', res);
           if (res.status === 1 && res.users && res.users.length > 0) {
@@ -1590,7 +1610,7 @@ export class MyApp {
           loading.dismiss();
         })
         .catch(err => {
-          console.log('loi may chu', err);
+          //console.log('loi may chu', err);
           loading.dismiss();
           resolve()
         })
