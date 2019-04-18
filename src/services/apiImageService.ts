@@ -62,7 +62,7 @@ export class ApiImageService {
                     resolve(canvas.toDataURL())
                 }
             }catch(err){
-                reject(err);
+                resolve();
             }
         })
     }

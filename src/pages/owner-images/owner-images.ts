@@ -55,7 +55,8 @@ export class OwnerImagesPage {
 
   constructor(  private platform: Platform
               , private authService: ApiAuthService
-              , private apiImageService: ApiImageService
+              , private apiImage: ApiImageService
+              , private apiStorage: ApiStorageService
               , private pubService: ApiHttpPublicService
               , private viewCtrl: ViewController
               , private navCtrl: NavController
@@ -150,8 +151,22 @@ export class OwnerImagesPage {
         },
         {
           text: 'Đồng ý',
-          handler: () => {
+          handler: async () => {
             //gui 
+            if (this.func==='avatar'){
+              let json_data = {image: ApiStorageService.mediaServer + "/db/get-file/" + encodeURI(item.url)}
+              this.authService.postDynamicForm(ApiStorageService.authenticationServer+"/ext-auth/save-user-info",json_data,true)
+              .then(data=>{})
+              .catch(err=>{})
+            }else{
+              if (this.func==='background'){
+                let json_data = {background: ApiStorageService.mediaServer + "/db/get-file/" + encodeURI(item.url)}
+                this.authService.postDynamicForm(ApiStorageService.authenticationServer+"/ext-auth/save-user-info",json_data,true)
+                .then(data=>{})
+                .catch(err=>{})
+              }
+            }
+            
             this.authService.postDynamicForm(ApiStorageService.mediaServer+"/db/set-function"
             ,{
               id:item.id
@@ -192,7 +207,7 @@ export class OwnerImagesPage {
 
         for (let key in files) { //index, length, item
           if (!isNaN(parseInt(key))) {
-            this.apiImageService.resizeImage(files[key].name,files[key],size)
+            this.apiImage.resizeImage(files[key].name,files[key],size)
             .then(data=>{
               fileProcessed.push(data);
               if (++countResize>=countFile){

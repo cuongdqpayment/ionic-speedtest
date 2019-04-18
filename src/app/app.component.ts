@@ -279,6 +279,7 @@ export class MyApp {
 
       console.log('friends', this.friends);
       //phan luu avatar ?? khi luu user tu dong luu avatar base64 co nho???
+      //new chua co avatar thi lay anh va tao???
 
       this.keyPair = this.apiStorageService.getUserKey(this.userInfo);
       if (this.keyPair) {
