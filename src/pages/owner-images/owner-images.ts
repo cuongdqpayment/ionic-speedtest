@@ -316,13 +316,14 @@ export class OwnerImagesPage {
                 && this.dynamicMedias.medias.length > 0){
 
         let loading = this.loadingCtrl.create({
-          content: 'Đang xử lý dữ liệu từ máy chủ ....'
+          content: 'Đang load dữ liệu lên máy chủ ....'
         });
         loading.present();
 
         let form_data: FormData = new FormData();
         form_data.append("count_image", this.dynamicMedias.medias.length);
         form_data.append("content", this.content);  //nhap lieu tu text-area
+        form_data.append("func", this.func);  //chuc nang anh load len de lam gi
         //group_id, content, title
         
         this.dynamicMedias.medias.forEach((el,idx) => {
