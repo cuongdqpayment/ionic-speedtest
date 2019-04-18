@@ -176,7 +176,7 @@ export class LoginPage {
         ]
       }
       
-      this.navCtrl.setRoot(DynamicFormWebPage
+      this.navCtrl.push(DynamicFormWebPage
         , {
           parent: this, //bind this for call
           callback: this.callbackUserInfo,
@@ -241,7 +241,8 @@ export class LoginPage {
       }
 
       if (res.button&&res.button.command==="HOME"){
-        this.navCtrl.setRoot(HomeMenuPage); //vi setRoot nen khong can dong
+        //this.navCtrl.setRoot(HomeMenuPage); //vi push nen khong can dong
+        this.navCtrl.popToRoot(); //tro ve trang chu ban dau
       }
       
       if (res.button&&res.button.command==="UPDATE"){
@@ -252,7 +253,7 @@ export class LoginPage {
           this.apiStorageService.saveToken(this.token);
         }
 
-        this.navCtrl.setRoot(HomeMenuPage);
+        this.navCtrl.push(HomeMenuPage);
         resolve({next:"CLOSE"}); //vi dung modal nen phai dong lai
       }else{
         resolve();

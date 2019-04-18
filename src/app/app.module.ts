@@ -63,6 +63,8 @@ import { QrBarScannerPage } from '../pages/qr-bar-scanner/qr-bar-scanner';
 import { QrBarCodePage } from '../pages/qr-bar-code/qr-bar-code';
 import { ContactsPage } from '../pages/contacts/contacts';
 import { CordovaPage } from '../pages/cordova-info/cordova-info';
+import { ApiContactService } from '../services/apiContactService';
+import { ApiChatService } from '../services/apiChatService';
 
 
 @NgModule({
@@ -156,6 +158,8 @@ import { CordovaPage } from '../pages/cordova-info/cordova-info';
     ApiResourceService,
     ApiLocationService,
     ApiMapService,
+    ApiContactService,
+    ApiChatService,
     RequestInterceptor,
     {
       provide: HTTP_INTERCEPTORS,

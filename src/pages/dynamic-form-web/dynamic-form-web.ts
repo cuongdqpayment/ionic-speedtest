@@ -60,6 +60,7 @@ export class DynamicFormWebPage {
           { name: "Reset", next: "RESET" }
           , { name: "Exit", next: "EXIT" }
           , { name: "Close", next: "CLOSE" }
+          , { name: "Home", next: "HOME" }
           , { name: "Back", next: "CALLBACK"}
           , { name: "Continue", next: "CONTINUE"}
           , { name: "Register", next: "CALLBACK", url: "https://chonsoc3.mobifone.vn/ionic/", command: "USER_LOGIN_REDIRECT" }
@@ -281,6 +282,8 @@ export class DynamicFormWebPage {
         this.resetForm();
       } else if (btn.next == 'CLOSE') {
         if (this.parent) this.viewCtrl.dismiss(btn.next_data)
+      } else if (btn.next == 'HOME') {
+        if (this.parent) this.navCtrl.popToRoot()
       } else if (btn.next == 'BACK') {
         if (this.parent) this.navCtrl.pop()
       } else if (btn.next == 'CALLBACK') {

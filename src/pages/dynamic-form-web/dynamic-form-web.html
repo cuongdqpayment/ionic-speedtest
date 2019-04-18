@@ -1,12 +1,12 @@
 <ion-header *ngIf="dynamicForm.title">
-	<ion-navbar>
+	<ion-toolbar>
 		<ion-title>{{dynamicForm.title}}</ion-title>
 		<ion-buttons end *ngFor="let btn of dynamicForm?.buttons">
 			<button ion-button icon-only color="{{btn.color}}" (click)="onClickHeader(btn)">
 				<ion-icon name="{{btn.icon}}"></ion-icon>
 			</button>
 		</ion-buttons>
-	</ion-navbar>
+	</ion-toolbar>
 </ion-header>
 
 <ion-content no-padding class="background-page gradient">

@@ -21,12 +21,15 @@ import { OwnerImagesPage } from '../pages/owner-images/owner-images';
 
 import { Socket, SocketIoConfig } from 'ng-socket-io';
 import { Observable } from 'rxjs/Observable';
+
 import { ApiImageService } from '../services/apiImageService';
 import { InAppBrowser } from '@ionic-native/in-app-browser/ngx';
 import { LinkPage } from '../pages/link/link';
 import { QrBarScannerPage } from '../pages/qr-bar-scanner/qr-bar-scanner';
 import { ContactsPage } from '../pages/contacts/contacts';
 import { CordovaPage } from '../pages/cordova-info/cordova-info';
+import { ApiContactService } from '../services/apiContactService';
+import { ApiChatService } from '../services/apiChatService';
 
 
 const createObjectKey = (obj, key, value) => {
@@ -59,32 +62,22 @@ export class MyApp {
   mySocket: any;
 
   keyPair: any;
-  friends: any; //danh sach ban be de lien ket
-  follows: any; //danh sach follow de lay tin ()
+  
 
-  contacts: any = {}      //users with all info include image private
-  //login vao thi lay user cua minh
-  //lien lac voi chat thi lay user new online
-  //doc danh ba tu dien thoai thi tao user offline
-  //{username:{fullname,nickname,image,status:-1,0,1}} -1= from contact, 0 = owner, 1 online
-  users = []        //users online
-  rooms = [];       //room online
-  originRooms = []; //luu goc
-  socket: Socket;
-  configSocketIo: SocketIoConfig;
-  last_time: number = new Date().getTime();
 
   constructor(
     private menuCtrl: MenuController, //goi trong callback
     private modalCtrl: ModalController,
     private loadingCtrl: LoadingController,
-    private apiStorageService: ApiStorageService,
+    private toastCtrl: ToastController,
+    private apiStorage: ApiStorageService,
     private apiImage: ApiImageService,
-    private auth: ApiAuthService,
+    private apiAuth: ApiAuthService,
+    private apiContact: ApiContactService,
+    private apiChat: ApiChatService,
     private events: Events,
     private inAppBrowser: InAppBrowser, //goi trong callback
     private platform: Platform,
-    private toastCtrl: ToastController,
     statusBar: StatusBar,
     splashScreen: SplashScreen
   ) {
@@ -95,6 +88,12 @@ export class MyApp {
   }
 
   ngOnInit() {
+
+    this.apiContact
+    .getPublicUser()
+    .then(publicFriend=>{
+      console.log(publicFriend);
+    })
 
     this.callbackTreeMenu = this.callbackTree;
 
@@ -125,22 +124,22 @@ export class MyApp {
     if (this.userInfo.data) {
       try {
         this.userInfo.data.image = await this.apiImage
-          .createBase64Image(ApiStorageService.mediaServer + "/db/get-private?func=avatar&token=" + this.apiStorageService.getToken(), 120)
+          .createBase64Image(ApiStorageService.mediaServer + "/db/get-private?func=avatar&token=" + this.apiStorage.getToken(), 120)
 
         this.userInfo.data.background = await this.apiImage
-          .createBase64Image(ApiStorageService.mediaServer + "/db/get-private?func=background&token=" + this.apiStorageService.getToken(), 300)
+          .createBase64Image(ApiStorageService.mediaServer + "/db/get-private?func=background&token=" + this.apiStorage.getToken(), 300)
       } catch (e) { }
 
-      //this.contacts = this.apiStorageService.getUserContacts(this.userInfo);
+      /* //this.contacts = this.apiStorage.getUserContacts(this.userInfo);
       if (!this.contacts[this.userInfo.username]) {
         createObjectKey(this.contacts, this.userInfo.username, {
-          fullname: this.userInfo.data.fullname
+          fullname:  this.userInfo.data.fullname
           , nickname: this.userInfo.data.nickname
           , image: this.userInfo.data.image
           , background: this.userInfo.data.background
           , status: 0
         })
-        //this.apiStorageService.saveUserContacts(this.userInfo, this.contacts);
+        //this.apiStorage.saveUserContacts(this.userInfo, this.contacts);
       } else {
         this.contacts[this.userInfo.username] = {
           fullname: this.userInfo.data.fullname
@@ -149,8 +148,9 @@ export class MyApp {
           , background: this.userInfo.data.background
           , status: 0 //owner user
         }
-        //this.apiStorageService.saveUserContacts(this.userInfo, this.contacts);
-      }
+        //this.apiStorage.saveUserContacts(this.userInfo, this.contacts);
+      } */
+
     } else {
       //du lieu chua dang ky user 
       //yeu cau dang ky user
@@ -166,176 +166,29 @@ export class MyApp {
    * friends, id, pass 
    * neu chua co 
    */
-  async prepareFriends() {
+  prepareFriends() {
     if (this.userInfo) {
-      this.friends = this.apiStorageService.getUserFriends(this.userInfo);
-      if (!this.friends) {
-        //doc danh ba,
-        let vn_prefix_code;
-        let contactsProcessed;
+      this.apiContact.prepareFriends(this.userInfo,true)
+      .then(friends=>{
+        console.log(friends); //da luu xuong dia va co danh sach ban be
+      });
 
-        try {
-          vn_prefix_code = await this.auth.getDynamicUrl(ApiStorageService.authenticationServer + "/ext-public/vn-net-code");
-        } catch (e) { }
-
-        //doc tu dia len, neu co thi liet ke ra luon
-        let phoneContacts = this.apiStorageService.getPhoneContacts(this.userInfo);
-
-        if (phoneContacts) {
-          contactsProcessed = this.processContactsFromServer(phoneContacts, vn_prefix_code);
-          //console.log('uniquePhones storage', contactsProcessed.uniquePhones);
-        } else {
-
-          try {
-            //truong hop chua co thi doc tu may chu
-            phoneContacts = await this.listContactsFromServer();
-
-            if (phoneContacts) {
-              contactsProcessed = this.processContactsFromServer(phoneContacts, vn_prefix_code);
-              //console.log('uniquePhones server', contactsProcessed.uniquePhones);
-            } else {
-              //doc danh ba tu dien thoai
-              phoneContacts = await this.listContactsFromSmartPhone();
-              if (phoneContacts) {
-                contactsProcessed = this.processContactsFromSmartPhone(phoneContacts, vn_prefix_code);
-                //console.log('uniquePhones smartphone', contactsProcessed.uniquePhones);
-              }
-            }
-
-          } catch (e) {
-            //doc tu may len
-            //neu khong co tu may chu thi doc tu dien thoai ra
-            phoneContacts = await this.listContactsFromSmartPhone();
-            if (phoneContacts) {
-              contactsProcessed = this.processContactsFromSmartPhone(phoneContacts, vn_prefix_code);
-              //console.log('uniquePhones smartphone', contactsProcessed.uniquePhones);
-            }
-          }
-        }
-        //doc ds tren server tu danh ba
-        //neu co thi tu dong ket ban
-
-        //chuyen doi contactsProcessed sang friend
-        if (contactsProcessed && contactsProcessed.uniquePhones) {
-          //da tim thay danh ba
-          //loc lay du lieu tu server cac user da dang ky
-          // dang username '90'
-          //neu danh ba co luu thi tao thanh friends
-          let friends;
-          let count = 0;
-          for (let key in contactsProcessed.uniquePhones) {
-            //dang so dien thoai luu lai la +8490
-            //nen cat di +84 de lay danh ba tu may chu
-            //console.log(key.indexOf("+84"),contactsProcessed.uniquePhones[key].type);
-            //la dien thoai di dong thi moi xem xet
-            if (key.indexOf("+84") === 0
-              && contactsProcessed.uniquePhones[key].type === "M"
-            ) {
-              friends = (friends ? friends + "," : "") + "'" + key.slice(3) + "'"
-              if (++count >= 500) {
-                let users = await this.listUserFromServer(friends);
-
-                if (users) {
-                  //console.log('lay user nay', users);
-                  //lay danh sach user ket hop voi danh ba se ra duoc
-                  //danh sach ban be ket noi nhau
-                  //ghi nhan so dien thoai quoc te nhe
-                  users.forEach(el => {
-                    let existFriend = this.friends ? this.friends.find(x => x.username === el.username) : null;
-                    if (existFriend) {
-                      //doi ten ghi lai ten duoc doi tren server
-                      //doi avatar??
-                    } else {
-                      if (!this.friends) this.friends = [];
-                      this.friends.push(el);
-                    }
-                  });
-                }
-                //delay ???
-                count = 0;
-                friends = null;
-              }
-            }
-          }
-
-          if (count > 0 && friends) {
-            let users = await this.listUserFromServer(friends);
-            if (users) {
-              users.forEach(el => {
-                let existFriend = this.friends ? this.friends.find(x => x.username === el.username) : null;
-                if (existFriend) {
-                  //doi ten ghi lai ten duoc doi tren server
-                  //doi avatar??
-                } else {
-                  if (!this.friends) this.friends = [];
-                  this.friends.push(el);
-                }
-              });
-            }
-          }          
-        }
-      }
+    }
       
-
-      console.log('friends', this.friends);
-      //phan luu avatar ?? khi luu user tu dong luu avatar base64 co nho???
-      //new chua co avatar thi lay anh va tao???
-
-      this.keyPair = this.apiStorageService.getUserKey(this.userInfo);
-      if (this.keyPair) {
-        //nhap pass de giai ma private key
-
-      } else {
-        //lay pass tren server (hoac lay private key tren server)
-        //tao pass, luu key
-        //luu server 
-
-      }
+    this.keyPair = this.apiStorage.getUserKey(this.userInfo);
+    if (this.keyPair) {
+      //nhap pass de giai ma private key
+  
+    } else {
+      //lay pass tren server (hoac lay private key tren server)
+      //tao pass, luu key
+      //luu server 
     }
   }
 
-  prepareContactsNewUser(user) {
-
-    if (user.username !== this.userInfo.username) {
-      //luon lam moi thong tin cua user moi lan login
-      new Promise((resolve, reject) => {
-        this.apiImage
-          .createBase64Image(ApiStorageService.mediaServer + "/db/get-private?func=avatar&user=" + user.username + "&token=" + this.apiStorageService.getToken(), 64)
-          .then(base64 => {
-            user.image = base64;
-            resolve()
-          })
-          .catch(err => reject(err));
-      })
-        .then(() => {
-          if (!this.contacts[user.username]) {
-            createObjectKey(this.contacts, user.username, {
-              fullname: user.data.fullname
-              , nickname: user.data.nickname
-              , image: user.image
-              , status: 1 //user online chat
-            })
-            //this.apiStorageService.saveUserContacts(this.userInfo, this.contacts);
-          } else {
-            this.contacts[user.username] = {
-              fullname: user.data.fullname
-              , nickname: user.data.nickname
-              , image: user.image
-              , status: 1 //user online chat
-            }
-            //this.apiStorageService.saveUserContacts(this.userInfo, this.contacts);
-          }
-        })
-        .catch(err => { })
-        .then(() => {
-          console.log('xong prepare', this.contacts)
-        })
-    }
-
-  }
 
   checkTokenLogin() {
-    this.token = this.apiStorageService.getToken();
+    this.token = this.apiStorage.getToken();
     if (this.token) {
 
       let loading = this.loadingCtrl.create({
@@ -343,18 +196,18 @@ export class MyApp {
       });
       loading.present();
 
-      this.auth.authorize
+      this.apiAuth.authorize
         (this.token)
         .then(data => {
 
-          this.auth.getServerPublicRSAKey()
+          this.apiAuth.getServerPublicRSAKey()
             .then(pk => {
 
               this.userInfo = data.user_info;
               //Tiêm token cho các phiên làm việc lấy số liệu cần xác thực
               if (this.userInfo && this.userInfo.data) {
 
-                this.auth.injectToken();
+                this.apiAuth.injectToken();
 
                 this.initChatting();
 
@@ -370,8 +223,6 @@ export class MyApp {
               }
 
               this.resetTreeMenu();
-
-              //
 
               loading.dismiss();
             })
@@ -398,227 +249,7 @@ export class MyApp {
 
 
   initChatting() {
-
-    this.configSocketIo = {
-      url: ApiStorageService.chatServer + '?token=' + this.token
-      , options: {
-        path: '/media/socket.io'
-        , pingInterval: 20000
-        , timeout: 60000
-        , reconnectionDelay: 30000
-        , reconnectionDelayMax: 60000
-        , wsEngine: 'ws'
-      }
-    };
-
-    //chat - client -->open
-    this.socket = new Socket(this.configSocketIo);
-    //this.apiStorageService.deleteUserRooms(this.userInfo)
-    this.originRooms = this.apiStorageService.getUserRooms(this.userInfo);
-
-    if (this.userInfo && this.originRooms.length === 0 && this.userInfo.username === '903500888') {
-      this.originRooms = [
-        {
-          id: this.userInfo.username + '-0#xxxx',
-          name: 'demo 1',
-          users: ['903500888', '702418821'],
-          created: new Date().getTime(),
-          time: new Date().getTime(),
-          messages: [{
-            //romm_id: room_id,
-            //user: this.userInfo,
-            text: (this.userInfo.data ? this.userInfo.data.fullname : this.userInfo.username) + " Create group",
-            created: new Date().getTime()
-          }]
-        }
-        ,
-        {
-          id: this.userInfo.username + '-1#yyyy',
-          name: 'demo 2',
-          users: ['903500888', '702418821', '905300888'],
-          created: new Date().getTime(),
-          time: new Date().getTime(),
-          messages: [{
-            //romm_id: room_id,
-            //user: this.userInfo,
-            text: (this.userInfo.data ? this.userInfo.data.fullname : this.userInfo.username) + " Create group",
-            created: new Date().getTime()
-          }]
-        }
-      ]; //lay tu storage de join lai cac room
-    }
-
-    //1.chat - client received welcome
-    this.getMessages()
-      .subscribe(data => {
-        let msg;
-        msg = data;
-        console.log('send, message', msg);
-        if (msg.step == 'INIT') {
-          //socketid,user,sockets
-          this.mySocket = msg.your_socket;
-          //4. chat - join rooms
-          this.socket.emit('client-join-rooms'
-            , {
-              rooms: this.originRooms
-            });
-        }
-        if (msg.step == 'USERS') {
-          //msg.users = {username,{name:,nickname:,sockets:[socketid]},...}
-          for (let username in msg.users) {
-            if (!this.users.find(user => user.username === username)) {
-              this.users.push({
-                username: username,
-                name: msg.users[username].name,
-                nickname: msg.users[username].nickname
-              })
-            }
-
-          }
-
-        }
-        if (msg.step == 'JOINED') {
-          //4.2 rooms joined first
-          this.rooms = msg.rooms;
-
-          let originRooms = []; //reset
-          this.rooms.forEach(room => {
-            let users = [];
-            room.users.forEach(user => {
-              for (let uname in user) {
-                users.push(uname);
-              }
-            });
-
-            if (room.id.indexOf('#') > 0) {
-              originRooms.push({
-                id: room.id,
-                name: room.name,
-                created: room.created,
-                time: room.time,
-                image: room.image,
-                admin: room.admin,
-                users: users,
-                messages: room.messages,
-              })
-            }
-          })
-          //luu room de load lan sau
-          this.apiStorageService.saveUserRooms(this.userInfo, originRooms);
-
-          this.events.publish('event-main-received-rooms', this.rooms);
-        }
-
-        if (msg.step == 'ACCEPTED') {
-          //5.1 + 6.2 accepted room
-
-          //this.originRooms
-          let originRooms = this.apiStorageService.getUserRooms(this.userInfo);
-
-          if (msg.room) {
-
-            this.rooms.push(msg.room);
-
-            let users = [];
-            msg.room.users.forEach(user => {
-              for (let uname in user) {
-                users.push(uname);
-              }
-            });
-
-            originRooms.push({
-              id: msg.room.id,
-              name: msg.room.name,
-              created: msg.room.created,
-              time: msg.room.time,
-              image: msg.room.image,
-              admin: msg.room.admin,
-              users: users,
-              messages: msg.room.messages
-            })
-          }
-          //luu room de load lan sau
-          this.apiStorageService.saveUserRooms(this.userInfo, originRooms);
-
-          this.events.publish('event-main-received-rooms', this.rooms);
-        }
-
-      });
-
-    //2.chat - client received new/disconnect socket the same user
-    this.getPrivateMessages()
-      .subscribe(data => {
-        let msg;
-        msg = data;
-        if (msg.step === 'START') {
-          //3.2 private old socket in username inform new socket
-          this.mySocket.sockets.push(msg.socket_id);
-        } else if (msg.step === 'END') {
-          //x.2 chat
-          this.mySocket.sockets.splice(this.mySocket.sockets.indexOf(msg.socket_id), 1);
-        }
-        //console.log('private, mysocket',this.mySocket);
-      });
-
-    //3.1 chat - client received new user
-    this.getNewUser()
-      .subscribe(data => {
-        let msg;
-        msg = data;
-        console.log('new user receive', msg);
-        //luu trong contact de tham chieu nhanh, khong load lai cua server
-        this.prepareContactsNewUser(msg);
-
-        if (!this.users.find(user => user.username === msg.username)) {
-          this.users.push({
-            username: msg.username,
-            name: msg.data.fullname,
-            nickname: msg.data.nickname
-          });
-          this.events.publish('event-main-received-users', this.users);
-        }
-      });
-
-    //4.1 + 6.1 invite join this room
-    this.getInvitedRoom()
-      .subscribe(data => {
-        let msg;
-        msg = data;
-        //{roomId:{name:,messages[],users:[{username:[socketonline,...]}]}}
-        console.log('new room from other', msg);
-        //join-new-room
-        for (let key in msg) {
-          msg[key].id = key;
-          //5. accept room
-          this.socket.emit('client-accept-room', msg[key]);
-        }
-
-      });
-
-
-    //7. new message
-    this.getMessagesEmit()
-      .subscribe(data => {
-        let msg;
-        msg = data;
-        console.log('7. new message:', msg, this.rooms);
-        msg.user.image = this.contacts[msg.user.username].image;
-
-        let roomMsg = this.rooms.find(room => room.id === msg.room_id);
-
-        roomMsg.messages.push(msg);
-        this.events.publish('event-receiving-message', roomMsg);
-      });
-
-    //x.1 chat - client user disconnect
-    this.getEndUser()
-      .subscribe(data => {
-        let msg;
-        msg = data;
-        this.users = this.users.splice(this.users.indexOf(msg.username), 1);
-        this.events.publish('event-main-received-users', this.users);
-      });
-
+    this.apiChat.initChatting(this.token,this.userInfo);
   }
 
   resetTreeMenu() {
@@ -1003,11 +634,8 @@ export class MyApp {
       ]
     }
 
-    this.events.publish('event-main-login-checked', {
-      token: this.token,
-      user: this.userInfo,
-      socket: this.socket
-    });
+    this.apiChat.initLogin();
+
   }
 
 
@@ -1020,20 +648,22 @@ export class MyApp {
 
     if (isMore) {
       if (item.next) {
-        this.navCtrl.push(item.next);
+        this.navCtrl.push(item.next,{parent:this});
         this.menuCtrl.close();
-        if (item.next === HomeMenuPage) {
+        if (item.next === this.rootPage) {
 
           setTimeout(() => {
             //console.log(item);
-            this.events.publish('event-main-login-checked', {
-              token: this.token,
-              user: this.userInfo,
-              socket: this.socket
-            });
+            this.apiChat.initLogin();
 
-            this.events.publish('event-main-received-users', this.users);
-            this.events.publish('event-main-received-rooms', this.rooms);
+            this.events.publish('event-main-received-users'
+              , this.users
+            );
+
+            this.events.publish('event-main-received-rooms'
+              , this.rooms
+            );
+
           }, 1000)
 
         }
@@ -1113,511 +743,6 @@ export class MyApp {
   openModal(form, data?: any) {
     let modal = this.modalCtrl.create(form, data);
     modal.present();
-  }
-
-  //emit....
-  jointRooms() {
-    this.socket.emit('client-joint-room'
-      , {
-        rooms: this.originRooms,
-        last_time: this.last_time
-      });
-  }
-
-  //socket.on...
-  getMessages() {
-    return new Observable(observer => {
-      this.socket.on("message", (data) => {
-        observer.next(data);
-      });
-    })
-  }
-
-  getPrivateMessages() {
-    return new Observable(observer => {
-      this.socket.on("server-private-emit", (data) => {
-        observer.next(data);
-      });
-    })
-  }
-
-  /**
-   * new user connected
-   */
-  getNewUser() {
-    return new Observable(observer => {
-      this.socket.on("server-broadcast-new-user", (data) => {
-        observer.next(data); //user
-      });
-    })
-  }
-
-  /**
-   * 4.1 room other socket or user new invite
-   */
-  getInvitedRoom() {
-    return new Observable(observer => {
-      this.socket.on("server-private-join-room-invite", (data) => {
-        observer.next(data); //user
-      });
-    })
-  }
-
-  /**
-   * end user coonected
-   */
-  getEndUser() {
-    return new Observable(observer => {
-      this.socket.on("server-broadcast-end-user", (data) => {
-        observer.next(data); //user
-      });
-    })
-  }
-
-  getMessagesEmit() {
-    return new Observable(observer => {
-      this.socket.on("server-emit-message", (data) => {
-        observer.next(data);
-      });
-    })
-  }
-
-
-  /**
-   * Process contacts
-   * lay danh ba ve, chuyen doi mot danh ba so dien thoai
-   * 
-   */
-
-  processContactsFromServer(data, vn_prefix_code) {
-
-    let _phoneContacts = [];
-    let _uniquePhones = {};
-    let _uniqueEmails = {};
-
-    if (data) {
-
-      data.forEach(contact => {
-
-        let nickname = contact.nickname;
-        let fullname = contact.fullname ? contact.fullname : nickname;
-        let phones = [];
-        let emails = [];
-        let relationship = [];
-        //tu nguoi dung dinh nghia bang cach chon
-        //: ['friend', 'closefriend', 'schoolmate', 'family', 'co-worker', 'partner', 'work', 'neigbor', 'doctor', 'teacher', 'vip', 'blacklist']
-        //if (fullname.indexOf('Loan comisa')>=0) console.log(fullname, contact);
-
-        if (contact.phones) {
-          contact.phones.forEach(phone => {
-
-            let phonenumber = phone.value.replace(/[^0-9+]+/g, "");
-
-            if (phonenumber && phonenumber !== "") {
-
-              let netCode = this.checkPhoneType(phonenumber, '84', vn_prefix_code);
-
-              let intPhonenumber = this.internationalFormat(phonenumber, '84');
-
-              if (!_uniquePhones[intPhonenumber]) {
-                Object.defineProperty(_uniquePhones, intPhonenumber, {
-                  value: {
-                    fullname: fullname
-                    , nickname: nickname
-                    , type: netCode && netCode.f_or_m ? netCode.f_or_m : '#'
-                    , relationship: relationship
-                  }, writable: false, enumerable: true, configurable: false
-                });
-
-                if (fullname) {
-                  _uniquePhones[intPhonenumber].name = {};
-                  Object.defineProperty(_uniquePhones[intPhonenumber].name, fullname, { value: 1, writable: true, enumerable: true, configurable: false });
-                }
-
-                phones.push({ value: phonenumber, type: netCode && netCode.f_or_m ? netCode.f_or_m : '#', int: intPhonenumber, net: netCode && netCode.network ? netCode.network : '#' })
-              } else {
-
-                if (fullname) {
-                  if (_uniquePhones[intPhonenumber].name[fullname]) {
-                    _uniquePhones[intPhonenumber].name[fullname] += 1;
-                  } else {
-                    Object.defineProperty(_uniquePhones[intPhonenumber].name, fullname, { value: 1, writable: true, enumerable: true, configurable: false });
-                  }
-                }
-
-              }
-
-            }
-          })
-        }
-
-        if (contact.emails) {
-          contact.emails.forEach(email => {
-            if (!_uniqueEmails[email.value]) {
-              Object.defineProperty(_uniqueEmails, email.value, {
-                value: {
-                  fullname: fullname
-                  , nickname: nickname
-                  , relationship: relationship
-                }, writable: false, enumerable: true, configurable: false
-              });
-
-              emails.push({ value: email.value, type: 'E' });
-
-              if (fullname) {
-                _uniqueEmails[email.value].name = {};
-                Object.defineProperty(_uniqueEmails[email.value].name, fullname, { value: 1, writable: true, enumerable: true, configurable: false });
-              }
-
-            } else {
-
-              if (fullname) {
-                if (_uniqueEmails[email.value].name[fullname]) {
-                  _uniqueEmails[email.value].name[fullname] += 1;
-                } else {
-                  Object.defineProperty(_uniqueEmails[email.value].name, fullname, { value: 1, writable: true, enumerable: true, configurable: false });
-                }
-              }
-
-            }
-          })
-        }
-
-        if (fullname && (phones.length > 0 || emails.length > 0)) {
-
-          //let countPhone = 0;
-          for (let phone in _uniquePhones) {
-            //countPhone++;
-            let countInContact = 0;
-            for (let name in _uniquePhones[phone].name) {
-              countInContact += _uniquePhones[phone].name[name]
-            }
-            _uniquePhones[phone].count = countInContact;
-          }
-
-          //let emailCount = 0;
-          for (let email in _uniqueEmails) {
-            //emailCount++;
-            let countInContact = 0;
-            for (let name in _uniqueEmails[email].name) {
-              countInContact += _uniqueEmails[email].name[name]
-            }
-            _uniqueEmails[email].count = countInContact;
-          }
-
-          _phoneContacts.push({
-            fullname: fullname
-            , nickname: nickname
-            , phones: phones
-            , emails: emails
-            , relationship: relationship
-          });
-
-        }
-
-      });
-    }
-    return {
-      contacts: _phoneContacts,
-      uniquePhones: _uniquePhones,
-      uniqueEmails: _uniqueEmails
-    };
-
-  }
-
-  processContactsFromSmartPhone(data, vn_prefix_code) {
-
-    let _phoneContacts = [];
-    let _uniquePhones = {};
-    let _uniqueEmails = {};
-
-
-    if (data) {
-
-      data.forEach(contact => {
-
-        //console.log(contact);
-
-        let nickname = contact._objectInstance && contact._objectInstance.name && contact._objectInstance.name.formatted ? contact._objectInstance.name.formatted : contact._objectInstance.name.givenName;
-        let fullname = contact._objectInstance.displayName ? contact._objectInstance.displayName : nickname;
-        let phones = [];
-        let emails = [];
-        let relationship = [];
-        //tu nguoi dung dinh nghia bang cach chon
-        //: ['friend', 'closefriend', 'schoolmate', 'family', 'co-worker', 'partner', 'work', 'neigbor', 'doctor', 'teacher', 'vip', 'blacklist']
-
-        //console.log(fullname);
-
-
-        if (contact._objectInstance.phoneNumbers) {
-          contact._objectInstance.phoneNumbers.forEach(phone => {
-
-            let phonenumber = phone.value.replace(/[^0-9+]+/g, "");
-
-            if (phonenumber && phonenumber !== "") {
-
-              let netCode = this.checkPhoneType(phonenumber, '84', vn_prefix_code);
-              //console.log(netCode);
-
-              let intPhonenumber = this.internationalFormat(phonenumber, '84');
-
-
-
-              if (!_uniquePhones[intPhonenumber]) {
-                Object.defineProperty(_uniquePhones, intPhonenumber, {
-                  value: {
-                    fullname: fullname
-                    , nickname: nickname
-                    , type: netCode && netCode.f_or_m ? netCode.f_or_m : '#'
-                    , relationship: relationship
-                  }, writable: false, enumerable: true, configurable: false
-                });
-
-
-                phones.push({ value: phonenumber, type: netCode && netCode.f_or_m ? netCode.f_or_m : '#', int: intPhonenumber, net: netCode && netCode.network ? netCode.network : '#' })
-
-                _uniquePhones[intPhonenumber].name = {};
-                if (fullname) {
-                  Object.defineProperty(_uniquePhones[intPhonenumber].name, fullname, { value: 1, writable: true, enumerable: true, configurable: false });
-                }
-              } else {
-
-                if (fullname) {
-                  if (_uniquePhones[intPhonenumber].name[fullname]) {
-                    _uniquePhones[intPhonenumber].name[fullname] += 1;
-                  } else {
-                    Object.defineProperty(_uniquePhones[intPhonenumber].name, fullname, { value: 1, writable: true, enumerable: true, configurable: false });
-                  }
-                }
-
-              }
-
-            }
-          })
-        }
-
-        if (contact._objectInstance.emails) {
-
-          contact._objectInstance.emails.forEach(email => {
-
-            if (!_uniqueEmails[email.value]) {
-
-              Object.defineProperty(_uniqueEmails, email.value, {
-                value: {
-                  fullname: fullname
-                  , nickname: nickname
-                  , relationship: relationship
-                }, writable: false, enumerable: true, configurable: false
-              });
-              emails.push({ value: email.value, type: 'E' });
-              _uniqueEmails[email.value].name = {};
-
-              if (fullname) {
-                Object.defineProperty(_uniqueEmails[email.value].name, fullname, { value: 1, writable: true, enumerable: true, configurable: false });
-              }
-
-            } else {
-
-              if (fullname) {
-                if (_uniqueEmails[email.value].name[fullname]) {
-                  _uniqueEmails[email.value].name[fullname] += 1;
-                } else {
-                  Object.defineProperty(_uniqueEmails[email.value].name, fullname, { value: 1, writable: true, enumerable: true, configurable: false });
-                }
-              }
-
-            }
-          })
-        }
-
-        if (fullname && (phones.length > 0 || emails.length > 0)) {
-
-          //let countPhone = 0;
-          for (let phone in _uniquePhones) {
-            //countPhone++;
-            let countInContact = 0;
-            for (let name in _uniquePhones[phone].name) {
-              countInContact += _uniquePhones[phone].name[name]
-            }
-            _uniquePhones[phone].count = countInContact;
-          }
-
-          //let emailCount = 0;
-          for (let email in _uniqueEmails) {
-            //emailCount++;
-            let countInContact = 0;
-            for (let name in _uniqueEmails[email].name) {
-              countInContact += _uniqueEmails[email].name[name]
-            }
-            _uniqueEmails[email].count = countInContact;
-          }
-
-
-          _phoneContacts.push({
-            fullname: fullname
-            , nickname: nickname
-            , phones: phones
-            , emails: emails
-            , relationship: relationship
-          });
-
-        }
-
-      });
-
-    }
-
-    return {
-      contacts: _phoneContacts,
-      uniquePhones: _uniquePhones,
-      uniqueEmails: _uniqueEmails
-    };
-
-  }
-
-  /**
-   * Chuyen doi so dien thoai sang kieu quoc te de luu tru duy nhat
-   * @param phone 
-   * @param nation_callingcode 
-   */
-  internationalFormat(phone, nation_callingcode) {
-    let phoneReturn = phone;
-
-    if (phone.indexOf('+') === 0) {
-      phoneReturn = phone;
-    }
-
-    if (phone.indexOf('00') === 0) {
-      phoneReturn = '+' + phone.substring(2);
-    } else if (phone.indexOf('0') === 0) {
-      phoneReturn = '+' + nation_callingcode + phone.substring(1);
-    }
-
-    return phoneReturn;
-  }
-
-  /**
-   * lay ma mang dien thoai (co dinh, di dong)
-   * Cac dau so luu trong danh ba kieu + hoac 0
-   */
-  checkPhoneType(phone, nation_callingcode, net_code) {
-    if (net_code) {
-      let found = net_code.find(x => ("+" + nation_callingcode + x.code) === phone.substring(0, ("+" + nation_callingcode + x.code).length))
-      if (found) {
-        return found
-      } else {
-        found = net_code.find(x => ("0" + x.code) === phone.substring(0, ("0" + x.code).length))
-        if (found) {
-          return found
-        }
-      }
-    }
-    return null;
-  }
-
-  /**
-   * Doc danh ba tu may chu
-   */
-  listContactsFromServer() {
-
-    return new Promise((resolve, reject) => {
-
-      //console.log('doc tu may chu day');
-      let loading = this.loadingCtrl.create({
-        content: 'Đọc danh bạ từ máy chủ...'
-      });
-      loading.present();
-
-      this.auth.getDynamicUrl(ApiStorageService.authenticationServer + "/ext-auth/get-your-contacts", true)
-        .then(res => {
-          //console.log('ket qua res', res);
-          if (res.status === 1 && res.result && res.result.length > 0) {
-            resolve(res.result);
-          } else {
-            resolve();
-          }
-          loading.dismiss();
-        })
-        .catch(err => {
-          console.log('loi may chu', err);
-          loading.dismiss();
-          resolve()
-        })
-
-    })
-
-  }
-
-  listContactsFromSmartPhone() {
-
-    return new Promise((resolve, reject) => {
-      let loading = this.loadingCtrl.create({
-        content: 'Đợi lọc dữ liệu từ danh bạ'
-      });
-      loading.present();
-
-      this.contacts
-        //.find(['displayName', 'name', 'phoneNumbers', 'emails', 'photos', 'urls', 'organizations', 'addresses', 'birthday', 'ims']
-        .find(['displayName', 'name', 'phoneNumbers', 'emails',]
-          , { filter: "", multiple: true })
-        .then(data => {
-
-          loading.dismiss()
-
-          this.toastCtrl.create({
-            message: 'Đã đọc xong danh bạ ' + data.length + ' số',
-            duration: 5000,
-            position: 'middle'
-          }).present();
-
-          resolve(data);
-
-        })
-        .catch(err => {
-          loading.dismiss()
-
-          this.toastCtrl.create({
-            message: 'Lỗi đọc danh bạ: ' + JSON.stringify(err),
-            duration: 5000,
-            position: 'bottom'
-          }).present();
-
-          resolve();
-
-        });
-    })
-
-  }
-
-
-  listUserFromServer(friends) {
-
-    return new Promise<any>((resolve, reject) => {
-
-      //console.log('doc tu may chu day');
-      let loading = this.loadingCtrl.create({
-        content: 'Tìm bạn bè từ máy chủ...'
-      });
-      loading.present();
-
-      this.auth.getDynamicUrl(ApiStorageService.authenticationServer + "/ext-auth/get-users-info?users=" + friends, true)
-        .then(res => {
-          //console.log('ket qua get-users-info?users', res);
-          if (res.status === 1 && res.users && res.users.length > 0) {
-            resolve(res.users);
-          } else {
-            resolve();
-          }
-          loading.dismiss();
-        })
-        .catch(err => {
-          //console.log('loi may chu', err);
-          loading.dismiss();
-          resolve()
-        })
-
-    })
-
   }
 
 }
