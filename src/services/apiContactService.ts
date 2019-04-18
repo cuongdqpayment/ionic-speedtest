@@ -19,6 +19,9 @@ import { ApiImageService } from './apiImageService';
 export class ApiContactService {
 
     friends: any = []; //danh sach ban be de lien ket
+    publicUsers: any = []; //danh sach ban be de lien ket
+
+    uniqueContacts: any = {} //danh muc duy nhat
 
     constructor(
         private apiAuth: ApiAuthService,
@@ -30,36 +33,41 @@ export class ApiContactService {
     ) {
     }
 
-    getPublicUser(){
+    getUniqueContacts(){
+        return this.uniqueContacts;
+    }
+    /**
+     * public users phục vụ lấy tin tức 
+     * hiển thị tin tức
+     */
+    getPublicUser(isRenew?: boolean){
         return new Promise<any>(async (resolve,reject)=>{
             //lay danh sach user public de lay thong tin
-            let publicFriends = [];
+            this.publicUsers = this.apiStorage.getPublicUsers();
             let users = await this.listUserFromServer();
             if (users) {
+                if (isRenew) this.publicUsers = [];
                 users.forEach(el => {
                     //ban cua minh trang thai ban
                     el.relationship = 1; //public user
-                    let index = publicFriends.findIndex(x => x.username === el.username);
+                    let index = this.publicUsers.findIndex(x => x.username === el.username);
                     if (index >= 0) {
-                        publicFriends.splice(index, 1, el);
+                        this.publicUsers.splice(index, 1, el);
                     } else {
-                        publicFriends.push(el);
+                        this.publicUsers.push(el);
                     }
                 });
+                this.prepareAvatars(this.publicUsers);  
+                this.apiStorage.savePublicUsers(this.publicUsers); 
             }
-            publicFriends.forEach(async el=>{
-                if (!el.image){
-                    el.image = ApiStorageService.mediaServer + "/db/get-private?func=avatar&user=" + el.username;
-                    el.avatar = await this.apiImage.createBase64Image(el.image, 32);
-                }else{
-                    el.avatar = await this.apiImage.createBase64Image(el.image, 32);
-                }
-              })
-            resolve(publicFriends);
+            resolve(this.publicUsers);
         })
     }
 
     /**
+     * private friends phục vụ lấy tin tức, 
+     * chat, danh bạ liên hệ
+     * 
        * thu tuc nay goi khi login thanh cong, co day du thong tin user
        * thuc hien doc tren local cac thong tin
        * friends, id, pass 
@@ -69,9 +77,8 @@ export class ApiContactService {
         return new Promise<any>(async (resolve,reject)=>{
             if (userInfo) {
                 this.friends = this.apiStorage.getUserFriends(userInfo);
-    
                 //truong hop them ban be tu danh ba
-                if (!this.friends || isAddFriend) {
+                if (isAddFriend) {
                     //doc danh ba,
                     let vn_prefix_code;
                     let contactsProcessed;
@@ -116,7 +123,6 @@ export class ApiContactService {
                     }
                     //doc ds tren server tu danh ba
                     //neu co thi tu dong ket ban
-    
                     //chuyen doi contactsProcessed sang friend
                     if (contactsProcessed && contactsProcessed.uniquePhones) {
                         //da tim thay danh ba
@@ -133,6 +139,16 @@ export class ApiContactService {
                             if (key.indexOf("+84") === 0
                                 && contactsProcessed.uniquePhones[key].type === "M"
                             ) {
+
+                                //luu tru danh ba trong may cua minh
+                                //dang 90xx
+                                if (!this.uniqueContacts[key]){
+                                    Object.defineProperty(this.uniqueContacts, key.slice(3), {
+                                        value: contactsProcessed.uniquePhones[key],
+                                        writable: true, enumerable: true, configurable: false
+                                    });
+                                }
+
                                 friends = (friends ? friends + "," : "") + "'" + key.slice(3) + "'"
                                 if (++count >= 500) {
                                     let users = await this.listUserFromServer(friends);
@@ -155,7 +171,9 @@ export class ApiContactService {
                                             }
                                         });
                                     }
-                                    //delay ???
+                                    //delay 1s de lay tiep, ko se bao loi tan cong server
+                                    await this.delay(2000);
+
                                     count = 0;
                                     friends = null;
                                 }
@@ -179,12 +197,15 @@ export class ApiContactService {
                                 });
                             }
                         }
+
+                        //gan danh muc contacts
+                        //console.log('hd',this.uniqueContacts);
+
                     }
+                    this.prepareAvatars(this.friends);
+                    this.apiStorage.saveUserFriends(userInfo, this.friends);
                 }
-                //console.log('friends', this.friends);
-                this.prepareAvatarFriend();
                 resolve(this.friends);
-                this.apiStorage.saveUserFriends(userInfo, this.friends);
             }else{
                 resolve(); //tra ve ban be public
             }
@@ -194,14 +215,35 @@ export class ApiContactService {
     /** lay anh avatar ve luu trong mang
      * Anh chi lay kich co avata 32x de hien thi thoi
      */
-    prepareAvatarFriend() {
-        if (this.friends) {
-          this.friends.forEach(async el=>{
+    prepareAvatars(users) {
+        if (users) {
+            users.forEach(async el=>{
             if (!el.image){
                 el.image = ApiStorageService.mediaServer + "/db/get-private?func=avatar&user=" + el.username + "&token=" + this.apiStorage.getToken();
                 el.avatar = await this.apiImage.createBase64Image(el.image, 32);
             }else{
                 el.avatar = await this.apiImage.createBase64Image(el.image + "?token=" + this.apiStorage.getToken(), 32);
+            }
+            
+            //let relationship = [];
+            //tu nguoi dung dinh nghia bang cach chon
+            //: ['public', 'friend-of-friend' , 'friend', 'closefriend', 'schoolmate', 'family', 'co-worker', 'partner', 'work', 'neigbor', 'doctor', 'teacher', 'vip', 'blacklist']
+
+            //neu chua co danh ba luu tru thi them vao
+            if (!this.uniqueContacts[el.username]){
+                Object.defineProperty(this.uniqueContacts, el.username, {
+                    value: {
+                        fullname: el.fullname,
+                        nickname: el.nickname,
+                        image: el.image,
+                        avatar: el.avatar,
+                        relationship:[el.relationship===1?'public':'friend']
+                    },
+                    writable: true, enumerable: true, configurable: false
+                });
+            }else{
+                this.uniqueContacts[el.username].image = el.image;
+                this.uniqueContacts[el.username].avatar = el.avatar;
             }
           })
         }
@@ -251,7 +293,7 @@ export class ApiContactService {
                                         , nickname: nickname
                                         , type: netCode && netCode.f_or_m ? netCode.f_or_m : '#'
                                         , relationship: relationship
-                                    }, writable: false, enumerable: true, configurable: false
+                                    }, writable: true, enumerable: true, configurable: false
                                 });
 
                                 if (fullname) {
@@ -284,7 +326,7 @@ export class ApiContactService {
                                     fullname: fullname
                                     , nickname: nickname
                                     , relationship: relationship
-                                }, writable: false, enumerable: true, configurable: false
+                                }, writable: true, enumerable: true, configurable: false
                             });
 
                             emails.push({ value: email.value, type: 'E' });
@@ -392,7 +434,7 @@ export class ApiContactService {
                                         , nickname: nickname
                                         , type: netCode && netCode.f_or_m ? netCode.f_or_m : '#'
                                         , relationship: relationship
-                                    }, writable: false, enumerable: true, configurable: false
+                                    }, writable: true, enumerable: true, configurable: false
                                 });
 
 
@@ -429,7 +471,7 @@ export class ApiContactService {
                                     fullname: fullname
                                     , nickname: nickname
                                     , relationship: relationship
-                                }, writable: false, enumerable: true, configurable: false
+                                }, writable: true, enumerable: true, configurable: false
                             });
                             emails.push({ value: email.value, type: 'E' });
                             _uniqueEmails[email.value].name = {};
@@ -634,6 +676,14 @@ export class ApiContactService {
 
         })
 
+    }
+
+    delay(milisecond){
+        return new Promise((resolve,reject)=>{
+            setTimeout(() => {
+                resolve()
+            }, milisecond);
+        })
     }
 
 }

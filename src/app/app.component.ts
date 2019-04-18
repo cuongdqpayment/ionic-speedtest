@@ -19,9 +19,6 @@ import { HomeMenuPage } from '../pages/home-menu/home-menu';
 import { HomeSpeedtestPage } from '../pages/home-speedtest/home-speedtest';
 import { OwnerImagesPage } from '../pages/owner-images/owner-images';
 
-import { Socket, SocketIoConfig } from 'ng-socket-io';
-import { Observable } from 'rxjs/Observable';
-
 import { ApiImageService } from '../services/apiImageService';
 import { InAppBrowser } from '@ionic-native/in-app-browser/ngx';
 import { LinkPage } from '../pages/link/link';
@@ -30,12 +27,6 @@ import { ContactsPage } from '../pages/contacts/contacts';
 import { CordovaPage } from '../pages/cordova-info/cordova-info';
 import { ApiContactService } from '../services/apiContactService';
 import { ApiChatService } from '../services/apiChatService';
-
-
-const createObjectKey = (obj, key, value) => {
-  Object.defineProperty(obj, key, { value: value, writable: true, enumerable: true, configurable: false });
-  return obj;
-}
 
 
 @Component({
@@ -56,14 +47,11 @@ export class MyApp {
 
   treeMenu: any;
   callbackTreeMenu: any;
+
   userInfo: any;
   token: any;
 
-  mySocket: any;
-
   keyPair: any;
-  
-
 
   constructor(
     private menuCtrl: MenuController, //goi trong callback
@@ -89,11 +77,10 @@ export class MyApp {
 
   ngOnInit() {
 
-    this.apiContact
-    .getPublicUser()
-    .then(publicFriend=>{
-      console.log(publicFriend);
-    })
+  /*   this.apiContact.getPublicUser()
+        .then(users=>{
+          console.log('public',users);
+        })  */
 
     this.callbackTreeMenu = this.callbackTree;
 
@@ -129,27 +116,6 @@ export class MyApp {
         this.userInfo.data.background = await this.apiImage
           .createBase64Image(ApiStorageService.mediaServer + "/db/get-private?func=background&token=" + this.apiStorage.getToken(), 300)
       } catch (e) { }
-
-      /* //this.contacts = this.apiStorage.getUserContacts(this.userInfo);
-      if (!this.contacts[this.userInfo.username]) {
-        createObjectKey(this.contacts, this.userInfo.username, {
-          fullname:  this.userInfo.data.fullname
-          , nickname: this.userInfo.data.nickname
-          , image: this.userInfo.data.image
-          , background: this.userInfo.data.background
-          , status: 0
-        })
-        //this.apiStorage.saveUserContacts(this.userInfo, this.contacts);
-      } else {
-        this.contacts[this.userInfo.username] = {
-          fullname: this.userInfo.data.fullname
-          , nickname: this.userInfo.data.nickname
-          , image: this.userInfo.data.image
-          , background: this.userInfo.data.background
-          , status: 0 //owner user
-        }
-        //this.apiStorage.saveUserContacts(this.userInfo, this.contacts);
-      } */
 
     } else {
       //du lieu chua dang ky user 
@@ -199,7 +165,7 @@ export class MyApp {
       this.apiAuth.authorize
         (this.token)
         .then(data => {
-
+          //console.log('goi mot lan, 2 lan')
           this.apiAuth.getServerPublicRSAKey()
             .then(pk => {
 

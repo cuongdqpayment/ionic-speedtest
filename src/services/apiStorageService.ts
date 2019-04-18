@@ -129,6 +129,19 @@ export class ApiStorageService {
         }
     }
 
+    savePublicUsers(friends){
+        this.save('#users#public',JSON.stringify(friends));
+    }
+
+    getPublicUsers(){
+        try{
+            let results = JSON.parse(this.read('#users#public'));
+            return results?results:[];
+        }catch(e){
+            return [];
+        }
+    }
+
     saveUserFriends(user,friends){
         this.save('#friends#'+user.username,JSON.stringify(friends));
     }
@@ -136,9 +149,9 @@ export class ApiStorageService {
     getUserFriends(user){
         try{
             let results = JSON.parse(this.read('#friends#'+user.username));
-            return results?results:null;
+            return results?results:[];
         }catch(e){
-            return null;
+            return [];
         }
     }
 

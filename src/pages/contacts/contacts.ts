@@ -449,7 +449,7 @@ export class ContactsPage {
         let emails = [];
         let relationship = [];
         //tu nguoi dung dinh nghia bang cach chon
-        //: ['friend', 'closefriend', 'schoolmate', 'family', 'co-worker', 'partner', 'work', 'neigbor', 'doctor', 'teacher', 'vip', 'blacklist']
+        //: ['public', 'friend-of-friend' , 'friend', 'closefriend', 'schoolmate', 'family', 'co-worker', 'partner', 'work', 'neigbor', 'doctor', 'teacher', 'vip', 'blacklist']
 
         //console.log(fullname);
 

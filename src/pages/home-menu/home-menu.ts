@@ -5,6 +5,7 @@ import { LoadingController, ModalController, NavController, Events } from 'ionic
 import { OwnerImagesPage } from '../owner-images/owner-images';
 import { HomeChatPage } from '../home-chat/home-chat';
 import { Socket } from 'ng-socket-io';
+import { ApiContactService } from '../../services/apiContactService';
 
 @Component({
   selector: 'page-home-menu',
@@ -26,7 +27,8 @@ export class HomeMenuPage {
 
   constructor(
       private apiStorageService: ApiStorageService
-    , private auth: ApiAuthService
+    , private apiAuth: ApiAuthService
+    , private apiContact: ApiContactService
     , private loadingCtrl: LoadingController
     , private navCtrl: NavController
     , private modalCtrl: ModalController
@@ -34,13 +36,14 @@ export class HomeMenuPage {
   ) { }
 
   ngOnInit() {
+    this.apiContact.getPublicUser()
+    .then(users=>{
+      console.log('public',users);
+    }) 
 
     //doc tu bo nho len lay danh sach da load truoc day ghi ra 
     this.dynamicTree = this.apiStorageService.getHome();
 
-    
-    //setInterval(()=>{this.isLoaded = false},10000); //cu 1 phut la cho doc du lieu moi
-    
     this.events.subscribe('event-main-login-checked'
       , (data => {
 
@@ -48,7 +51,10 @@ export class HomeMenuPage {
         this.userInfo = data.user;
         this.socket = data.socket;
 
-        this.contacts = this.apiStorageService.getUserContacts(this.userInfo);
+
+        this.contacts = this.apiContact.getUniqueContacts()
+        //this.apiStorageService.getUserContacts(this.userInfo);
+        //console.log('contacts',this.contacts);
 
         if (this.dynamicTree.items.length===0){
           setTimeout(() => {
@@ -83,7 +89,7 @@ export class HomeMenuPage {
       });
       loading.present();
       //chuyen thu tuc lay thong tin sang keo len, keo xuong
-      this.auth.getDynamicUrl(ApiStorageService.mediaServer + "/db/list-groups?limit=12&offset=0", true)
+      this.apiAuth.getDynamicUrl(ApiStorageService.mediaServer + "/db/list-groups?limit=12&offset=0", true)
         .then(data => {
 
           let items = [];
@@ -128,7 +134,7 @@ export class HomeMenuPage {
     });
     loading.present();
 
-    this.auth.getDynamicUrl(ApiStorageService.mediaServer + "/db/public-groups?limit=12&offset=0", true)
+    this.apiAuth.getDynamicUrl(ApiStorageService.mediaServer + "/db/public-groups?limit=12&offset=0", true)
       .then(data => {
         loading.dismiss();
 
