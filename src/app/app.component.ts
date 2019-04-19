@@ -77,11 +77,6 @@ export class MyApp {
 
   ngOnInit() {
 
-  /*   this.apiContact.getPublicUser()
-        .then(users=>{
-          console.log('public',users);
-        })  */
-
     this.callbackTreeMenu = this.callbackTree;
 
     this.ionViewDidLoad_main();
@@ -108,15 +103,22 @@ export class MyApp {
    */
   async userChangeImage() {
     //du lieu da duoc dang ky
+    
     if (this.userInfo.data) {
       try {
-        this.userInfo.data.image = await this.apiImage
+        if (!this.userInfo.data.image){
+          this.userInfo.data.image = await this.apiImage
           .createBase64Image(ApiStorageService.mediaServer + "/db/get-private?func=avatar&token=" + this.apiStorage.getToken(), 120)
-
-        this.userInfo.data.background = await this.apiImage
-          .createBase64Image(ApiStorageService.mediaServer + "/db/get-private?func=background&token=" + this.apiStorage.getToken(), 300)
+        }
+        
+        if (!this.userInfo.data.background){
+          this.userInfo.data.background = ApiStorageService.mediaServer + "/db/get-private?func=background&token=" + this.apiStorage.getToken();
+          // this.userInfo.data.background = await this.apiImage
+          // .createBase64Image(ApiStorageService.mediaServer + "/db/get-private?func=background&token=" + this.apiStorage.getToken(), 300)
+        }
       } catch (e) { }
-
+      console.log('user data',this.userInfo.data);
+      
     } else {
       //du lieu chua dang ky user 
       //yeu cau dang ky user

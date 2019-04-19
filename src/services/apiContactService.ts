@@ -172,7 +172,7 @@ export class ApiContactService {
                                         });
                                     }
                                     //delay 1s de lay tiep, ko se bao loi tan cong server
-                                    await this.delay(2000);
+                                    await this.delay(1000);
 
                                     count = 0;
                                     friends = null;
@@ -215,14 +215,16 @@ export class ApiContactService {
     /** lay anh avatar ve luu trong mang
      * Anh chi lay kich co avata 32x de hien thi thoi
      */
-    prepareAvatars(users) {
+    prepareAvatars(users,isRenew?:boolean) {
         if (users) {
             users.forEach(async el=>{
-            if (!el.image){
-                el.image = ApiStorageService.mediaServer + "/db/get-private?func=avatar&user=" + el.username + "&token=" + this.apiStorage.getToken();
-                el.avatar = await this.apiImage.createBase64Image(el.image, 32);
-            }else{
-                el.avatar = await this.apiImage.createBase64Image(el.image + "?token=" + this.apiStorage.getToken(), 32);
+            if (!el.avatar||isRenew){ //chua co avatar (da tung luu hoac luu moi)
+                if (!el.image){
+                    el.image = ApiStorageService.mediaServer + "/db/get-private?func=avatar&user=" + el.username + "&token=" + this.apiStorage.getToken();
+                    el.avatar = await this.apiImage.createBase64Image(el.image, 32);
+                }else{
+                    el.avatar = await this.apiImage.createBase64Image(el.image + "?token=" + this.apiStorage.getToken(), 32);
+                }
             }
             
             //let relationship = [];
