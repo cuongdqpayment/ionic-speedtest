@@ -66,11 +66,35 @@ const schedulers = {
                 {start:"1700", end:"1800"}
             ],
     relay2:[
-                {start:"0700", end:"0730"},
-                {start:"1100", end:"1200"},
-                {start:"1700", end:"1730"}
+                {start:"0700", end:"0710"},
+                {start:"1100", end:"1110"},
+                {start:"1700", end:"1710"}
             ]
 }
+
+
+/**
+ * Gui tin nhan thong bao chuong trinh dang chay - 1 ngay 1 lan
+ */
+const send_sms = (phone,sms)=>{
+    request.post({
+        headers: {'content-type' : 'application/json'},
+        url:     'https://c3.mobifone.vn/api/ext-auth/send-sms',
+        body:    JSON.stringify({ 
+                    phone: phone //"903500888"
+                   , sms: sms //"alive test time: " + new Date().toISOString(),
+                   , token:"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6IjkwMzUwMDAwMyIsIm9yaWdpbiI6Imh0dHA6Ly9jMy5tb2JpZm9uZS52biIsInJlcV9kZXZpY2UiOiJNb3ppbGxhLzUuMCAoV2luZG93cyBOVCA2LjEpIEFwcGxlV2ViS2l0LzUzNy4zNiAoS0hUTUwsIGxpa2UgR2Vja28pIGNvY19jb2NfYnJvd3Nlci83Mi40LjIwOCBDaHJvbWUvNjYuNC4zMzU5LjIwOCBTYWZhcmkvNTM3LjM2IiwicmVxX2lwIjoiMTAuMjQuMTk4LjIyMSIsImxldmVsIjoyLCJsb2NhbF90aW1lIjoxNTUzNzk2MjI3NTY2LCJpYXQiOjE1NTM4MjE0MjcsImV4cCI6MTU4NTM1NzQyN30.3cA0JoJao5pL_ZOVoZdX3rU2YgaMIMXAylS3kKgUu7A" 
+                 })
+      }, function(error, response, body){
+        console.log('kq gui',body);
+      });
+}
+
+
+
+/**
+ * Cron jobs
+ */
 
 const cron = require("node-cron");
 
@@ -143,4 +167,6 @@ cron.schedule("*/5 * * * * *", function() {
 });
 
 console.log("Start!");
+
+//send_sms('903500888','test nodejs');
 

@@ -165,9 +165,6 @@ export class MyApp {
       this.apiAuth.authorize
         (this.token)
         .then(data => {
-          //console.log('goi mot lan, 2 lan')
-          this.apiAuth.getServerPublicRSAKey()
-            .then(pk => {
 
               this.userInfo = data.user_info;
               //Tiêm token cho các phiên làm việc lấy số liệu cần xác thực
@@ -191,14 +188,7 @@ export class MyApp {
               this.resetTreeMenu();
 
               loading.dismiss();
-            })
-            .catch(err => {
 
-              this.resetTreeMenu();
-              //console.log('Error get Public key',err);
-              loading.dismiss();
-
-            });
         })
         .catch(err => {
           //this.auth.deleteToken();

@@ -26,7 +26,7 @@ export class HomeMenuPage {
   isLoaded: boolean = true;
 
   constructor(
-      private apiStorageService: ApiStorageService
+      private apiStorage: ApiStorageService
     , private apiAuth: ApiAuthService
     , private apiContact: ApiContactService
     , private loadingCtrl: LoadingController
@@ -42,7 +42,7 @@ export class HomeMenuPage {
     }) 
 
     //doc tu bo nho len lay danh sach da load truoc day ghi ra 
-    this.dynamicTree = this.apiStorageService.getHome();
+    this.dynamicTree = this.apiStorage.getHome();
 
     this.events.subscribe('event-main-login-checked'
       , (data => {
@@ -53,7 +53,7 @@ export class HomeMenuPage {
 
 
         this.contacts = this.apiContact.getUniqueContacts()
-        //this.apiStorageService.getUserContacts(this.userInfo);
+        //this.apiStorage.getUserContacts(this.userInfo);
         //console.log('contacts',this.contacts);
 
         if (this.dynamicTree.items.length===0){
@@ -115,7 +115,7 @@ export class HomeMenuPage {
           });
 
           this.dynamicTree.items = items;
-          this.apiStorageService.saveHome(this.dynamicTree);
+          this.apiStorage.saveHome(this.dynamicTree);
 
           loading.dismiss();
         })

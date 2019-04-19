@@ -122,7 +122,7 @@
 							</ion-row>
 
 							<ion-item class="background-item">
-								<ion-avatar item-start *ngIf="contacts[it.user]&&contacts[it.user].image"><img [src]="contacts[it.user].image"></ion-avatar>
+								<ion-avatar item-start *ngIf="contacts[it.user]&&contacts[it.user].avatar"><img [src]="contacts[it.user].avatar"></ion-avatar>
 								<ion-title>{{contacts[it.user]&&contacts[it.user].fullname?contacts[it.user].fullname:it.user}}</ion-title>
 								<p text-wrap>{{it.content | slice:0:50}}<ion-note *ngIf="it.content?.length>50">...more</ion-note><br><span style="color: blue">{{it.time | timeAgo}}</span></p>
 								<button item-end icon-only ion-button clear small color="primary" (click)="onClickShortDetails(it)">
