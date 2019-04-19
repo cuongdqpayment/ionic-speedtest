@@ -7,8 +7,7 @@ var request = require('request'),
     urlStatus = "http://192.168.59.245/status.xml",
     urlControl = "http://192.168.59.245/relays.cgi?relay=",
     auth = "Basic " + new Buffer(username + ":" + password).toString("base64");
-
-
+    
 class KMTronic{
     constructor(){}
     
@@ -58,6 +57,9 @@ class KMTronic{
 const control = new KMTronic();
 
 const schedulers = {
+    alert: [
+                {start:"0700", end:"1800"}
+           ],
     relay1:[
                 {start:"0700", end:"0900"},
                 {start:"1000", end:"1200"},
@@ -73,6 +75,7 @@ const schedulers = {
 }
 
 
+
 /**
  * Gui tin nhan thong bao chuong trinh dang chay - 1 ngay 1 lan
  */
@@ -81,12 +84,12 @@ const send_sms = (phone,sms)=>{
         headers: {'content-type' : 'application/json'},
         url:     'https://c3.mobifone.vn/api/ext-auth/send-sms',
         body:    JSON.stringify({ 
-                    phone: phone //"903500888"
-                   , sms: sms //"alive test time: " + new Date().toISOString(),
+                    phone: phone 
+                   , sms: sms
                    , token:"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6IjkwMzUwMDAwMyIsIm9yaWdpbiI6Imh0dHA6Ly9jMy5tb2JpZm9uZS52biIsInJlcV9kZXZpY2UiOiJNb3ppbGxhLzUuMCAoV2luZG93cyBOVCA2LjEpIEFwcGxlV2ViS2l0LzUzNy4zNiAoS0hUTUwsIGxpa2UgR2Vja28pIGNvY19jb2NfYnJvd3Nlci83Mi40LjIwOCBDaHJvbWUvNjYuNC4zMzU5LjIwOCBTYWZhcmkvNTM3LjM2IiwicmVxX2lwIjoiMTAuMjQuMTk4LjIyMSIsImxldmVsIjoyLCJsb2NhbF90aW1lIjoxNTUzNzk2MjI3NTY2LCJpYXQiOjE1NTM4MjE0MjcsImV4cCI6MTU4NTM1NzQyN30.3cA0JoJao5pL_ZOVoZdX3rU2YgaMIMXAylS3kKgUu7A" 
                  })
       }, function(error, response, body){
-        console.log('kq gui',body);
+        console.log('kq gui sms',body);
       });
 }
 
@@ -96,7 +99,10 @@ const send_sms = (phone,sms)=>{
  * Cron jobs
  */
 
+
 const cron = require("node-cron");
+
+var isAlertOne = false;
 
 cron.schedule("*/5 * * * * *", function() {
 
@@ -109,6 +115,19 @@ cron.schedule("*/5 * * * * *", function() {
         let hh24mi =  (""+curDate.getHours()).padStart(2,0)+(""+curDate.getMinutes()).padStart(2,0);
         
         //console.log("running a task every 5 seconds", hh24mi);
+        
+        //thong bao qua sms cho quan tri he thong biet
+        schedulers.alert.forEach(el=>{
+            if (el.start<=hh24mi&&hh24mi<el.end){
+                if (!isAlertOne){
+                    //gui mot lan neu chua gui
+                    isAlertOne = true; //da gui roi, lan sau khong gui nua
+                    send_sms('903500888',hh24mi + " cuongdq - alive relay datetime: " + new Date().toISOString().replace(/T/, ' ').replace(/\..+/, ''));
+                }
+            }else{
+                isAlertOne = false; //ngoai khung gio nen bat lai de lan sau gui tiep
+            }
+        })
         
         let hasOn = false;
         schedulers.relay1.forEach(el=>{
@@ -167,6 +186,4 @@ cron.schedule("*/5 * * * * *", function() {
 });
 
 console.log("Start!");
-
-//send_sms('903500888','test nodejs');
 

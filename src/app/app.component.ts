@@ -112,12 +112,13 @@ export class MyApp {
         }
         
         if (!this.userInfo.data.background){
-          this.userInfo.data.background = ApiStorageService.mediaServer + "/db/get-private?func=background&token=" + this.apiStorage.getToken();
-          // this.userInfo.data.background = await this.apiImage
-          // .createBase64Image(ApiStorageService.mediaServer + "/db/get-private?func=background&token=" + this.apiStorage.getToken(), 300)
+          //this.userInfo.data.background = ApiStorageService.mediaServer + "/db/get-private?func=background&token=" + this.apiStorage.getToken();
+           this.userInfo.data.background = await this.apiImage
+           .createBase64Image(ApiStorageService.mediaServer + "/db/get-private?func=background&token=" + this.apiStorage.getToken(), 300)
         }
       } catch (e) { }
-      console.log('user data',this.userInfo.data);
+      
+      //console.log('user data',this.userInfo.data);
       
     } else {
       //du lieu chua dang ky user 
