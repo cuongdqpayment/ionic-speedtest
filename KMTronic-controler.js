@@ -59,20 +59,22 @@ const control = new KMTronic();
 const schedulers = {
     alert: [
                 {start:"0700", end:"1800"}
-           ],
-    relay1:[
-                {start:"0700", end:"0900"},
-                {start:"1000", end:"1200"},
-                {start:"1300", end:"1400"},
-                {start:"1500", end:"1600"},
-                {start:"1700", end:"1800"}
-            ],
-    relay2:[
-                {start:"0700", end:"0710"},
-                {start:"1100", end:"1110"},
-                {start:"1700", end:"1710"}
             ]
-}
+            ,
+    relay1:[
+               {start:"0700", end:"0710"},
+               {start:"1100", end:"1110"},
+               {start:"1700", end:"1710"}
+            ]
+            ,
+     relay2:[
+                 {start:"0700", end:"0900"},
+                 {start:"1000", end:"1200"},
+                 {start:"1300", end:"1400"},
+                 {start:"1500", end:"1600"},
+                 {start:"1700", end:"1800"}
+             ]
+        }
 
 
 

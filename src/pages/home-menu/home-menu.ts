@@ -44,7 +44,7 @@ export class HomeMenuPage {
 
         this.contacts = this.apiContact.getUniqueContacts();
 
-        console.log('event-main-login-checked',this.contacts);
+        console.log('Contact for new',this.contacts);
 
         if (!this.contacts[this.userInfo.username]) {
           Object.defineProperty(this.contacts, this.userInfo.username, {
@@ -80,7 +80,7 @@ export class HomeMenuPage {
     this.contacts = this.apiContact.getUniqueContacts();
 
     //doc tu bo nho len lay danh sach da load truoc day ghi ra 
-    //this.dynamicTree = this.apiStorage.getHome();
+    this.dynamicTree = this.apiStorage.getHome();
 
   }
 
@@ -137,7 +137,7 @@ export class HomeMenuPage {
     });
     loading.present();
 
-    this.apiAuth.getDynamicUrl(ApiStorageService.mediaServer + "/db/public-groups?limit=12&offset=0", true)
+    this.apiAuth.getDynamicUrl(ApiStorageService.mediaServer + "/db/public-groups?limit=6&offset=0", false)
       .then(data => {
         loading.dismiss();
 
