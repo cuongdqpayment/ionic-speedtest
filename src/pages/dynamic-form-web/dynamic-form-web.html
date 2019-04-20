@@ -1,7 +1,12 @@
 <ion-header *ngIf="dynamicForm.title">
 	<ion-toolbar>
+		<ion-buttons left *ngIf="!dynamicForm?.home_disable">
+			<button ion-button icon-only color="primary" (click)="onClickGoHome()">
+				<ion-icon name="home"></ion-icon>
+			</button>
+		</ion-buttons>
 		<ion-title>{{dynamicForm.title}}</ion-title>
-		<ion-buttons end *ngFor="let btn of dynamicForm?.buttons">
+		<ion-buttons right *ngFor="let btn of dynamicForm?.buttons">
 			<button ion-button icon-only color="{{btn.color}}" (click)="onClickHeader(btn)">
 				<ion-icon name="{{btn.icon}}"></ion-icon>
 			</button>

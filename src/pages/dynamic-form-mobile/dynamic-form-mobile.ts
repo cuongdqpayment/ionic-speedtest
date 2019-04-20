@@ -12,6 +12,7 @@ export class DynamicFormMobilePage {
 
   dynamicForm: any = {
     title: "Đăng ký"
+    , home_disable: true //nut home
     , buttons: [
       {color:"danger", icon:"close", next:"CLOSE"} 
     ]
@@ -131,6 +132,10 @@ export class DynamicFormMobilePage {
       button: btn
     }
     this.next(btn);
+  }
+
+  onClickGoHome(){
+    if (this.parent) this.navCtrl.popToRoot();
   }
 
   // Xử lý sự kiện click button theo id

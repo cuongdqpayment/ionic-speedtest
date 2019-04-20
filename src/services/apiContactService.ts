@@ -208,12 +208,11 @@ export class ApiContactService {
                                         users.forEach(el => {
                                             //ban cua minh trang thai ban
                                             el.relationship = 2; //ban be quan he voi user
-
+                                            if (!this.friends) this.friends = [];
                                             let index = this.friends ? this.friends.findIndex(x => x.username === el.username) : null;
                                             if (index >= 0) {
                                                 this.friends.splice(index, 1, el);
                                             } else {
-                                                if (!this.friends) this.friends = [];
                                                 this.friends.push(el);
                                             }
                                         });
@@ -233,12 +232,11 @@ export class ApiContactService {
                                 users.forEach(el => {
                                     //ban cua minh trang thai ban
                                     el.relationship = 2; //ban be quan he voi user
-
+                                    if (!this.friends) this.friends = [];
                                     let index = this.friends ? this.friends.findIndex(x => x.username === el.username) : null;
                                     if (index >= 0) {
                                         this.friends.splice(index, 1, el);
                                     } else {
-                                        if (!this.friends) this.friends = [];
                                         this.friends.push(el);
                                     }
                                 });
@@ -264,7 +262,7 @@ export class ApiContactService {
      */
     prepareAvatars(users, isRenew?: boolean) {
         return new Promise((resolve, reject) => {
-            if (users) {
+            if (users&&this.apiStorage.getToken()) {
                 let count = 0;
                 users.forEach(async el => {
                     if (!el.avatar || isRenew) { //chua co avatar (da tung luu hoac luu moi)
@@ -283,7 +281,7 @@ export class ApiContactService {
                     }
                 })
             } else {
-                resolve();
+                resolve(users);
             }
 
         });

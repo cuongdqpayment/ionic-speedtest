@@ -12,6 +12,7 @@ export class DynamicFormWebPage {
 
   dynamicForm: any = {
     title: "Tiêu đề của trang"
+    , home_disable: false //nut home
     , buttons: [
         {color:"danger", icon:"close", next:"CLOSE"} 
       ]
@@ -136,6 +137,10 @@ export class DynamicFormWebPage {
     this.next(btn);
   }
 
+  onClickGoHome(){
+    if (this.parent) this.navCtrl.popToRoot();
+  }
+  
   // Xử lý sự kiện click button theo id
   onClick(btn) {
 

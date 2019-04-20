@@ -150,7 +150,7 @@ export class MyApp {
       this.apiAuth.authorize
         (this.token)
         .then(async data => {
-
+              
               this.userInfo = data.user_info;
               //Tiêm token cho các phiên làm việc lấy số liệu cần xác thực
               if (this.userInfo && this.userInfo.data) {
@@ -159,7 +159,7 @@ export class MyApp {
                 //thay doi anh dai dien va anh background
                 this.userChangeImage();
                 //login ok ... contacts, friends, ids, pass
-                await this.apiContact.delay(1000); //doi 1 giay de lay het anh
+                //await this.apiContact.delay(1000); //doi 1 giay de lay het anh
                 //ban dau moi khoi tao chua co Friend, ta moi khoi tao khi nao co thi moi di tiep
                 let friends = await this.apiContact.prepareFriends(this.userInfo);
       
@@ -170,21 +170,16 @@ export class MyApp {
                 this.navCtrl.push(LoginPage);
 
               }
-
               this.resetTreeMenu();
-
               loading.dismiss();
-
         })
         .catch(err => {
-          //this.auth.deleteToken();
           this.resetTreeMenu();
           loading.dismiss();
         });
     } else {
       this.userInfo = undefined;
       this.resetTreeMenu();
-      //yc login??
     }
 
   }
