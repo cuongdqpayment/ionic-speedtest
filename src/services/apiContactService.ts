@@ -33,32 +33,86 @@ export class ApiContactService {
     ) {
     }
 
-    getUniqueContacts(){
+
+
+    /**
+     * lay unique Contact chua thong tin public, friends
+     */
+    getUniqueContacts() {
+
+        if (this.publicUsers) {
+            this.publicUsers.forEach(el => {
+                //console.log('public', el.username, el.avatar)
+                //let relationship = [];
+                //tu nguoi dung dinh nghia bang cach chon
+                //: ['public', 'friend-of-friend' , 'friend', 'closefriend', 'schoolmate', 'family', 'co-worker', 'partner', 'work', 'neigbor', 'doctor', 'teacher', 'vip', 'blacklist']
+                //neu chua co danh ba luu tru thi them vao
+                if (!this.uniqueContacts[el.username]) {
+                    Object.defineProperty(this.uniqueContacts, el.username, {
+                        value: {
+                            fullname: el.fullname,
+                            nickname: el.nickname,
+                            image: el.image,
+                            avatar: el.avatar,
+                            relationship: [el.relationship === 1 ? 'public' : 'friend']
+                        },
+                        writable: true, enumerable: true, configurable: false
+                    });
+                } else {
+                    if (el.image) this.uniqueContacts[el.username].image = el.image;
+                    if (el.avatar) this.uniqueContacts[el.username].avatar = el.avatar;
+                }
+            })
+        }
+
+        if (this.friends) {
+            this.friends.forEach(el => {
+                //console.log('friends', el.username, el.avatar)
+                if (!this.uniqueContacts[el.username]) {
+                    Object.defineProperty(this.uniqueContacts, el.username, {
+                        value: {
+                            fullname: el.fullname,
+                            nickname: el.nickname,
+                            image: el.image,
+                            avatar: el.avatar,
+                            relationship: [el.relationship === 1 ? 'public' : 'friend']
+                        },
+                        writable: true, enumerable: true, configurable: false
+                    });
+                } else {
+                    if (el.image) this.uniqueContacts[el.username].image = el.image;
+                    if (el.avatar) this.uniqueContacts[el.username].avatar = el.avatar;
+                }
+            })
+        }
+
         return this.uniqueContacts;
     }
     /**
      * public users phục vụ lấy tin tức 
      * hiển thị tin tức
      */
-    getPublicUser(isRenew?: boolean){
-        return new Promise<any>(async (resolve,reject)=>{
+    getPublicUsers(isRenew?: boolean) {
+        return new Promise<any>(async (resolve, reject) => {
             //lay danh sach user public de lay thong tin
             this.publicUsers = this.apiStorage.getPublicUsers();
-            let users = await this.listUserFromServer();
-            if (users) {
-                if (isRenew) this.publicUsers = [];
-                users.forEach(el => {
-                    //ban cua minh trang thai ban
-                    el.relationship = 1; //public user
-                    let index = this.publicUsers.findIndex(x => x.username === el.username);
-                    if (index >= 0) {
-                        this.publicUsers.splice(index, 1, el);
-                    } else {
-                        this.publicUsers.push(el);
-                    }
-                });
-                this.prepareAvatars(this.publicUsers);  
-                this.apiStorage.savePublicUsers(this.publicUsers); 
+            if (!this.publicUsers || isRenew) {
+                let users = await this.listUserFromServer();
+                this.publicUsers = [];
+                if (users) {
+                    users.forEach(el => {
+                        //ban cua minh trang thai ban
+                        el.relationship = 1; //public user
+                        let index = this.publicUsers.findIndex(x => x.username === el.username);
+                        if (index >= 0) {
+                            this.publicUsers.splice(index, 1, el);
+                        } else {
+                            this.publicUsers.push(el);
+                        }
+                    });
+                    this.publicUsers = await this.prepareAvatars(this.publicUsers, isRenew);
+                    this.apiStorage.savePublicUsers(this.publicUsers);
+                }
             }
             resolve(this.publicUsers);
         })
@@ -74,31 +128,32 @@ export class ApiContactService {
        * neu chua co 
        */
     prepareFriends(userInfo: any, isAddFriend?: boolean) {
-        return new Promise<any>(async (resolve,reject)=>{
+        return new Promise<any>(async (resolve, reject) => {
             if (userInfo) {
                 this.friends = this.apiStorage.getUserFriends(userInfo);
-                //truong hop them ban be tu danh ba
-                if (isAddFriend) {
+                //neu da co danh ba roi thi lay ra khong tao them nua
+                //viec ket ban se su dung chuc nang khac khong cho tu dong
+                if (!this.friends || isAddFriend) {
                     //doc danh ba,
                     let vn_prefix_code;
                     let contactsProcessed;
-    
+
                     try {
                         vn_prefix_code = await this.apiAuth.getDynamicUrl(ApiStorageService.authenticationServer + "/ext-public/vn-net-code");
                     } catch (e) { }
-    
+
                     //doc tu dia len, neu co thi liet ke ra luon
                     let phoneContacts = this.apiStorage.getPhoneContacts(userInfo);
-    
+
                     if (phoneContacts) {
                         contactsProcessed = this.processContactsFromServer(phoneContacts, vn_prefix_code);
                         //console.log('uniquePhones storage', contactsProcessed.uniquePhones);
                     } else {
-    
+
                         try {
                             //truong hop chua co thi doc tu may chu
                             phoneContacts = await this.listContactsFromServer();
-    
+
                             if (phoneContacts) {
                                 contactsProcessed = this.processContactsFromServer(phoneContacts, vn_prefix_code);
                                 //console.log('uniquePhones server', contactsProcessed.uniquePhones);
@@ -110,7 +165,7 @@ export class ApiContactService {
                                     //console.log('uniquePhones smartphone', contactsProcessed.uniquePhones);
                                 }
                             }
-    
+
                         } catch (e) {
                             //doc tu may len
                             //neu khong co tu may chu thi doc tu dien thoai ra
@@ -140,19 +195,11 @@ export class ApiContactService {
                                 && contactsProcessed.uniquePhones[key].type === "M"
                             ) {
 
-                                //luu tru danh ba trong may cua minh
-                                //dang 90xx
-                                if (!this.uniqueContacts[key]){
-                                    Object.defineProperty(this.uniqueContacts, key.slice(3), {
-                                        value: contactsProcessed.uniquePhones[key],
-                                        writable: true, enumerable: true, configurable: false
-                                    });
-                                }
 
                                 friends = (friends ? friends + "," : "") + "'" + key.slice(3) + "'"
                                 if (++count >= 500) {
                                     let users = await this.listUserFromServer(friends);
-    
+
                                     if (users) {
                                         //console.log('lay user nay', users);
                                         //lay danh sach user ket hop voi danh ba se ra duoc
@@ -179,7 +226,7 @@ export class ApiContactService {
                                 }
                             }
                         }
-    
+
                         if (count > 0 && friends) {
                             let users = await this.listUserFromServer(friends);
                             if (users) {
@@ -202,11 +249,11 @@ export class ApiContactService {
                         //console.log('hd',this.uniqueContacts);
 
                     }
-                    this.prepareAvatars(this.friends);
+                    this.friends = await this.prepareAvatars(this.friends, isAddFriend);
                     this.apiStorage.saveUserFriends(userInfo, this.friends);
                 }
                 resolve(this.friends);
-            }else{
+            } else {
                 resolve(); //tra ve ban be public
             }
         })
@@ -215,40 +262,31 @@ export class ApiContactService {
     /** lay anh avatar ve luu trong mang
      * Anh chi lay kich co avata 32x de hien thi thoi
      */
-    prepareAvatars(users,isRenew?:boolean) {
-        if (users) {
-            users.forEach(async el=>{
-            if (!el.avatar||isRenew){ //chua co avatar (da tung luu hoac luu moi)
-                if (!el.image){
-                    el.image = ApiStorageService.mediaServer + "/db/get-private?func=avatar&user=" + el.username + "&token=" + this.apiStorage.getToken();
-                    el.avatar = await this.apiImage.createBase64Image(el.image, 32);
-                }else{
-                    el.avatar = await this.apiImage.createBase64Image(el.image + "?token=" + this.apiStorage.getToken(), 32);
-                }
-            }
-            
-            //let relationship = [];
-            //tu nguoi dung dinh nghia bang cach chon
-            //: ['public', 'friend-of-friend' , 'friend', 'closefriend', 'schoolmate', 'family', 'co-worker', 'partner', 'work', 'neigbor', 'doctor', 'teacher', 'vip', 'blacklist']
+    prepareAvatars(users, isRenew?: boolean) {
+        return new Promise((resolve, reject) => {
+            if (users) {
+                let count = 0;
+                users.forEach(async el => {
+                    if (!el.avatar || isRenew) { //chua co avatar (da tung luu hoac luu moi)
+                        if (!el.image) {
+                            el.image = ApiStorageService.mediaServer + "/db/get-private?func=avatar&user=" + el.username + "&token=" + this.apiStorage.getToken();
+                            el.avatar = await this.apiImage.createBase64Image(el.image, 32);
+                        } else {
+                            el.avatar = await this.apiImage.createBase64Image(el.image + "?token=" + this.apiStorage.getToken(), 32);
+                        }
+                        //await this.delay(100);
+                    }
+                    //console.log('prepare',users.length,count, el.username, el.avatar);
 
-            //neu chua co danh ba luu tru thi them vao
-            if (!this.uniqueContacts[el.username]){
-                Object.defineProperty(this.uniqueContacts, el.username, {
-                    value: {
-                        fullname: el.fullname,
-                        nickname: el.nickname,
-                        image: el.image,
-                        avatar: el.avatar,
-                        relationship:[el.relationship===1?'public':'friend']
-                    },
-                    writable: true, enumerable: true, configurable: false
-                });
-            }else{
-                this.uniqueContacts[el.username].image = el.image;
-                this.uniqueContacts[el.username].avatar = el.avatar;
+                    if (++count >= users.length) {
+                        resolve(users);
+                    }
+                })
+            } else {
+                resolve();
             }
-          })
-        }
+
+        });
     }
 
     /**
@@ -653,7 +691,7 @@ export class ApiContactService {
     }
 
 
-    listUserFromServer(friends?:string) {
+    listUserFromServer(friends?: string) {
 
         return new Promise<any>((resolve, reject) => {
 
@@ -662,7 +700,7 @@ export class ApiContactService {
             });
             loading.present();
 
-            this.apiAuth.getDynamicUrl(ApiStorageService.authenticationServer + "/ext-auth/get-users-info"+(friends?"?users=" + friends:""), true)
+            this.apiAuth.getDynamicUrl(ApiStorageService.authenticationServer + "/ext-auth/get-users-info" + (friends ? "?users=" + friends : ""), true)
                 .then(res => {
                     if (res.status === 1 && res.users && res.users.length > 0) {
                         resolve(res.users);
@@ -680,8 +718,8 @@ export class ApiContactService {
 
     }
 
-    delay(milisecond){
-        return new Promise((resolve,reject)=>{
+    delay(milisecond) {
+        return new Promise((resolve, reject) => {
             setTimeout(() => {
                 resolve()
             }, milisecond);

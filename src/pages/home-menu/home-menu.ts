@@ -3,8 +3,6 @@ import { ApiStorageService } from '../../services/apiStorageService';
 import { ApiAuthService } from '../../services/apiAuthService';
 import { LoadingController, ModalController, NavController, Events } from 'ionic-angular';
 import { OwnerImagesPage } from '../owner-images/owner-images';
-import { HomeChatPage } from '../home-chat/home-chat';
-import { Socket } from 'ng-socket-io';
 import { ApiContactService } from '../../services/apiContactService';
 
 @Component({
@@ -13,15 +11,14 @@ import { ApiContactService } from '../../services/apiContactService';
 })
 export class HomeMenuPage {
 
-  dynamicTree: any;
+  dynamicTree: any = {
+    title: "Home"
+  };
   
   contacts = {}
 
   userInfo: any;
   token:any;
-  socket: Socket;
-  users = [];
-  rooms = [];
 
   isLoaded: boolean = true;
 
@@ -36,48 +33,54 @@ export class HomeMenuPage {
   ) { }
 
   ngOnInit() {
-    this.apiContact.getPublicUser()
-    .then(users=>{
-      console.log('public',users);
-    }) 
-
-    //doc tu bo nho len lay danh sach da load truoc day ghi ra 
-    this.dynamicTree = this.apiStorage.getHome();
+    
+    this.refreshNews();
 
     this.events.subscribe('event-main-login-checked'
       , (data => {
 
         this.token = data.token;
         this.userInfo = data.user;
-        this.socket = data.socket;
+
+        this.contacts = this.apiContact.getUniqueContacts();
+
+        console.log('event-main-login-checked',this.contacts);
+
+        if (!this.contacts[this.userInfo.username]) {
+          Object.defineProperty(this.contacts, this.userInfo.username, {
+              value: {
+                  fullname: this.userInfo.fullname,
+                  nickname: this.userInfo.nickname,
+                  image: this.userInfo.data&&this.userInfo.data.image?this.userInfo.data.image:undefined,
+                  avatar: this.userInfo.data&&this.userInfo.data.avatar?this.userInfo.data.avatar:undefined,
+                  relationship: [this.userInfo.relationship === 1 ? 'public' : 'friend']
+              },
+              writable: true, enumerable: true, configurable: false
+          });
+      } else {
+          if (this.userInfo.data&&this.userInfo.data.image) this.contacts[this.userInfo.username].image = this.userInfo.data.image;
+          if (this.userInfo.data&&this.userInfo.data.avatar) this.contacts[this.userInfo.username].avatar = this.userInfo.data.avatar;
+      }
 
 
-        this.contacts = this.apiContact.getUniqueContacts()
-        //this.apiStorage.getUserContacts(this.userInfo);
-        //console.log('contacts',this.contacts);
-
-        if (this.dynamicTree.items.length===0){
-          setTimeout(() => {
-            this.getHomeNews();
-          }, 1000);
-        }
-
+        this.getHomeNews();
+        
       })
     )
+    
+  }
 
-    this.events.subscribe('event-main-received-users'
-      , (users => {
-        //console.log('event-main-received-users-home-menu', users);
-        this.users = users;
-      })
-    )
 
-    this.events.subscribe('event-main-received-rooms'
-      , (rooms => {
-        //console.log('event-main-received-rooms-home-menu', rooms);
-        this.rooms = rooms;
-      })
-    )
+  async refreshNews(){
+    //lay publicUser truoc tien roi moi tiep tuc cac buoc khac
+    let publicUsers = await this.apiContact.getPublicUsers();
+    //neu co roi thi moi di checking login
+
+    //thong tin tu public user
+    this.contacts = this.apiContact.getUniqueContacts();
+
+    //doc tu bo nho len lay danh sach da load truoc day ghi ra 
+    //this.dynamicTree = this.apiStorage.getHome();
 
   }
 
@@ -89,7 +92,7 @@ export class HomeMenuPage {
       });
       loading.present();
       //chuyen thu tuc lay thong tin sang keo len, keo xuong
-      this.apiAuth.getDynamicUrl(ApiStorageService.mediaServer + "/db/list-groups?limit=12&offset=0", true)
+      this.apiAuth.getDynamicUrl(ApiStorageService.mediaServer + "/db/list-groups?limit=6&offset=0", true)
         .then(data => {
 
           let items = [];
@@ -174,13 +177,13 @@ export class HomeMenuPage {
   }
 
   onClickChat() {
-    this.navCtrl.push(HomeChatPage, {
+    /* this.navCtrl.push(HomeChatPage, {
       token: this.token,
       user: this.userInfo,
       socket: this.socket,
       users: this.users,
       rooms: this.rooms
-    });
+    }); */
   }
 
 

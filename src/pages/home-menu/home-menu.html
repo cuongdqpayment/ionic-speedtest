@@ -9,11 +9,11 @@
 		<ion-title>{{dynamicTree?.title}}</ion-title>
 
 		<ion-buttons right *ngIf="userInfo">
-			<button *ngIf="rooms.length>0" class="badge-background" ion-button icon-only color="primary" (click)="onClickChat()">
+			<button *ngIf="isSocket" class="badge-background" ion-button icon-only color="primary" (click)="onClickChat()">
 				<ion-icon name="ios-chatbubbles"></ion-icon>
 			</button>
 			<button class="badge-background" ion-button icon-only color="secondary" (click)="onClickAdd()">
-				<ion-icon name="add"></ion-icon>
+				<ion-icon name="images"></ion-icon>
 			</button>
 		</ion-buttons>
 	</ion-toolbar>

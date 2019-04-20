@@ -83,7 +83,7 @@ export class MyApp {
 
   }
 
-  ionViewDidLoad_main() {
+  async ionViewDidLoad_main() {
 
     this.checkTokenLogin();
 
@@ -102,24 +102,16 @@ export class MyApp {
    * add to contacts
    */
   async userChangeImage() {
-    //du lieu da duoc dang ky
-    
+    //du lieu da duoc dang ky 
     if (this.userInfo.data) {
       try {
-        if (!this.userInfo.data.image){
           this.userInfo.data.image = await this.apiImage
           .createBase64Image(ApiStorageService.mediaServer + "/db/get-private?func=avatar&token=" + this.apiStorage.getToken(), 120)
-        }
         
-        if (!this.userInfo.data.background){
-          //this.userInfo.data.background = ApiStorageService.mediaServer + "/db/get-private?func=background&token=" + this.apiStorage.getToken();
-           this.userInfo.data.background = await this.apiImage
+          this.userInfo.data.background = await this.apiImage
            .createBase64Image(ApiStorageService.mediaServer + "/db/get-private?func=background&token=" + this.apiStorage.getToken(), 300)
-        }
       } catch (e) { }
-      
-      //console.log('user data',this.userInfo.data);
-      
+
     } else {
       //du lieu chua dang ky user 
       //yeu cau dang ky user
@@ -130,19 +122,9 @@ export class MyApp {
 
 
   /**
-   * thu tuc nay goi khi login thanh cong, co day du thong tin user
-   * thuc hien doc tren local cac thong tin
-   * friends, id, pass 
-   * neu chua co 
+   * khoi tao key
    */
-  prepareFriends() {
-    if (this.userInfo) {
-      this.apiContact.prepareFriends(this.userInfo,true)
-      .then(friends=>{
-        console.log(friends); //da luu xuong dia va co danh sach ban be
-      });
-
-    }
+  preparePrivateKeys() {
       
     this.keyPair = this.apiStorage.getUserKey(this.userInfo);
     if (this.keyPair) {
@@ -167,20 +149,21 @@ export class MyApp {
 
       this.apiAuth.authorize
         (this.token)
-        .then(data => {
+        .then(async data => {
 
               this.userInfo = data.user_info;
               //Tiêm token cho các phiên làm việc lấy số liệu cần xác thực
               if (this.userInfo && this.userInfo.data) {
 
                 this.apiAuth.injectToken();
-
-                this.initChatting();
-
+                //thay doi anh dai dien va anh background
                 this.userChangeImage();
-
                 //login ok ... contacts, friends, ids, pass
-                this.prepareFriends();
+                await this.apiContact.delay(1000); //doi 1 giay de lay het anh
+                //ban dau moi khoi tao chua co Friend, ta moi khoi tao khi nao co thi moi di tiep
+                let friends = await this.apiContact.prepareFriends(this.userInfo);
+      
+                this.apiChat.initChatting(this.token,this.userInfo, friends);
 
               } else {
 
@@ -206,10 +189,6 @@ export class MyApp {
 
   }
 
-
-  initChatting() {
-    this.apiChat.initChatting(this.token,this.userInfo);
-  }
 
   resetTreeMenu() {
     //tuy thuoc vao tung user se co menu khac nhau
@@ -593,7 +572,11 @@ export class MyApp {
       ]
     }
 
-    this.apiChat.initLogin();
+    //bao hieu da login xong
+    this.events.publish('event-main-login-checked', {
+      token: this.token,
+      user: this.userInfo
+    });
 
   }
 

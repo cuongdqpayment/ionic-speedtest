@@ -136,9 +136,9 @@ export class ApiStorageService {
     getPublicUsers(){
         try{
             let results = JSON.parse(this.read('#users#public'));
-            return results?results:[];
+            return results?results:null;
         }catch(e){
-            return [];
+            return null;
         }
     }
 
@@ -149,9 +149,9 @@ export class ApiStorageService {
     getUserFriends(user){
         try{
             let results = JSON.parse(this.read('#friends#'+user.username));
-            return results?results:[];
+            return results?results:null;
         }catch(e){
-            return [];
+            return null;
         }
     }
 
