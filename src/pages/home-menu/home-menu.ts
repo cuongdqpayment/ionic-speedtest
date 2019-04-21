@@ -115,9 +115,9 @@ export class HomeMenuPage {
               isHaveNew = true;           
             }
           })
-          if (isHaveNew) this.lastPageIndex--;
+          if (isHaveNew&&this.lastPageIndex>0) this.lastPageIndex--;
         }else{
-          this.curPageIndex = this.lastPageIndex;
+          this.curPageIndex = this.curPageIndex<this.lastPageIndex?this.lastPageIndex:this.curPageIndex;
           items.forEach((el,idx)=>{
             let index = this.dynamicTree.items
                         .findIndex(x => x.group_id === el.group_id);
@@ -150,10 +150,23 @@ export class HomeMenuPage {
     let offset = this.curPageIndex * this.maxOnePage;
     let limit = offset + this.maxOnePage;
 
-    return this.apiAuth.getDynamicUrl(ApiStorageService.mediaServer 
-                                      + "/db/public-groups?limit="+limit
-                                      + "&offset="+offset, isToken)
+    let follows = [];
+    for (let key in this.contacts){
+      follows.push(key);
+    }
+
+    let json_data = {
+      limit: limit,
+      offset: offset,
+      follows: follows
+    }
+    //console.log('json_data',json_data);
+
+    return this.apiAuth.postDynamicForm(ApiStorageService.mediaServer 
+                                      + "/db/public-groups", json_data)
         .then(data => {
+          
+          //console.log('public-groups',data);
 
           let items = [];
           data.forEach(el => {
