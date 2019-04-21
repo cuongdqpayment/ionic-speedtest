@@ -70,6 +70,7 @@ export class ApiStorageService {
                     };
         }
     }
+    
 
     deleteResults(){
         this.delete('results');
@@ -87,6 +88,23 @@ export class ApiStorageService {
     deleteToken(){
         ApiStorageService.token = null;
         this.delete('token');
+    }
+
+    
+    saveServerKey(key){
+        this.save('#key#server#',JSON.stringify(key));
+    }
+
+    /**
+     * lay cap key cua thiet bi nay duy nhat khi khoi dong
+     */
+    getServerKey(){
+        try{
+            let results = JSON.parse(this.read('#key#server#'));
+            return results?results:null;
+        }catch(e){
+            return null;
+        }
     }
 
     /**

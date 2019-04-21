@@ -12,13 +12,19 @@ import { ApiContactService } from '../../services/apiContactService';
 export class HomeMenuPage {
 
   dynamicTree: any = {
-    title: "Home"
+    title: "Home",
+    items:[]
   };
   
-  contacts = {}
+  maxOnePage = 6;
+  curPageIndex = 0;
+  lastPageIndex = 0;
+  maxPage = 10; //toi da cua trang de khong bi lag
 
-  userInfo: any;
-  token:any;
+  contacts = {}  // this.apiContact.getUniqueContacts()
+
+  userInfo: any; // this.apiAuth.getUserInfo()
+  token:any;     // this.apiStorage.getToken() hoac ApiStorageService.token
 
   isLoaded: boolean = true;
 
@@ -44,7 +50,7 @@ export class HomeMenuPage {
 
         this.contacts = this.apiContact.getUniqueContacts();
 
-        console.log('Contact for new',this.contacts);
+        //console.log('Contact for new',this.contacts);
 
         if (!this.contacts[this.userInfo.username]) {
           Object.defineProperty(this.contacts, this.userInfo.username, {
@@ -62,8 +68,7 @@ export class HomeMenuPage {
           if (this.userInfo.data&&this.userInfo.data.avatar) this.contacts[this.userInfo.username].avatar = this.userInfo.data.avatar;
       }
 
-
-        this.getHomeNews();
+      this.getHomeNews(true);
         
       })
     )
@@ -77,14 +82,112 @@ export class HomeMenuPage {
     //neu co roi thi moi di checking login
 
     //thong tin tu public user
+    this.token = this.apiStorage.getToken();
+    this.userInfo = this.apiAuth.getUserInfo();
     this.contacts = this.apiContact.getUniqueContacts();
 
+    this.getHomeNews(true);
+
+    //this.dynamicTree.items.push(items);
     //doc tu bo nho len lay danh sach da load truoc day ghi ra 
-    this.dynamicTree = this.apiStorage.getHome();
+    //this.dynamicTree = this.apiStorage.getHome();
 
   }
 
-  getHomeNews() {
+  /** lay tin tuc moi nhat */
+  getHomeNews(isRenew?:boolean) {
+    if (isRenew) {
+      this.lastPageIndex = this.curPageIndex>0?this.curPageIndex:this.lastPageIndex;
+      this.curPageIndex = 0;
+    }
+    this.getJsonPostNews(this.userInfo?true:false)
+      .then(items=>{
+        if (isRenew) {
+          let isHaveNew = false;
+          items.reverse().forEach((el,idx)=>{
+            let index = this.dynamicTree.items
+                        .findIndex(x => x.group_id === el.group_id);
+            //console.log(idx, el, index);
+            if (index >= 0) {
+              //this.dynamicTree.items.splice(index, 1, el);
+            } else {
+              this.dynamicTree.items.unshift(el);
+              isHaveNew = true;           
+            }
+          })
+          if (isHaveNew) this.lastPageIndex--;
+        }else{
+          this.curPageIndex = this.lastPageIndex;
+          items.forEach((el,idx)=>{
+            let index = this.dynamicTree.items
+                        .findIndex(x => x.group_id === el.group_id);
+            if (index >= 0) {
+              //this.dynamicTree.items.splice(index, 1, el);
+            } else {
+              this.dynamicTree.items.push(el);              
+            }
+          })
+        }
+        //Array.prototype.push.apply(this.dynamicTree.items,items);
+      })
+      .catch(err=>{})
+      ;
+  }
+
+  /**
+   * thuc hien post json gom:
+   * token,
+   * contacts list user 
+   * result: 
+   * server se kiem tra token 
+   * neu co token se doc tin cua user + tin cua contacts moi nhat
+   * neu khong co token hoac khong hop le
+   * sever tra ket qua la tin public cua contact truyen len
+   * 
+   */
+  getJsonPostNews(isToken?:boolean){
+   
+    let offset = this.curPageIndex * this.maxOnePage;
+    let limit = offset + this.maxOnePage;
+
+    return this.apiAuth.getDynamicUrl(ApiStorageService.mediaServer 
+                                      + "/db/public-groups?limit="+limit
+                                      + "&offset="+offset, isToken)
+        .then(data => {
+
+          let items = [];
+          data.forEach(el => {
+
+            let medias = [];
+            if (el.medias) {
+              el.medias.forEach(e => {
+                e.image = ApiStorageService.mediaServer + "/db/get-file/" + encodeURI(e.url);
+                medias.push(e);
+              })
+            }
+
+            el.medias = medias;
+            el.actions = {
+              like: { name: "LIKE", color: "primary", icon: "thumbs-up", next: "LIKE" }
+              , comment: { name: "COMMENT", color: "primary", icon: "chatbubbles", next: "COMMENT" }
+              , share: { name: "SHARE", color: "primary", icon: "share-alt", next: "SHARE" }
+            }
+
+            items.push(el);
+
+          });
+
+          if (items.length>0) this.curPageIndex++; 
+          //da doc duoc trang 1
+           return items;
+          
+        })
+        .catch(err => {return []})
+  }
+
+
+  getPrivateNews(){
+
     if (this.userInfo) {
 
       let loading = this.loadingCtrl.create({
@@ -117,58 +220,15 @@ export class HomeMenuPage {
 
           });
 
-          this.dynamicTree.items = items;
-          this.apiStorage.saveHome(this.dynamicTree);
+          // this.dynamicTree.items = items;
+          // this.apiStorage.saveHome(this.dynamicTree);
 
           loading.dismiss();
         })
         .catch(err => {
           loading.dismiss();
         })
-    } else {
-      this.userInfo = undefined;
-      this.getPublicNews();
-    }
-  }
-
-  getPublicNews() {
-    let loading = this.loadingCtrl.create({
-      content: 'Đợi load dữ liệu chung...'
-    });
-    loading.present();
-
-    this.apiAuth.getDynamicUrl(ApiStorageService.mediaServer + "/db/public-groups?limit=6&offset=0", false)
-      .then(data => {
-        loading.dismiss();
-
-        let items = [];
-        data.forEach(el => {
-
-          let medias = [];
-          if (el.medias) {
-            el.medias.forEach(e => {
-              e.image = ApiStorageService.mediaServer + "/db/get-file/" + encodeURI(e.url);
-              e.note = el.time;
-              medias.push(e);
-            })
-          }
-
-          el.medias = medias;
-          el.actions = {
-            like: { name: "LIKE", color: "primary", icon: "thumbs-up", next: "LIKE" }
-            , comment: { name: "COMMENT", color: "primary", icon: "chatbubbles", next: "COMMENT" }
-            , share: { name: "SHARE", color: "primary", icon: "share-alt", next: "SHARE" }
-          }
-
-          items.push(el);
-
-        });
-
-        this.dynamicTree.items = items;
-      })
-      .catch(err => {
-        loading.dismiss();
-      })
+    } 
   }
 
   // Xử lý sự kiện click button theo id
@@ -189,18 +249,17 @@ export class HomeMenuPage {
 
   doInfinite(infiniteScroll,direction) {
     if (direction==='UP'){
-      console.log('UP');
-
+      console.log('UP', this.curPageIndex);
       if (!this.isLoaded){
-        this.getHomeNews()
+        this.getHomeNews(true);
       }
       setTimeout(() => {
         this.isLoaded = true;
         infiniteScroll.complete();
       }, 1000);
     }else{
-      console.log('DOWN');
-
+      console.log('DOWN', this.curPageIndex);
+      this.getHomeNews(false);
       this.isLoaded = false; //khi keo xuong duoi thi o tren moi cho phep
       setTimeout(() => {
         infiniteScroll.complete();
