@@ -588,24 +588,11 @@ export class MyApp {
         this.navCtrl.push(item.next,{parent:this});
         this.menuCtrl.close();
         if (item.next === this.rootPage) {
-
-          setTimeout(() => {
-            //console.log(item);
-            this.apiChat.initLogin();
-
-            this.events.publish('event-main-received-users'
-              , this.users
-            );
-
-            this.events.publish('event-main-received-rooms'
-              , this.rooms
-            );
-
-          }, 1000)
-
+          //lam gi voi trang chu??? khong can
         }
-      } else if (item.in_app_browser && item.url) {
 
+      } else if (item.in_app_browser && item.url) {
+        //mo kieu new window
         var target = "_blank"; //mo trong inappbrowser
         var options = "hidden=no,toolbar=yes,location=yes,presentationstyle=fullscreen,clearcache=yes,clearsessioncache=yes";
         this.inAppBrowser.create(item.url, target, options);
@@ -613,9 +600,11 @@ export class MyApp {
       } else if (item.popup_iframe && item.url) {
 
         if (this.platform.is('ios')) {
+          //mo kieu popup cua ios doc link
           this.inAppBrowser.create(item.url, '_blank');
         } else {
-          this.openModal(item.popup
+          //mo keu popup
+          this.openModal(item.popup_iframe
             , {
               parent: this,
               link: item.url

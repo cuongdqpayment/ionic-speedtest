@@ -4,6 +4,7 @@ import { ApiAuthService } from '../../services/apiAuthService';
 import { LoadingController, ModalController, NavController, Events } from 'ionic-angular';
 import { OwnerImagesPage } from '../owner-images/owner-images';
 import { ApiContactService } from '../../services/apiContactService';
+import { ApiChatService } from '../../services/apiChatService';
 
 @Component({
   selector: 'page-home-menu',
@@ -28,10 +29,15 @@ export class HomeMenuPage {
 
   isLoaded: boolean = true;
 
+  chatRooms:any;
+  chatFriends: any;
+  chatNewFriends: any;
+
   constructor(
       private apiStorage: ApiStorageService
     , private apiAuth: ApiAuthService
     , private apiContact: ApiContactService
+    , private apiChat: ApiChatService
     , private loadingCtrl: LoadingController
     , private navCtrl: NavController
     , private modalCtrl: ModalController
@@ -51,7 +57,7 @@ export class HomeMenuPage {
         this.contacts = this.apiContact.getUniqueContacts();
 
         //console.log('Contact for new',this.contacts);
-
+        //them danh ba cua nguoi login vao
         if (!this.contacts[this.userInfo.username]) {
           Object.defineProperty(this.contacts, this.userInfo.username, {
               value: {
@@ -67,9 +73,21 @@ export class HomeMenuPage {
           if (this.userInfo.data&&this.userInfo.data.image) this.contacts[this.userInfo.username].image = this.userInfo.data.image;
           if (this.userInfo.data&&this.userInfo.data.avatar) this.contacts[this.userInfo.username].avatar = this.userInfo.data.avatar;
       }
+        //doi 3 giay sau neu login tu dong bang token
+        //thi moi lay thong tin cua user
+        setTimeout(() => {
+          this.getHomeNews(true);
+        }, 3000);
+      })
+    )
 
-      this.getHomeNews(true);
-        
+
+    this.events.subscribe('event-chat-init-room'
+      , (data => {
+        this.chatRooms = data.rooms;
+        this.chatFriends = data.friends;
+        this.chatNewFriends = data.new_friends;
+
       })
     )
     
@@ -91,6 +109,12 @@ export class HomeMenuPage {
     //this.dynamicTree.items.push(items);
     //doc tu bo nho len lay danh sach da load truoc day ghi ra 
     //this.dynamicTree = this.apiStorage.getHome();
+    let chattingData = this.apiChat.getRoomsFriends();
+
+    this.chatRooms = chattingData.rooms;
+    this.chatFriends = chattingData.friends;
+    this.chatNewFriends = chattingData.new_friends;
+
 
   }
 
@@ -259,6 +283,10 @@ export class HomeMenuPage {
     }); */
   }
 
+  //thuc hien ket ban
+  onClickChatFriend(){
+    
+  }
 
   doInfinite(infiniteScroll,direction) {
     if (direction==='UP'){

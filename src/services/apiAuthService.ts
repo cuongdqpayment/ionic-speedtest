@@ -77,7 +77,10 @@ export class ApiAuthService {
     getServerPublicRSAKey(isRenew?:boolean) {
         //{id: publicKey, info:thong tin may chu, signature: chu ky cua may chu}
         let serverId = this.apiStorage.getServerKey();
-        if (!serverId || isRenew){
+        
+        console.log('severId',serverId);
+
+        if (!serverId || !serverId.id || isRenew){
             let serverPublicKey;
             return this.httpClient.get(this.authenticationServer + '/ext-auth/key-json')
                             .toPromise()

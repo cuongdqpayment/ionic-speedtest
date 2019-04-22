@@ -22,7 +22,11 @@ export class ApiChatService {
 
   users = []        //users online
   rooms = [];       //room online
-  originRooms = []; //luu goc
+
+
+  chatRooms:any; // ban dau la khong co room, neu login roi thi moi co room
+  chatFriends:any;
+  chatNewFriends:any;
 
 
   constructor(private apiAuth: ApiAuthService,
@@ -32,6 +36,21 @@ export class ApiChatService {
     private toastCtrl: ToastController
 
   ) { }
+
+
+  /**
+   * Phuc vu kiem tra da login chua?
+   * co ban moi khong?
+   * co ban khong?
+   */
+  getRoomsFriends(){
+    return {
+              rooms: this.chatRooms,
+              friends: this.chatFriends, 
+              new_friends: this.chatNewFriends
+           };
+  }
+
 
   initChatting(token, userInfo, friends) {
 
@@ -53,16 +72,41 @@ export class ApiChatService {
     //chat - client -->open
     this.socket = new Socket(this.configSocketIo);
     //this.apiStorage.deleteUserRooms(this.userInfo)
-    this.originRooms = this.apiStorage.getUserRooms(this.userInfo);
-
+    this.chatRooms = this.apiStorage.getUserRooms(this.userInfo);
+    this.chatFriends = this.apiStorage.getUserChatFriends(this.userInfo);
 
     //tao cac kenh lien lac default
     //va cac kenh lien lac theo ban be trong danh ba
-    console.log('chat friends:',friends)
+    //console.log('contact friends:',friends);
+    if (friends){
+      friends.forEach(el => {
+        let index = this.chatFriends?this.chatFriends.findIndex(x => x.username === el.username):-1;
+        if (index>=0){
+          this.chatFriends.splice(index, 1, el);
+        }else{
+          if (!this.chatNewFriends) this.chatNewFriends=[];
+          this.chatNewFriends.push(el); //them ban moi ket ban, minh phai xac nhan thi no moi ket ban
+        }         
+      });
+    }else{
+
+    }
+    //tu cac rooms da co, co danh sach ban be
+    //neu co ban moi chua co room thi tra ve 
+    //room, new friend (de co)
+    this.events.publish('event-chat-init-room'
+    , {
+        rooms: this.chatRooms,
+        friends: this.chatFriends, 
+        new_friends: this.chatNewFriends
+      }
+    );
+
+
     /* 
     //room demo
-    if (this.userInfo && this.originRooms.length === 0 && this.userInfo.username === '903500888') {
-      this.originRooms = [
+    if (this.userInfo && this.chatRooms.length === 0 && this.userInfo.username === '903500888') {
+      this.chatRooms = [
         {
           id: this.userInfo.username + '-0#xxxx',
           name: 'demo 1',
@@ -107,7 +151,7 @@ export class ApiChatService {
           //4. chat - join rooms
           this.socket.emit('client-join-rooms'
             , {
-              rooms: this.originRooms
+              rooms: this.chatRooms
             });
         }
         if (msg.step == 'USERS') {
@@ -128,7 +172,7 @@ export class ApiChatService {
           //4.2 rooms joined first
           this.rooms = msg.rooms;
 
-          let originRooms = []; //reset
+          let chatRooms = []; //reset
           this.rooms.forEach(room => {
             let users = [];
             room.users.forEach(user => {
@@ -138,7 +182,7 @@ export class ApiChatService {
             });
 
             if (room.id.indexOf('#') > 0) {
-              originRooms.push({
+              chatRooms.push({
                 id: room.id,
                 name: room.name,
                 created: room.created,
@@ -151,7 +195,7 @@ export class ApiChatService {
             }
           })
           //luu room de load lan sau
-          this.apiStorage.saveUserRooms(this.userInfo, originRooms);
+          this.apiStorage.saveUserRooms(this.userInfo, chatRooms);
 
           this.events.publish('event-main-received-rooms', this.rooms);
         }
@@ -159,8 +203,8 @@ export class ApiChatService {
         if (msg.step == 'ACCEPTED') {
           //5.1 + 6.2 accepted room
 
-          //this.originRooms
-          let originRooms = this.apiStorage.getUserRooms(this.userInfo);
+          //this.chatRooms
+          let chatRooms = this.apiStorage.getUserRooms(this.userInfo);
 
           if (msg.room) {
 
@@ -173,7 +217,7 @@ export class ApiChatService {
               }
             });
 
-            originRooms.push({
+            chatRooms.push({
               id: msg.room.id,
               name: msg.room.name,
               created: msg.room.created,
@@ -185,7 +229,7 @@ export class ApiChatService {
             })
           }
           //luu room de load lan sau
-          this.apiStorage.saveUserRooms(this.userInfo, originRooms);
+          this.apiStorage.saveUserRooms(this.userInfo, chatRooms);
 
           this.events.publish('event-main-received-rooms', this.rooms);
         }
@@ -273,7 +317,7 @@ export class ApiChatService {
   jointRooms() {
     this.socket.emit('client-joint-room'
       , {
-        rooms: this.originRooms,
+        rooms: this.chatRooms,
         last_time: this.last_time
       });
   }
