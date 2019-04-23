@@ -68,7 +68,9 @@ export class HomeMenuPage {
           if (this.userInfo.data&&this.userInfo.data.avatar) this.contacts[this.userInfo.username].avatar = this.userInfo.data.avatar;
       }
 
-      this.getHomeNews(true);
+      setTimeout(()=>{
+        this.getHomeNews(true); //3 giay sau moi lay tin moi
+      },3000)
         
       })
     )
