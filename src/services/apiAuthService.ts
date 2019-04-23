@@ -34,16 +34,21 @@ export class ApiAuthService {
             let deviceKey;
             deviceKey = this.apiStorage.getDeviceKey();
             if (deviceKey) {
-                let saveKeyOnServe;
+                let savedKeyOnServe;
                 try{
-                    saveKeyOnServe = await this.postDynamicForm(ApiStorageService.authenticationServer+"/ext-auth/key-device-json",{id:deviceKey.id});
+                    savedKeyOnServe = await this.postDynamicForm(ApiStorageService.authenticationServer+"/ext-auth/key-device-json",{id:deviceKey.id});
                 }catch(e){}
 
-                if (saveKeyOnServe){
+                if (savedKeyOnServe){
                     //kiem tra bang luu tru tren may chu va may ca nhan co dung khong??
+                    //last update time from this device
                     resolve(deviceKey);
+                    //console.log('key server',savedKeyOnServe);
+                    return;
                 }
             }
+
+            //console.log('key in',deviceKey);
             
             const key = new NodeRSA({b: 512}, { signingScheme: 'pkcs1-sha256' });
             const publicKey = key.exportKey("public").replace('-----BEGIN PUBLIC KEY-----\n','').replace('-----END PUBLIC KEY-----','').replace(/[\n\r]/g, '');
@@ -53,14 +58,16 @@ export class ApiAuthService {
             try{
                 yourDevice = await this.getDynamicUrl(ApiStorageService.authenticationServer+"/ext-public/your-device");
             }catch(e){}
-    
+            
+            //console.log('your device',yourDevice);
             if (yourDevice&&yourDevice.device){
                 let time = Date.now();
                 
                 let signature =  key.sign( JSON.stringify({
                                                             time : time,
                                                             device: yourDevice.device,
-                                                            ip: yourDevice.ip
+                                                            ip: yourDevice.ip,
+                                                            origin: yourDevice.origin,
                                                             }
                 )
                 , 'base64','utf8');
@@ -69,6 +76,7 @@ export class ApiAuthService {
                             , time: time                //data in signature
                             , device: yourDevice.device //data in signature
                             , ip: yourDevice.ip         //data in signature
+                            , origin: yourDevice.origin //data in signature
                             , signature: signature      //xac thuc chu ky
                             , key: privateKey           //su dung ma hoa luu pass va sign //co mat khau de luu private key xuong
                             }
@@ -79,9 +87,10 @@ export class ApiAuthService {
                     //ma hoa key nay de server giai ma 
                     let encrypted = serverKey.encrypt(JSON.stringify(
                         {id: publicKey
-                        , ip: yourDevice.ip
-                        , device: yourDevice.device
                         , time: time
+                        , device: yourDevice.device
+                        , ip: yourDevice.ip
+                        , origin: yourDevice.origin
                         , signature: signature}
                     )
                     , 'base64','utf8');
@@ -95,8 +104,9 @@ export class ApiAuthService {
                         resolve()
                     })
                 }
+            }else{
+                resolve()
             }
-            resolve()
         })
     }
 

@@ -84,7 +84,7 @@ export class MyApp {
     this.apiAuth.generatorKeyPairDevice()
     .then(key=>{
       this.keyPair = key;
-      //console.log('key',this.keyPair);
+      //console.log('key resolve',this.keyPair);
     });
     
 
