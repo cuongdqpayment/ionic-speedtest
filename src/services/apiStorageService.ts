@@ -101,9 +101,9 @@ export class ApiStorageService {
     getServerKey(){
         try{
             let results = JSON.parse(this.read('#key#server#'));
-            return results?results:null;
+            return results?results:{};
         }catch(e){
-            return null;
+            return {};
         }
     }
 
@@ -160,13 +160,36 @@ export class ApiStorageService {
         }
     }
 
-    saveUserFriends(user,friends){
-        this.save('#friends#'+user.username,JSON.stringify(friends));
+    /**
+     * luu tru ban be theo danh ba, su dung cho news
+     * @param user 
+     * @param contactFriends 
+     */
+    saveUserContactFriends(user,contactFriends){
+        this.save('#contact-friends#'+user.username,JSON.stringify(contactFriends));
     }
 
-    getUserFriends(user){
+    getUserContactFriends(user){
         try{
-            let results = JSON.parse(this.read('#friends#'+user.username));
+            let results = JSON.parse(this.read('#contact-friends#'+user.username));
+            return results?results:null;
+        }catch(e){
+            return null;
+        }
+    }
+
+    /**
+     * luu tru ban be theo cha, dong y ket ban
+     * @param user 
+     * @param chatFriends 
+     */
+    saveUserChatFriends(user,chatFriends){
+        this.save('#chat-friends#'+user.username,JSON.stringify(chatFriends));
+    }
+
+    getUserChatFriends(user){
+        try{
+            let results = JSON.parse(this.read('#chat-friends#'+user.username));
             return results?results:null;
         }catch(e){
             return null;

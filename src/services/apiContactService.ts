@@ -18,7 +18,7 @@ import { ApiImageService } from './apiImageService';
 @Injectable()
 export class ApiContactService {
 
-    friends: any = []; //danh sach ban be de lien ket
+    contactFriends: any = []; //danh sach ban be de lien ket
     publicUsers: any = []; //danh sach ban be de lien ket
 
     uniqueContacts: any = {} //danh muc duy nhat
@@ -36,7 +36,7 @@ export class ApiContactService {
 
 
     /**
-     * lay unique Contact chua thong tin public, friends
+     * lay unique Contact chua thong tin public, contactFriends
      */
     getUniqueContacts() {
 
@@ -65,9 +65,9 @@ export class ApiContactService {
             })
         }
 
-        if (this.friends) {
-            this.friends.forEach(el => {
-                //console.log('friends', el.username, el.avatar)
+        if (this.contactFriends) {
+            this.contactFriends.forEach(el => {
+                //console.log('contactFriends', el.username, el.avatar)
                 if (!this.uniqueContacts[el.username]) {
                     Object.defineProperty(this.uniqueContacts, el.username, {
                         value: {
@@ -119,21 +119,21 @@ export class ApiContactService {
     }
 
     /**
-     * private friends phục vụ lấy tin tức, 
+     * private contactFriends phục vụ lấy tin tức, 
      * chat, danh bạ liên hệ
      * 
        * thu tuc nay goi khi login thanh cong, co day du thong tin user
        * thuc hien doc tren local cac thong tin
-       * friends, id, pass 
+       * contactFriends, id, pass 
        * neu chua co 
        */
     prepareFriends(userInfo: any, isAddFriend?: boolean) {
         return new Promise<any>(async (resolve, reject) => {
             if (userInfo) {
-                this.friends = this.apiStorage.getUserFriends(userInfo);
+                this.contactFriends = this.apiStorage.getUserContactFriends(userInfo);
                 //neu da co danh ba roi thi lay ra khong tao them nua
                 //viec ket ban se su dung chuc nang khac khong cho tu dong
-                if (!this.friends || isAddFriend) {
+                if (!this.contactFriends || isAddFriend) {
                     //doc danh ba,
                     let vn_prefix_code;
                     let contactsProcessed;
@@ -183,8 +183,8 @@ export class ApiContactService {
                         //da tim thay danh ba
                         //loc lay du lieu tu server cac user da dang ky
                         // dang username '90'
-                        //neu danh ba co luu thi tao thanh friends
-                        let friends;
+                        //neu danh ba co luu thi tao thanh contactFriends
+                        let contactFriends;
                         let count = 0;
                         for (let key in contactsProcessed.uniquePhones) {
                             //dang so dien thoai luu lai la +8490
@@ -196,9 +196,9 @@ export class ApiContactService {
                             ) {
 
 
-                                friends = (friends ? friends + "," : "") + "'" + key.slice(3) + "'"
+                                contactFriends = (contactFriends ? contactFriends + "," : "") + "'" + key.slice(3) + "'"
                                 if (++count >= 500) {
-                                    let users = await this.listUserFromServer(friends);
+                                    let users = await this.listUserFromServer(contactFriends);
 
                                     if (users) {
                                         //console.log('lay user nay', users);
@@ -208,12 +208,12 @@ export class ApiContactService {
                                         users.forEach(el => {
                                             //ban cua minh trang thai ban
                                             el.relationship = 2; //ban be quan he voi user
-                                            if (!this.friends) this.friends = [];
-                                            let index = this.friends ? this.friends.findIndex(x => x.username === el.username) : null;
+                                            if (!this.contactFriends) this.contactFriends = [];
+                                            let index = this.contactFriends ? this.contactFriends.findIndex(x => x.username === el.username) : null;
                                             if (index >= 0) {
-                                                this.friends.splice(index, 1, el);
+                                                this.contactFriends.splice(index, 1, el);
                                             } else {
-                                                this.friends.push(el);
+                                                this.contactFriends.push(el);
                                             }
                                         });
                                     }
@@ -221,23 +221,23 @@ export class ApiContactService {
                                     await this.delay(1000);
 
                                     count = 0;
-                                    friends = null;
+                                    contactFriends = null;
                                 }
                             }
                         }
 
-                        if (count > 0 && friends) {
-                            let users = await this.listUserFromServer(friends);
+                        if (count > 0 && contactFriends) {
+                            let users = await this.listUserFromServer(contactFriends);
                             if (users) {
                                 users.forEach(el => {
                                     //ban cua minh trang thai ban
                                     el.relationship = 2; //ban be quan he voi user
-                                    if (!this.friends) this.friends = [];
-                                    let index = this.friends ? this.friends.findIndex(x => x.username === el.username) : null;
+                                    if (!this.contactFriends) this.contactFriends = [];
+                                    let index = this.contactFriends ? this.contactFriends.findIndex(x => x.username === el.username) : null;
                                     if (index >= 0) {
-                                        this.friends.splice(index, 1, el);
+                                        this.contactFriends.splice(index, 1, el);
                                     } else {
-                                        this.friends.push(el);
+                                        this.contactFriends.push(el);
                                     }
                                 });
                             }
@@ -247,10 +247,10 @@ export class ApiContactService {
                         //console.log('hd',this.uniqueContacts);
 
                     }
-                    this.friends = await this.prepareAvatars(this.friends, isAddFriend);
-                    this.apiStorage.saveUserFriends(userInfo, this.friends);
+                    this.contactFriends = await this.prepareAvatars(this.contactFriends, isAddFriend);
+                    this.apiStorage.saveUserContactFriends(userInfo, this.contactFriends);
                 }
-                resolve(this.friends);
+                resolve(this.contactFriends);
             } else {
                 resolve(); //tra ve ban be public
             }
@@ -689,7 +689,7 @@ export class ApiContactService {
     }
 
 
-    listUserFromServer(friends?: string) {
+    listUserFromServer(contactFriends?: string) {
 
         return new Promise<any>((resolve, reject) => {
 
@@ -698,7 +698,7 @@ export class ApiContactService {
             });
             loading.present();
 
-            this.apiAuth.getDynamicUrl(ApiStorageService.authenticationServer + "/ext-auth/get-users-info" + (friends ? "?users=" + friends : ""), true)
+            this.apiAuth.getDynamicUrl(ApiStorageService.authenticationServer + "/ext-auth/get-users-info" + (contactFriends ? "?users=" + contactFriends : ""), true)
                 .then(res => {
                     if (res.status === 1 && res.users && res.users.length > 0) {
                         resolve(res.users);

@@ -1,3 +1,6 @@
+
+// ma hoa va giai ma kieu cryto
+
 var crypto = require('crypto'),
   algorithm = 'aes-256-gcm',
   key = '12345678876543211234567887654321',
@@ -40,3 +43,6 @@ console.log(decrypt(hw,pw));
 //dong thoi luu xuong may nay id,key, duoc ma hoa bang pass nguoi dung
 //khi nguoi dung muon ky chu ky nao, thi chi can nhap mat khau
 //giai ma lay cap id,key, roi ky gui len server la duoc
+
+
+//kieu RSA???

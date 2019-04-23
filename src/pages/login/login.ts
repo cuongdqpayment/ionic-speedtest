@@ -39,8 +39,10 @@ export class LoginPage {
 
 
   checkTokenLogin(){
+    
+    this.token = this.apiStorageService.getToken();
 
-    if (this.apiStorageService.getToken()) {
+    if (this.token) {
 
       let loading = this.loadingCtrl.create({
         content: 'Đang kiểm tra từ máy chủ xác thực ...'
@@ -48,30 +50,24 @@ export class LoginPage {
       loading.present();
 
       this.auth.authorize
-        (this.apiStorageService.getToken())
+        (this.token)
         .then(data => {
           
           if (data.user_info){
-            this.auth.getServerPublicRSAKey()
-            .then(pk => {
 
+              
               let userInfo = this.auth.getUserInfo();
               //neu co data tuc co khai bao user roi
               if (userInfo.data) this.auth.injectToken(); //Tiêm token cho các phiên làm việc lấy số liệu cần xác thực
               this.callLoginOk(data.user_info);
   
               loading.dismiss();
-            })
-            .catch(err => {
-              loading.dismiss();
-              throw err;
-            });
+            
           }else{
             console.log('no User Info',data);
             loading.dismiss();
             throw "no data.user_info";
           }
-
 
         })
         .catch(err => {
@@ -183,10 +179,38 @@ export class LoginPage {
           step: 'form-user-info',
           form: data
         });
-    }else{
+    }else if (this.userInfo){
       //khi chua co thong tin ca nhan
       //yeu cau nhap thong tin ca nhan
-      this.callEditForm(); 
+      
+        let data = {
+          title: "TẠO THÔNG TIN CÁ NHÂN"
+          , home_disable: true //khong cho nut hom
+          , items: [
+             {          name: "USER " + this.userInfo.username, type: "title"}
+            , { key: "nickname", name: "Biệt danh(*)", hint:"Nickname", type: "text", input_type: "text", icon: "heart", value: this.userInfo.data?this.userInfo.data.nickname:"", validators: [{required: true, min: 1}]}
+            , { key: "name", name: "Họ và tên (*)", hint:"Họ và tên đầy đủ", type: "text", input_type: "text", icon: "person", value: this.userInfo.data?this.userInfo.data.fullname:"", validators: [{required: true, min: 5}]}
+            , { key: "address", name: "Địa chỉ (*)", hint:"Địa chỉ đầy đủ", type: "text", input_type: "text", icon: "pin", value: this.userInfo.data?this.userInfo.data.address:"", validators: [{required: true, min: 5}]}
+            , { key: "phone", name: "Điện thoại (*)", hint: "Yêu cầu định dạng số điện thoại nhé", type: "text", input_type: "tel", icon: "call", validators: [{ pattern: "^[0-9]*$" }], value: this.userInfo.data&&this.userInfo.data.phone?this.userInfo.data.phone:this.userInfo.username}
+            , { key: "email", name: "email(*)", hint: "Yêu cầu định dạng email nhé", type: "text", input_type: "email", icon: "mail", validators: [{ pattern: "^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$" }], value: this.userInfo.data?this.userInfo.data.email:""}
+            , { key: "broadcast_status", name: "Quyền riêng tư", hint: "Lựa chọn quyền riêng tư", type: "select", icon: "md-globe", value: this.userInfo.data?this.userInfo.data.broadcast_status:"1", options: [{ name: "Chỉ mình tôi", value: 0 }, { name: "Cho mọi người", value: 1 }, { name: "Chỉ bạn bè tôi", value: 2 }, { name: "Bạn của bạn tôi", value: 3 }]}
+            , { 
+              type: "button"
+            , options: [
+                { name: "Logout", command:"EXIT" , next: "CALLBACK"}
+              , { name: "Tạo mới", command:"CREATE", url: ApiStorageService.authenticationServer+"/ext-auth/save-user-info", token: this.token, next: "CALLBACK"}
+            ]
+          }
+          ]
+        }
+        
+        this.openModal(DynamicFormWebPage
+          , {
+            parent: this, //bind this for call
+            callback: this.callbackUserInfo,
+            step: 'form-user-create',
+            form: data
+          });
 
     }
 
@@ -200,17 +224,18 @@ export class LoginPage {
       let data = {
         title: "Sửa thông tin cá nhân"
         , items: [
-           {          name: "THÔNG TIN CHO USER " + this.userInfo.username, type: "title"}
+           {          name: "USER " + this.userInfo.username, type: "title"}
           , { key: "nickname", name: "Biệt danh(*)", hint:"Nickname", type: "text", input_type: "text", icon: "heart", value: this.userInfo.data?this.userInfo.data.nickname:"", validators: [{required: true, min: 1}]}
           , { key: "name", name: "Họ và tên (*)", hint:"Họ và tên đầy đủ", type: "text", input_type: "text", icon: "person", value: this.userInfo.data?this.userInfo.data.fullname:"", validators: [{required: true, min: 5}]}
           , { key: "address", name: "Địa chỉ (*)", hint:"Địa chỉ đầy đủ", type: "text", input_type: "text", icon: "pin", value: this.userInfo.data?this.userInfo.data.address:"", validators: [{required: true, min: 5}]}
           , { key: "phone", name: "Điện thoại (*)", hint: "Yêu cầu định dạng số điện thoại nhé", type: "text", input_type: "tel", icon: "call", validators: [{ pattern: "^[0-9]*$" }], value: this.userInfo.data&&this.userInfo.data.phone?this.userInfo.data.phone:this.userInfo.username}
           , { key: "email", name: "email(*)", hint: "Yêu cầu định dạng email nhé", type: "text", input_type: "email", icon: "mail", validators: [{ pattern: "^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$" }], value: this.userInfo.data?this.userInfo.data.email:""}
+          , { key: "broadcast_status", name: "Quyền riêng tư", hint: "Lựa chọn quyền riêng tư", type: "select", icon: "md-globe", value: this.userInfo.data?this.userInfo.data.broadcast_status:"1", options: [{ name: "Chỉ mình tôi", value: 0 }, { name: "Cho mọi người", value: 1 }, { name: "Chỉ bạn bè tôi", value: 2 }, { name: "Bạn của bạn tôi", value: 3 }]}
           , { 
             type: "button"
           , options: [
             { name: "Bỏ qua", command:"CLOSE" , next: "CLOSE"}
-            , { name: "Cập nhập", command:"UPDATE", url: ApiStorageService.authenticationServer+"/ext-auth/save-user-info", token:true, next: "CALLBACK"}
+            , { name: "Cập nhập", command:"UPDATE", url: ApiStorageService.authenticationServer+"/ext-auth/save-user-info", token: this.token, next: "CALLBACK"}
           ]
         }
         ]
@@ -234,6 +259,10 @@ export class LoginPage {
         this.auth.deleteToken();
         this.ionViewDidLoad_Login();
         this.events.publish('user-log-out-ok');
+        //console.log('Goi logout');
+        this.checkTokenLogin(); //kiem tra lai login xem
+        resolve({next:"CLOSE"}); //vi dung modal nen phai dong lai
+
       }
 
       if (res.button&&res.button.command==="EDIT"){
@@ -245,16 +274,23 @@ export class LoginPage {
         this.navCtrl.popToRoot(); //tro ve trang chu ban dau
       }
       
+      if (res.button&&res.button.command==="CREATE"){
+        
+        //luu token truoc khi goi su kien kiem tra login
+        if (this.token) this.apiStorageService.saveToken(this.token);
+        this.events.publish('user-log-in-ok');
+        this.checkTokenLogin(); //kiem tra lai login xem
+        resolve({next:"CLOSE"}); //vi dung modal nen phai dong lai
+
+      } 
+
       if (res.button&&res.button.command==="UPDATE"){
         
+        if (this.token) this.apiStorageService.saveToken(this.token);
         this.events.publish('user-log-in-ok'); 
-        
-        if (this.token){
-          this.apiStorageService.saveToken(this.token);
-        }
-
         this.navCtrl.push(HomeMenuPage);
         resolve({next:"CLOSE"}); //vi dung modal nen phai dong lai
+
       }else{
         resolve();
       }
@@ -265,7 +301,7 @@ export class LoginPage {
               parent: this,
               type: 'QR',
               visible: false,
-              data: this.apiStorageService.getToken()
+              data: this.token
               });  
       }
 
@@ -316,9 +352,8 @@ export class LoginPage {
       
     return new Promise((resolve, reject) => {
 
-      if (res && res.error && res.error.error) {
-        //console.log('callback error:', res.error.error);
-        this.presentAlert('Lỗi:<br>' + JSON.stringify(res));
+      if (res && res.error) {
+        this.presentAlert('Lỗi:<br>' + JSON.stringify(res.error.error));
         resolve();
       } else if (res && res.step === 'form-phone' && res.data) {
         // console.log('forward data:', res.data.database_out);
@@ -364,7 +399,8 @@ export class LoginPage {
             ) {
               
               this.token = res.data.token;
-
+              //tiem token cho phien xac thuc tiep theo
+              
               if (login.user_info.data) {
                 this.apiStorageService.saveToken(this.token);
                 this.events.publish('user-log-in-ok');

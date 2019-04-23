@@ -4,6 +4,7 @@ import { ApiAuthService } from '../../services/apiAuthService';
 import { LoadingController, ModalController, NavController, Events } from 'ionic-angular';
 import { OwnerImagesPage } from '../owner-images/owner-images';
 import { ApiContactService } from '../../services/apiContactService';
+import { ApiChatService } from '../../services/apiChatService';
 
 @Component({
   selector: 'page-home-menu',
@@ -28,10 +29,15 @@ export class HomeMenuPage {
 
   isLoaded: boolean = true;
 
+  chatRooms:any;
+  chatFriends: any;
+  chatNewFriends: any;
+
   constructor(
       private apiStorage: ApiStorageService
     , private apiAuth: ApiAuthService
     , private apiContact: ApiContactService
+    , private apiChat: ApiChatService
     , private loadingCtrl: LoadingController
     , private navCtrl: NavController
     , private modalCtrl: ModalController
@@ -51,27 +57,39 @@ export class HomeMenuPage {
         this.contacts = this.apiContact.getUniqueContacts();
 
         //console.log('Contact for new',this.contacts);
+        //them danh ba cua nguoi login vao
+        if (this.userInfo){
+          if (!this.contacts[this.userInfo.username]) {
+            Object.defineProperty(this.contacts, this.userInfo.username, {
+                value: {
+                    fullname: this.userInfo.fullname,
+                    nickname: this.userInfo.nickname,
+                    image: this.userInfo.data&&this.userInfo.data.image?this.userInfo.data.image:undefined,
+                    avatar: this.userInfo.data&&this.userInfo.data.avatar?this.userInfo.data.avatar:undefined,
+                    relationship: [this.userInfo.relationship === 1 ? 'public' : 'friend']
+                },
+                writable: true, enumerable: true, configurable: false
+            });
+          } else {
+              if (this.userInfo.data&&this.userInfo.data.image) this.contacts[this.userInfo.username].image = this.userInfo.data.image;
+              if (this.userInfo.data&&this.userInfo.data.avatar) this.contacts[this.userInfo.username].avatar = this.userInfo.data.avatar;
+          }
+        }
+        //doi 3 giay sau neu login tu dong bang token
+        //thi moi lay thong tin cua user
+        setTimeout(() => {
+          this.getHomeNews(true);
+        }, 3000);
+      })
+    )
 
-        if (!this.contacts[this.userInfo.username]) {
-          Object.defineProperty(this.contacts, this.userInfo.username, {
-              value: {
-                  fullname: this.userInfo.fullname,
-                  nickname: this.userInfo.nickname,
-                  image: this.userInfo.data&&this.userInfo.data.image?this.userInfo.data.image:undefined,
-                  avatar: this.userInfo.data&&this.userInfo.data.avatar?this.userInfo.data.avatar:undefined,
-                  relationship: [this.userInfo.relationship === 1 ? 'public' : 'friend']
-              },
-              writable: true, enumerable: true, configurable: false
-          });
-      } else {
-          if (this.userInfo.data&&this.userInfo.data.image) this.contacts[this.userInfo.username].image = this.userInfo.data.image;
-          if (this.userInfo.data&&this.userInfo.data.avatar) this.contacts[this.userInfo.username].avatar = this.userInfo.data.avatar;
-      }
 
-      setTimeout(()=>{
-        this.getHomeNews(true); //3 giay sau moi lay tin moi
-      },3000)
-        
+    this.events.subscribe('event-chat-init-room'
+      , (data => {
+        this.chatRooms = data.rooms;
+        this.chatFriends = data.friends;
+        this.chatNewFriends = data.new_friends;
+
       })
     )
     
@@ -80,7 +98,7 @@ export class HomeMenuPage {
 
   async refreshNews(){
     //lay publicUser truoc tien roi moi tiep tuc cac buoc khac
-    let publicUsers = await this.apiContact.getPublicUsers();
+    let publicUsers = await this.apiContact.getPublicUsers(true);
     //neu co roi thi moi di checking login
 
     //thong tin tu public user
@@ -93,6 +111,12 @@ export class HomeMenuPage {
     //this.dynamicTree.items.push(items);
     //doc tu bo nho len lay danh sach da load truoc day ghi ra 
     //this.dynamicTree = this.apiStorage.getHome();
+    let chattingData = this.apiChat.getRoomsFriends();
+
+    this.chatRooms = chattingData.rooms;
+    this.chatFriends = chattingData.friends;
+    this.chatNewFriends = chattingData.new_friends;
+
 
   }
 
@@ -261,6 +285,10 @@ export class HomeMenuPage {
     }); */
   }
 
+  //thuc hien ket ban
+  onClickChatFriend(){
+    
+  }
 
   doInfinite(infiniteScroll,direction) {
     if (direction==='UP'){
