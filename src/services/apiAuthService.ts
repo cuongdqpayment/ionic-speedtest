@@ -30,15 +30,74 @@ export class ApiAuthService {
      * 
      */
     generatorKeyPairDevice(){
-        let deviceKey;
-        deviceKey = this.apiStorage.getDeviceKey();
-        if (deviceKey) return deviceKey;
-        const key = new NodeRSA({b: 512}, { signingScheme: 'pkcs1-sha256' });
-        const publicKey = key.exportKey("public").replace('-----BEGIN PUBLIC KEY-----\n','').replace('-----END PUBLIC KEY-----','').replace(/[\n\r]/g, '');
-        const privateKey = key.exportKey("private").replace('-----BEGIN RSA PRIVATE KEY-----\n','').replace('-----END RSA PRIVATE KEY-----','').replace(/[\n\r]/g, '');
-        deviceKey = {id: publicKey, key: privateKey}
-        this.apiStorage.saveDeviceKey(deviceKey);
-        return deviceKey;
+        return new Promise(async (resolve,reject)=>{
+            let deviceKey;
+            deviceKey = this.apiStorage.getDeviceKey();
+            if (deviceKey) {
+                let saveKeyOnServe;
+                try{
+                    saveKeyOnServe = await this.postDynamicForm(ApiStorageService.authenticationServer+"/ext-auth/key-device-json",{id:deviceKey.id});
+                }catch(e){}
+
+                if (saveKeyOnServe){
+                    //kiem tra bang luu tru tren may chu va may ca nhan co dung khong??
+                    resolve(deviceKey);
+                }
+            }
+            
+            const key = new NodeRSA({b: 512}, { signingScheme: 'pkcs1-sha256' });
+            const publicKey = key.exportKey("public").replace('-----BEGIN PUBLIC KEY-----\n','').replace('-----END PUBLIC KEY-----','').replace(/[\n\r]/g, '');
+            const privateKey = key.exportKey("private").replace('-----BEGIN RSA PRIVATE KEY-----\n','').replace('-----END RSA PRIVATE KEY-----','').replace(/[\n\r]/g, '');
+            
+            let yourDevice;
+            try{
+                yourDevice = await this.getDynamicUrl(ApiStorageService.authenticationServer+"/ext-public/your-device");
+            }catch(e){}
+    
+            if (yourDevice&&yourDevice.device){
+                let time = Date.now();
+                
+                let signature =  key.sign( JSON.stringify({
+                                                            time : time,
+                                                            device: yourDevice.device,
+                                                            ip: yourDevice.ip
+                                                            }
+                )
+                , 'base64','utf8');
+    
+                deviceKey = {id: publicKey              //key for verify
+                            , time: time                //data in signature
+                            , device: yourDevice.device //data in signature
+                            , ip: yourDevice.ip         //data in signature
+                            , signature: signature      //xac thuc chu ky
+                            , key: privateKey           //su dung ma hoa luu pass va sign //co mat khau de luu private key xuong
+                            }
+                
+    
+                let serverKey = await this.getServerPublicRSAKey();
+                if (serverKey){
+                    //ma hoa key nay de server giai ma 
+                    let encrypted = serverKey.encrypt(JSON.stringify(
+                        {id: publicKey
+                        , ip: yourDevice.ip
+                        , device: yourDevice.device
+                        , time: time
+                        , signature: signature}
+                    )
+                    , 'base64','utf8');
+                    //console.log(encrypted);
+                    this.postDynamicForm(ApiStorageService.authenticationServer+"/ext-auth/key-device",{encrypted: encrypted})
+                    .then(data=>{
+                        this.apiStorage.saveDeviceKey(deviceKey);
+                        resolve(deviceKey);
+                    })
+                    .catch(err=>{
+                        resolve()
+                    })
+                }
+            }
+            resolve()
+        })
     }
 
     /**
@@ -49,12 +108,16 @@ export class ApiAuthService {
      */
     importKey(keySave:{id:string,key:string},keyType:'public'|'private'){
         const rsaKey = new NodeRSA(null, { signingScheme: 'pkcs1-sha256' });
-        if (keyType==='private'){
-            rsaKey.importKey('-----BEGIN RSA PRIVATE KEY-----\n'+keySave.key+'\n-----END RSA PRIVATE KEY-----');
-        }else{
-            rsaKey.importKey('-----BEGIN PUBLIC KEY-----\n'+keySave.id+'\n-----END PUBLIC KEY-----');
+        try{
+            if (keyType==='private'){
+                rsaKey.importKey('-----BEGIN RSA PRIVATE KEY-----\n'+keySave.key+'\n-----END RSA PRIVATE KEY-----');
+            }else{
+                rsaKey.importKey('-----BEGIN PUBLIC KEY-----\n'+keySave.id+'\n-----END PUBLIC KEY-----');
+            }
+            return rsaKey;
+        }catch(e){
+            return null;
         }
-        return rsaKey;
     }
 
     generatorKeyPairUser(user){
@@ -77,9 +140,7 @@ export class ApiAuthService {
     getServerPublicRSAKey(isRenew?:boolean) {
         //{id: publicKey, info:thong tin may chu, signature: chu ky cua may chu}
         let serverId = this.apiStorage.getServerKey();
-        
-        console.log('severId',serverId);
-
+        //console.log('severId',serverId);
         if (!serverId || !serverId.id || isRenew){
             let serverPublicKey;
             return this.httpClient.get(this.authenticationServer + '/ext-auth/key-json')
@@ -89,12 +150,11 @@ export class ApiAuthService {
                                sData =  data;
                                if (sData && sData.public_key) {
                                     let rsaServerPublicKey = this.importKey({id: sData.public_key,
-                                                                            key:""},"public");
-                                    //neu server co tra them info va signature thi luu lai luon
+                                                                             key:""},"public");
                                     this.apiStorage.saveServerKey({id: serverPublicKey});                                         
                                     return rsaServerPublicKey;
                                 } else {
-                                    throw new Error('No public_key exists!');
+                                    return null;
                                 }
                             })
             
@@ -292,7 +352,8 @@ export class ApiAuthService {
      }
 
 
-     injectToken(){
+     injectToken(token?:any){
+        this.tokenObject={token: token?token:this.tokenObject.token};
         this.reqInterceptor.setRequestToken(this.tokenObject.token);
      }
 

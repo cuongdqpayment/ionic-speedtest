@@ -152,45 +152,56 @@ export class DynamicFormMobilePage {
       btn.next === 'CALLBACK'
       || btn.next === 'NEXT'
     ) {
-      this.dynamicForm.items.some(el => {
-        let validatorFns = [];
-        if (el.validators) {
-          el.validators.forEach(req => {
-            if (req.required) validatorFns.push(Validators.required);
-            if (req.min) validatorFns.push(Validators.minLength(req.min));
-            if (req.max) validatorFns.push(Validators.maxLength(req.max));
-            if (req.pattern) validatorFns.push(Validators.pattern(req.pattern));
-          })
+      if (btn.command!=="EXIT"){
+        this.dynamicForm.items.some(el => {
+          let validatorFns = [];
+          if (el.validators) {
+            el.validators.forEach(req => {
+              if (req.required) validatorFns.push(Validators.required);
+              if (req.min) validatorFns.push(Validators.minLength(req.min));
+              if (req.max) validatorFns.push(Validators.maxLength(req.max));
+              if (req.pattern) validatorFns.push(Validators.pattern(req.pattern));
+            })
+          }
+          let control = new FormControl(el.value, validatorFns);
+          el.invalid = control.invalid;
+          valid = !el.invalid;
+  
+          if (valid
+            && el.key
+            && el.value
+          ) {
+            Object.defineProperty(keyResults, el.key, { value: el.value, writable: false, enumerable: true });
+          } else if (valid
+            && el.id
+            && el.value
+            && el.type !== "title"
+            && el.type !== "image"
+            && el.type !== "avatar"
+            && el.type !== "button"
+          ) {
+            results.push({
+              id: el.id,
+              value: el.value
+            })
+          }
+          //console.log(el.name, el.id, el.value, 'control:', control.invalid, control.valid);
+          return el.invalid;
+        });
+      }else{
+        btn.next_data = {
+          step: this.step,
+          button: btn //vi la callback tri tra ket qua cho callback
         }
-        let control = new FormControl(el.value, validatorFns);
-        el.invalid = control.invalid;
-        valid = !el.invalid;
+        this.next(btn);
+        return;
+      }
 
-        if (valid
-          && el.key
-          && el.value
-        ) {
-          Object.defineProperty(keyResults, el.key, { value: el.value, writable: false, enumerable: true });
-        } else if (valid
-          && el.id
-          && el.value
-          && el.type !== "title"
-          && el.type !== "image"
-          && el.type !== "avatar"
-          && el.type !== "button"
-        ) {
-          results.push({
-            id: el.id,
-            value: el.value
-          })
-        }
-        //console.log(el.name, el.id, el.value, 'control:', control.invalid, control.valid);
-        return el.invalid;
-      });
     }else{
       this.next(btn);
       return;
     }
+
 
     if (valid) {
 

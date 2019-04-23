@@ -58,21 +58,23 @@ export class HomeMenuPage {
 
         //console.log('Contact for new',this.contacts);
         //them danh ba cua nguoi login vao
-        if (!this.contacts[this.userInfo.username]) {
-          Object.defineProperty(this.contacts, this.userInfo.username, {
-              value: {
-                  fullname: this.userInfo.fullname,
-                  nickname: this.userInfo.nickname,
-                  image: this.userInfo.data&&this.userInfo.data.image?this.userInfo.data.image:undefined,
-                  avatar: this.userInfo.data&&this.userInfo.data.avatar?this.userInfo.data.avatar:undefined,
-                  relationship: [this.userInfo.relationship === 1 ? 'public' : 'friend']
-              },
-              writable: true, enumerable: true, configurable: false
-          });
-      } else {
-          if (this.userInfo.data&&this.userInfo.data.image) this.contacts[this.userInfo.username].image = this.userInfo.data.image;
-          if (this.userInfo.data&&this.userInfo.data.avatar) this.contacts[this.userInfo.username].avatar = this.userInfo.data.avatar;
-      }
+        if (this.userInfo){
+          if (!this.contacts[this.userInfo.username]) {
+            Object.defineProperty(this.contacts, this.userInfo.username, {
+                value: {
+                    fullname: this.userInfo.fullname,
+                    nickname: this.userInfo.nickname,
+                    image: this.userInfo.data&&this.userInfo.data.image?this.userInfo.data.image:undefined,
+                    avatar: this.userInfo.data&&this.userInfo.data.avatar?this.userInfo.data.avatar:undefined,
+                    relationship: [this.userInfo.relationship === 1 ? 'public' : 'friend']
+                },
+                writable: true, enumerable: true, configurable: false
+            });
+          } else {
+              if (this.userInfo.data&&this.userInfo.data.image) this.contacts[this.userInfo.username].image = this.userInfo.data.image;
+              if (this.userInfo.data&&this.userInfo.data.avatar) this.contacts[this.userInfo.username].avatar = this.userInfo.data.avatar;
+          }
+        }
         //doi 3 giay sau neu login tu dong bang token
         //thi moi lay thong tin cua user
         setTimeout(() => {
@@ -96,7 +98,7 @@ export class HomeMenuPage {
 
   async refreshNews(){
     //lay publicUser truoc tien roi moi tiep tuc cac buoc khac
-    let publicUsers = await this.apiContact.getPublicUsers();
+    let publicUsers = await this.apiContact.getPublicUsers(true);
     //neu co roi thi moi di checking login
 
     //thong tin tu public user

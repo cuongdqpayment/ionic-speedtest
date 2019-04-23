@@ -81,6 +81,13 @@ export class MyApp {
 
     this.ionViewDidLoad_main();
 
+    this.apiAuth.generatorKeyPairDevice()
+    .then(key=>{
+      this.keyPair = key;
+      //console.log('key',this.keyPair);
+    });
+    
+
   }
 
   async ionViewDidLoad_main() {
@@ -126,15 +133,8 @@ export class MyApp {
    */
   preparePrivateKeys() {
       
-    this.keyPair = this.apiStorage.getUserKey(this.userInfo);
-    if (this.keyPair) {
-      //nhap pass de giai ma private key
-  
-    } else {
-      //lay pass tren server (hoac lay private key tren server)
-      //tao pass, luu key
-      //luu server 
-    }
+    // this.apiStorage.getUserKey(this.userInfo);
+    
   }
 
 

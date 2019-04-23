@@ -65,7 +65,8 @@ export class ApiChatService {
         , timeout: 60000
         , reconnectionDelay: 30000
         , reconnectionDelayMax: 60000
-        , wsEngine: 'ws'
+        //, transports: ['websocket']
+        //, wsEngine: 'wss'
       }
     };
 
