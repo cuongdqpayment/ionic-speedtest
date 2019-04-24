@@ -5,6 +5,7 @@ import { LoadingController, ModalController, NavController, Events } from 'ionic
 import { OwnerImagesPage } from '../owner-images/owner-images';
 import { ApiContactService } from '../../services/apiContactService';
 import { ApiChatService } from '../../services/apiChatService';
+import { FriendsPage } from '../friends/friends';
 
 @Component({
   selector: 'page-home-menu',
@@ -174,7 +175,7 @@ export class HomeMenuPage {
   getJsonPostNews(isToken?:boolean){
    
     let offset = this.curPageIndex * this.maxOnePage;
-    let limit = offset + this.maxOnePage;
+    let limit =  this.maxOnePage;
 
     let follows = [];
     for (let key in this.contacts){
@@ -287,7 +288,11 @@ export class HomeMenuPage {
 
   //thuc hien ket ban
   onClickChatFriend(){
-    
+    this.openModal(FriendsPage,{
+      parent: this,
+      friends: this.chatFriends,
+      new_friends: this.chatNewFriends
+    })
   }
 
   doInfinite(infiniteScroll,direction) {
