@@ -276,7 +276,7 @@ export class HomeMenuPage {
     this.openModal(OwnerImagesPage,{parent: this});
   }
 
-  onClickChat() {
+  onClickChatRoom() {
     /* this.navCtrl.push(HomeChatPage, {
       token: this.token,
       user: this.userInfo,

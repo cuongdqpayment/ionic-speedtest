@@ -90,7 +90,7 @@ export class MyApp {
 
   }
 
-  async ionViewDidLoad_main() {
+  ionViewDidLoad_main() {
 
     this.checkTokenLogin();
 
