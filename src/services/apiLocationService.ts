@@ -12,6 +12,8 @@
 import { Geolocation } from '@ionic-native/geolocation';
 import { Injectable } from '@angular/core';
 import { Platform } from 'ionic-angular';
+
+//cordova
 import { Device } from '@ionic-native/device';
 import { Network } from '@ionic-native/network';
 import { Sim } from '@ionic-native/sim';

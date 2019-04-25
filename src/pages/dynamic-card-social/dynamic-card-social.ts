@@ -225,7 +225,7 @@ export class DynamicCardSocialPage {
 
   ngOnInit(){
 
-    this.dynamicCardsOrigin = this.navParams.get("list") ? this.navParams.get("list") : this.dynamicCardsOrigin;
+    this.dynamicCardsOrigin = this.navParams.get("form") ? this.navParams.get("form") : this.dynamicCardsOrigin;
     this.refresh();
     
     this.callback = this.navParams.get("callback");
@@ -235,8 +235,8 @@ export class DynamicCardSocialPage {
     
     if (call_waiting_data){
       call_waiting_data()
-      .then(list=>{
-        this.refresh(list);
+      .then(form=>{
+        this.refresh(form);
       })
     }
   }
@@ -245,8 +245,7 @@ export class DynamicCardSocialPage {
     if (newList) this.dynamicCardsOrigin = newList;
     this.isMobile = (this.platform.platforms()[0]==='mobile');
     this.dynamicCards = this.dynamicCardsOrigin;
-
-    console.log('cards', this.dynamicCardsOrigin);
+    //console.log('cards', this.dynamicCardsOrigin);
   }
 
   //Su dung search
@@ -382,13 +381,13 @@ export class DynamicCardSocialPage {
       || btn.next == 'SHARE' 
       || btn.next == 'MORE' ) {
         if (this.callback) {
-          this.callback(btn.next_data)
+          this.callback(btn)
             .then(nextStep => this.next(nextStep));
         }
       } else if (btn.next == 'NEXT' && btn.next_data && btn.next_data.data) {
         btn.next_data.callback = this.callback; //gan lai cac function object
         btn.next_data.parent = this.parent;     //gan lai cac function object
-        btn.next_data.list = btn.next_data.data; //gan du lieu tra ve tu server
+        btn.next_data.form = btn.next_data.data; //gan du lieu tra ve tu server
         this.navCtrl.push(DynamicCardSocialPage, btn.next_data);
       }
     }

@@ -1,5 +1,5 @@
 import { Component, ViewChild, ElementRef } from '@angular/core';
-import { NavController, LoadingController, ToastController, ModalController } from 'ionic-angular';
+import { NavController, LoadingController, ToastController, ModalController, NavParams } from 'ionic-angular';
 import { Geolocation } from '@ionic-native/geolocation';
 import { DynamicFormWebPage } from '../dynamic-form-web/dynamic-form-web';
 import { ApiMapService } from '../../services/apiMapService';
@@ -23,6 +23,8 @@ var interval;
 })
 export class GoogleMapPage {
   @ViewChild('map') mapElement: ElementRef;
+
+  parent:any;
 
   map: any;
   isMapLoaded:boolean = false;
@@ -160,9 +162,11 @@ export class GoogleMapPage {
               , private geoLocation: Geolocation
               , private apiMap: ApiMapService
               , private toastCtrl: ToastController
+              , private navParams: NavParams
     ) {}
 
   ngOnInit() {
+    this.parent = this.navParams.get("parent");
     //lay vi tri tracking
     this.getLocation();
   }
@@ -717,6 +721,11 @@ export class GoogleMapPage {
     };
     this.openModal(DynamicListOrderPage,formData);   
 
+  }
+
+
+  onClickGoHome(){
+    if (this.parent) this.navCtrl.popToRoot();
   }
 
   //thuc hien cac nut lenh theo khau lenh

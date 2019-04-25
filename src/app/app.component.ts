@@ -339,7 +339,7 @@ export class MyApp {
               size: "1.3em",
               click: true,
               url: "https://c3.mobifone.vn/qld/db/matrix-a4",
-              icon: "list"
+              icon: "ios-apps-outline"
             }
             ,
             {
@@ -347,7 +347,7 @@ export class MyApp {
               size: "1.3em",
               click: true,
               url: "https://c3.mobifone.vn/qld/db/matrix-a5",
-              icon: "list"
+              icon: "md-apps"
             }
             ,
             {
@@ -356,7 +356,7 @@ export class MyApp {
               click: true,
               popup_iframe: LinkPage, //su dung link web ko file
               url: "https://dantri.com.vn/",
-              icon: "list"
+              icon: "at"
             }
             ,
             {
@@ -365,7 +365,7 @@ export class MyApp {
               click: true,
               in_app_browser: LinkPage, //Link page chi gia lap thoi
               url: "https://dantri.com.vn/",
-              icon: "list"
+              icon: "globe"
             }
           ]
         }

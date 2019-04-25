@@ -5,6 +5,7 @@ import { Contacts, Contact } from '@ionic-native/contacts';
 import { ApiAuthService } from '../../services/apiAuthService';
 import { ApiStorageService } from '../../services/apiStorageService';
 import { DynamicFormWebPage } from '../dynamic-form-web/dynamic-form-web';
+import { ApiLocationService } from '../../services/apiLocationService';
 
 @Component({
   selector: 'page-contacts',
@@ -83,6 +84,7 @@ export class ContactsPage {
   constructor(
     private apiAuth: ApiAuthService,
     private apiStorage: ApiStorageService,
+    private apiLocation: ApiLocationService,
     private loadingCtrl: LoadingController,
     private alertController: AlertController,
     private toastCtrl: ToastController,
@@ -126,7 +128,7 @@ export class ContactsPage {
   }
 
 
-  
+
   async refresh() {
 
     let loading = this.loadingCtrl.create({
@@ -135,7 +137,7 @@ export class ContactsPage {
     loading.present();
 
     this.dynamicContacts = {
-      title: "Danh bạ"
+      title: "DANH BẠ CỦA BẠN"
       , search_bar: { hint: "Tìm tên hoặc số" }
       , buttons: [
         { color: "primary", icon: "person-add", next: "ADD" }    //doc danh ba, pickup 1 so addfriend
@@ -162,7 +164,7 @@ export class ContactsPage {
     //doc tu dia len, neu co thi liet ke ra luon
     let phoneContacts = this.apiStorage.getPhoneContacts(this.userInfo);
 
-    if (phoneContacts) {
+    if (phoneContacts && phoneContacts.length > 0) {
       this.phoneContacts = this.processServerContacts(phoneContacts);
     } else {
 
@@ -170,9 +172,10 @@ export class ContactsPage {
         //truong hop chua co thi doc tu may chu
         phoneContacts = await this.listContactsFromServer();
 
-        if (phoneContacts) {
+        if (phoneContacts && phoneContacts.length > 0) {
           this.phoneContacts = this.processServerContacts(phoneContacts);
         } else {
+          //kiem tra neu la core 
           this.phoneContacts = await this.listContacts();
         }
 
@@ -212,11 +215,16 @@ export class ContactsPage {
 
   }
 
-
   async onClickHeader(btn) {
     if (btn.next === "ADD") {
-      this.pickContacts();
-
+      this.pickContacts()
+        .then(data => {
+          if (data) {
+            this.presentAlert("Ban chon danh ba" + JSON.stringify(data));
+          } else {
+            this.presentAlert("khong co danh ba nao duoc chon");
+          }
+        });
     }
 
     if (btn.next === "SYNC") {
@@ -256,7 +264,7 @@ export class ContactsPage {
   }
 
   callbackSettings = function (res) {
-    
+
     this.changeFixType = res.data.change_prefix;
     this.orginContacts = res.data.origin;
     return new Promise(async (resolve, reject) => {
@@ -275,13 +283,17 @@ export class ContactsPage {
             let btnHeader = this.dynamicContacts.buttons.find(x => x.next === "SYNC");
             if (btnHeader && btnHeader.alerts) btnHeader.alerts = []; //reset ve 0
           } catch (e) { }
+        } else {
+          this.presentAlert('Không có danh bạ nào được được lưu lại')
         }
 
         loading.dismiss();
         //hoi xem co dong bo lai danh ba vao may khong?
         //neu co thi luu lai danh ba (xoa het danh ba va luu lai danh ba moi)
 
-      } else {
+      }
+
+      else {
 
         //console.log(res.data);
         let tmpPhoneContacts;
@@ -299,13 +311,13 @@ export class ContactsPage {
         if (this.orginContacts === 'PHONE') {
           tmpPhoneContacts = await this.listContacts();  //da chuyen doi contact
           //console.log(tmpPhoneContacts);
-          if (tmpPhoneContacts) {
+          if (tmpPhoneContacts && tmpPhoneContacts.length > 0) {
             this.saveContacts2Server(tmpPhoneContacts);
             this.apiStorage.savePhoneContacts(this.userInfo, tmpPhoneContacts);
           }
         }
 
-        if (tmpPhoneContacts) {
+        if (tmpPhoneContacts && tmpPhoneContacts.length > 0) {
           this.phoneContacts = tmpPhoneContacts;
           //chuyen doi de hien thi
           //hien thi chi 20 bang ghi thoi
@@ -318,56 +330,6 @@ export class ContactsPage {
       resolve({ next: "CLOSE" })
     })
   }.bind(this);
-
-  /** Goi menu he thong de mo danh ba ra
-   * ket qua sau khi chon mot danh ba nao do thi se in ra
-   */
-  pickContacts() {
-    let loading = this.loadingCtrl.create({
-      content: 'Đợi load danh bạ từ máy để bạn chọn...'
-    });
-    loading.present();
-
-    //Goi menu he thong
-    this.contacts.pickContact()
-      .then((oneContact: Contact) => {
-        //ket qua chon duoc 1 danh ba trong danh sach
-
-        this.showToast(loading, 'Bạn đã chọn được 1 danh bạ ' + (oneContact.displayName ? oneContact.displayName : oneContact.name.formatted ? oneContact.name.formatted : oneContact.name.familyName ? oneContact.name.familyName : 'Không biết tên'), 0, 1);
-
-        if (oneContact.phoneNumbers) {
-          oneContact.phoneNumbers.forEach((value, index) => {
-            let obj;
-            obj = value;
-            //so dien thoai lien quan
-            console.log('PhoneNumber : ', obj.id, obj.type, obj.value);
-          })
-        }
-        if (oneContact.photos) {
-          oneContact.photos.forEach((value, index) => {
-            let obj;
-            obj = value;
-            //anh dai dien
-            console.log('Photo: ', obj.id, obj.type, obj.value)
-          });
-        }
-
-        if (oneContact.urls) {
-          oneContact.urls.forEach((value, index) => {
-            let obj;
-            obj = value;
-            //link nick google plus or facebook...
-            console.log('Url: ', obj.id, obj.type, obj.value)
-          });
-        }
-
-      })
-      .catch(err => {
-        this.showToast(loading, 'Lỗi đọc danh bạ: ' + JSON.stringify(err));
-        //console.log('Khong chon danh ba nao ca');
-      });
-  }
-
 
   //chuyen doi phone duy nhat
   //neu so dau tien la + thi giu nguyen
@@ -398,7 +360,7 @@ export class ContactsPage {
   }
 
 
-  checkPhoneType(phone,nation_callingcode,net_code){
+  checkPhoneType(phone, nation_callingcode, net_code) {
     if (net_code) {
       let found = net_code.find(x => ("+" + nation_callingcode + x.code) === phone.substring(0, ("+" + nation_callingcode + x.code).length))
       if (found) {
@@ -461,16 +423,14 @@ export class ContactsPage {
 
             if (phonenumber && phonenumber !== "") {
 
-              let netCode = this.checkPhoneType(phonenumber,'84',this.vn_prefix_code);
+              let netCode = this.checkPhoneType(phonenumber, '84', this.vn_prefix_code);
               //console.log(netCode);
 
-              if (this.changeFixType){
+              if (this.changeFixType) {
                 phonenumber = this.vnChangePrefix(phonenumber, '84', this.prefix_change, this.changeFixType);
               }
 
               let intPhonenumber = this.internationalFormat(phonenumber, '84');
-
-
 
               if (!_uniquePhones[intPhonenumber]) {
                 Object.defineProperty(_uniquePhones, intPhonenumber, {
@@ -481,8 +441,7 @@ export class ContactsPage {
                   }, writable: false, enumerable: true, configurable: false
                 });
 
-
-                phones.push({ value: phonenumber, type: netCode&&netCode.f_or_m?netCode.f_or_m:'#', int: intPhonenumber, net: netCode&&netCode.network?netCode.network:'#'})
+                phones.push({ value: phonenumber, type: netCode && netCode.f_or_m ? netCode.f_or_m : '#', int: intPhonenumber, net: netCode && netCode.network ? netCode.network : '#' })
 
                 _uniquePhones[intPhonenumber].name = {};
                 if (fullname) {
@@ -504,11 +463,9 @@ export class ContactsPage {
           })
         }
 
-
         //console.log(fullname);
 
         if (contact._objectInstance.emails) {
-
 
           contact._objectInstance.emails.forEach(email => {
 
@@ -575,9 +532,7 @@ export class ContactsPage {
             , emails: emails
             , relationship: relationship
           });
-
           //console.log(fullname,_phoneContacts);
-
         }
 
       });
@@ -615,16 +570,16 @@ export class ContactsPage {
 
         if (contact.phones) {
           contact.phones.forEach(phone => {
-            
+
             let phonenumber = phone.value.replace(/[^0-9+]+/g, "");
 
             if (phonenumber && phonenumber !== "") {
-              
-              let netCode = this.checkPhoneType(phonenumber,'84',this.vn_prefix_code);
+
+              let netCode = this.checkPhoneType(phonenumber, '84', this.vn_prefix_code);
               //console.log(netCode);
-              
-              if (this.changeFixType){
-                phonenumber = this.vnChangePrefix(phonenumber, '84', this.prefix_change,this.changeFixType);
+
+              if (this.changeFixType) {
+                phonenumber = this.vnChangePrefix(phonenumber, '84', this.prefix_change, this.changeFixType);
               }
 
               let intPhonenumber = this.internationalFormat(phonenumber, '84');
@@ -644,7 +599,7 @@ export class ContactsPage {
                   Object.defineProperty(_uniquePhones[intPhonenumber].name, fullname, { value: 1, writable: true, enumerable: true, configurable: false });
                 }
 
-                phones.push({ value: phonenumber, type: netCode&&netCode.f_or_m?netCode.f_or_m:'#', int: intPhonenumber, net: netCode&&netCode.network?netCode.network:'#'})
+                phones.push({ value: phonenumber, type: netCode && netCode.f_or_m ? netCode.f_or_m : '#', int: intPhonenumber, net: netCode && netCode.network ? netCode.network : '#' })
               } else {
 
                 if (fullname) {
@@ -754,14 +709,14 @@ export class ContactsPage {
           if (res.status === 1 && res.result && res.result.length > 0) {
             resolve(res.result);
           } else {
-            resolve();
+            resolve([]);
           }
           loading.dismiss();
         })
         .catch(err => {
           console.log('loi may chu', err);
           loading.dismiss();
-          resolve()
+          resolve([])
         })
 
     })
@@ -806,43 +761,112 @@ export class ContactsPage {
   listContacts() {
 
     return new Promise((resolve, reject) => {
-      let loading = this.loadingCtrl.create({
-        content: 'Đợi lọc dữ liệu từ danh bạ'
-      });
-      loading.present();
 
-      this.contacts
-        //.find(['displayName', 'name', 'phoneNumbers', 'emails', 'photos', 'urls', 'organizations', 'addresses', 'birthday', 'ims']
-        .find(['displayName', 'name', 'phoneNumbers', 'emails',]
-          , { filter: "", multiple: true })
-        .then(data => {
+      //kiem tra co phai la ung dung cordova khong?
+      if (this.apiLocation.getPlatform().is_cordova) {
 
-          loading.dismiss()
-
-          this.toastCtrl.create({
-            message: 'Đã đọc xong danh bạ ' + data.length + ' số',
-            duration: 5000,
-            position: 'middle'
-          }).present();
-
-          resolve(this.processContacts(data));
-          //this.phoneContacts = ;
-          //this.saveContacts2Server(this.phoneContacts);
-        })
-        .catch(err => {
-          loading.dismiss()
-
-          this.toastCtrl.create({
-            message: 'Lỗi đọc danh bạ: ' + JSON.stringify(err),
-            duration: 5000,
-            position: 'bottom'
-          }).present();
-
-          resolve();
-
+        let loading = this.loadingCtrl.create({
+          content: 'Đợi lọc dữ liệu từ danh bạ'
         });
-    })
+        loading.present();
 
+        this.contacts
+          //.find(['displayName', 'name', 'phoneNumbers', 'emails', 'photos', 'urls', 'organizations', 'addresses', 'birthday', 'ims']
+          .find(['displayName', 'name', 'phoneNumbers', 'emails',]
+            , { filter: "", multiple: true })
+          .then(data => {
+
+            loading.dismiss()
+
+            this.toastCtrl.create({
+              message: 'Đã đọc xong danh bạ ' + data.length + ' số',
+              duration: 5000,
+              position: 'middle'
+            }).present();
+
+            resolve(this.processContacts(data));
+            //this.phoneContacts = ;
+            //this.saveContacts2Server(this.phoneContacts);
+          })
+          .catch(err => {
+            loading.dismiss()
+
+            this.toastCtrl.create({
+              message: 'Lỗi đọc danh bạ: ' + JSON.stringify(err),
+              duration: 5000,
+              position: 'bottom'
+            }).present();
+
+            resolve([]);
+
+          });
+
+      } else {
+        this.presentAlert("Bạn phải cài đặt ứng dụng mới sử dụng được chức năng này");
+        resolve([]);
+      }
+    })
+  }
+
+  /** Goi menu he thong de mo danh ba ra
+   * ket qua sau khi chon mot danh ba nao do thi se in ra
+   */
+  pickContacts() {
+    return new Promise((resolve, reject) => {
+      if (this.apiLocation.getPlatform().is_cordova) {
+
+
+        let loading = this.loadingCtrl.create({
+          content: 'Đợi load danh bạ từ máy để bạn chọn...'
+        });
+        loading.present();
+
+        //Goi menu he thong
+        this.contacts.pickContact()
+          .then((oneContact: Contact) => {
+            //ket qua chon duoc 1 danh ba trong danh sach
+
+            this.showToast(loading, 'Bạn đã chọn được 1 danh bạ ' + (oneContact.displayName ? oneContact.displayName : oneContact.name.formatted ? oneContact.name.formatted : oneContact.name.familyName ? oneContact.name.familyName : 'Không biết tên'), 0, 1);
+
+            if (oneContact.phoneNumbers) {
+              oneContact.phoneNumbers.forEach((value, index) => {
+                let obj;
+                obj = value;
+                //so dien thoai lien quan
+                //console.log('PhoneNumber : ', obj.id, obj.type, obj.value);
+              })
+            }
+            if (oneContact.photos) {
+              oneContact.photos.forEach((value, index) => {
+                let obj;
+                obj = value;
+                //anh dai dien
+                //console.log('Photo: ', obj.id, obj.type, obj.value)
+              });
+            }
+
+            if (oneContact.urls) {
+              oneContact.urls.forEach((value, index) => {
+                let obj;
+                obj = value;
+                //link nick google plus or facebook...
+                //console.log('Url: ', obj.id, obj.type, obj.value)
+              });
+            }
+
+            //tra ve 1 array chua 1 danh ba cua nguoi dung da chon
+            resolve(this.processContacts([oneContact]));
+
+          })
+          .catch(err => {
+            this.presentAlert('Lỗi đọc danh bạ: ' + JSON.stringify(err));
+            resolve();
+          });
+      } else {
+        this.presentAlert("Bạn phải cài đặt ứng dụng mới sử dụng được chức năng này");
+        resolve();
+      }
+    })
   }
 
   showToast(ld: any, msg: string, dur?: 0 | 1 | 2, pos?: 0 | 1 | 2) {

@@ -216,9 +216,9 @@ export class ApiStorageService {
     getPhoneContacts(user){
         try{
             let results = JSON.parse(this.read('#phone-contacts#'+user.username));
-            return results?results:null;
+            return results?results:[];
         }catch(e){
-            return null;
+            return [];
         }
     }
 

@@ -6,6 +6,7 @@ import { OwnerImagesPage } from '../owner-images/owner-images';
 import { ApiContactService } from '../../services/apiContactService';
 import { ApiChatService } from '../../services/apiChatService';
 import { FriendsPage } from '../friends/friends';
+import { DynamicCardSocialPage } from '../dynamic-card-social/dynamic-card-social';
 
 @Component({
   selector: 'page-home-menu',
@@ -15,9 +16,9 @@ export class HomeMenuPage {
 
   dynamicTree: any = {
     title: "Home",
-    items:[]
+    items: []
   };
-  
+
   maxOnePage = 6;
   curPageIndex = 0;
   lastPageIndex = 0;
@@ -26,16 +27,16 @@ export class HomeMenuPage {
   contacts = {}  // this.apiContact.getUniqueContacts()
 
   userInfo: any; // this.apiAuth.getUserInfo()
-  token:any;     // this.apiStorage.getToken() hoac ApiStorageService.token
+  token: any;     // this.apiStorage.getToken() hoac ApiStorageService.token
 
   isLoaded: boolean = true;
 
-  chatRooms:any;
+  chatRooms: any;
   chatFriends: any;
   chatNewFriends: any;
 
   constructor(
-      private apiStorage: ApiStorageService
+    private apiStorage: ApiStorageService
     , private apiAuth: ApiAuthService
     , private apiContact: ApiContactService
     , private apiChat: ApiChatService
@@ -46,7 +47,7 @@ export class HomeMenuPage {
   ) { }
 
   ngOnInit() {
-    
+
     this.refreshNews();
 
     this.events.subscribe('event-main-login-checked'
@@ -59,21 +60,21 @@ export class HomeMenuPage {
 
         //console.log('Contact for new',this.contacts);
         //them danh ba cua nguoi login vao
-        if (this.userInfo){
+        if (this.userInfo) {
           if (!this.contacts[this.userInfo.username]) {
             Object.defineProperty(this.contacts, this.userInfo.username, {
-                value: {
-                    fullname: this.userInfo.fullname,
-                    nickname: this.userInfo.nickname,
-                    image: this.userInfo.data&&this.userInfo.data.image?this.userInfo.data.image:undefined,
-                    avatar: this.userInfo.data&&this.userInfo.data.avatar?this.userInfo.data.avatar:undefined,
-                    relationship: [this.userInfo.relationship === 1 ? 'public' : 'friend']
-                },
-                writable: true, enumerable: true, configurable: false
+              value: {
+                fullname: this.userInfo.fullname,
+                nickname: this.userInfo.nickname,
+                image: this.userInfo.data && this.userInfo.data.image ? this.userInfo.data.image : undefined,
+                avatar: this.userInfo.data && this.userInfo.data.avatar ? this.userInfo.data.avatar : undefined,
+                relationship: [this.userInfo.relationship === 1 ? 'public' : 'friend']
+              },
+              writable: true, enumerable: true, configurable: false
             });
           } else {
-              if (this.userInfo.data&&this.userInfo.data.image) this.contacts[this.userInfo.username].image = this.userInfo.data.image;
-              if (this.userInfo.data&&this.userInfo.data.avatar) this.contacts[this.userInfo.username].avatar = this.userInfo.data.avatar;
+            if (this.userInfo.data && this.userInfo.data.image) this.contacts[this.userInfo.username].image = this.userInfo.data.image;
+            if (this.userInfo.data && this.userInfo.data.avatar) this.contacts[this.userInfo.username].avatar = this.userInfo.data.avatar;
           }
         }
         //doi 3 giay sau neu login tu dong bang token
@@ -93,11 +94,11 @@ export class HomeMenuPage {
 
       })
     )
-    
+
   }
 
 
-  async refreshNews(){
+  async refreshNews() {
     //lay publicUser truoc tien roi moi tiep tuc cac buoc khac
     let publicUsers = await this.apiContact.getPublicUsers(true);
     //neu co roi thi moi di checking login
@@ -122,42 +123,42 @@ export class HomeMenuPage {
   }
 
   /** lay tin tuc moi nhat */
-  getHomeNews(isRenew?:boolean) {
+  getHomeNews(isRenew?: boolean) {
     if (isRenew) {
-      this.lastPageIndex = this.curPageIndex>0?this.curPageIndex:this.lastPageIndex;
+      this.lastPageIndex = this.curPageIndex > 0 ? this.curPageIndex : this.lastPageIndex;
       this.curPageIndex = 0;
     }
-    this.getJsonPostNews(this.userInfo?true:false)
-      .then(items=>{
+    this.getJsonPostNews(this.userInfo ? true : false)
+      .then(items => {
         if (isRenew) {
           let isHaveNew = false;
-          items.reverse().forEach((el,idx)=>{
+          items.reverse().forEach((el, idx) => {
             let index = this.dynamicTree.items
-                        .findIndex(x => x.group_id === el.group_id);
+              .findIndex(x => x.group_id === el.group_id);
             //console.log(idx, el, index);
             if (index >= 0) {
               //this.dynamicTree.items.splice(index, 1, el);
             } else {
               this.dynamicTree.items.unshift(el);
-              isHaveNew = true;           
+              isHaveNew = true;
             }
           })
-          if (isHaveNew&&this.lastPageIndex>0) this.lastPageIndex--;
-        }else{
-          this.curPageIndex = this.curPageIndex<this.lastPageIndex?this.lastPageIndex:this.curPageIndex;
-          items.forEach((el,idx)=>{
+          if (isHaveNew && this.lastPageIndex > 0) this.lastPageIndex--;
+        } else {
+          this.curPageIndex = this.curPageIndex < this.lastPageIndex ? this.lastPageIndex : this.curPageIndex;
+          items.forEach((el, idx) => {
             let index = this.dynamicTree.items
-                        .findIndex(x => x.group_id === el.group_id);
+              .findIndex(x => x.group_id === el.group_id);
             if (index >= 0) {
               //this.dynamicTree.items.splice(index, 1, el);
             } else {
-              this.dynamicTree.items.push(el);              
+              this.dynamicTree.items.push(el);
             }
           })
         }
         //Array.prototype.push.apply(this.dynamicTree.items,items);
       })
-      .catch(err=>{})
+      .catch(err => { })
       ;
   }
 
@@ -172,13 +173,13 @@ export class HomeMenuPage {
    * sever tra ket qua la tin public cua contact truyen len
    * 
    */
-  getJsonPostNews(isToken?:boolean){
-   
+  getJsonPostNews(isToken?: boolean) {
+
     let offset = this.curPageIndex * this.maxOnePage;
-    let limit =  this.maxOnePage;
+    let limit = this.maxOnePage;
 
     let follows = [];
-    for (let key in this.contacts){
+    for (let key in this.contacts) {
       follows.push(key);
     }
 
@@ -189,44 +190,44 @@ export class HomeMenuPage {
     }
     //console.log('json_data',json_data);
 
-    return this.apiAuth.postDynamicForm(ApiStorageService.mediaServer 
-                                      + "/db/public-groups", json_data)
-        .then(data => {
-          
-          //console.log('public-groups',data);
+    return this.apiAuth.postDynamicForm(ApiStorageService.mediaServer
+      + "/db/public-groups", json_data)
+      .then(data => {
 
-          let items = [];
-          data.forEach(el => {
+        //console.log('public-groups',data);
 
-            let medias = [];
-            if (el.medias) {
-              el.medias.forEach(e => {
-                e.image = ApiStorageService.mediaServer + "/db/get-file/" + encodeURI(e.url);
-                medias.push(e);
-              })
-            }
+        let items = [];
+        data.forEach(el => {
 
-            el.medias = medias;
-            el.actions = {
-              like: { name: "LIKE", color: "primary", icon: "thumbs-up", next: "LIKE" }
-              , comment: { name: "COMMENT", color: "primary", icon: "chatbubbles", next: "COMMENT" }
-              , share: { name: "SHARE", color: "primary", icon: "share-alt", next: "SHARE" }
-            }
+          let medias = [];
+          if (el.medias) {
+            el.medias.forEach(e => {
+              e.image = ApiStorageService.mediaServer + "/db/get-file/" + encodeURI(e.url);
+              medias.push(e);
+            })
+          }
 
-            items.push(el);
+          el.medias = medias;
+          el.actions = {
+            like: { name: "LIKE", color: "primary", icon: "thumbs-up", next: "LIKE" }
+            , comment: { name: "COMMENT", color: "primary", icon: "chatbubbles", next: "COMMENT" }
+            , share: { name: "SHARE", color: "primary", icon: "share-alt", next: "SHARE" }
+          }
 
-          });
+          items.push(el);
 
-          if (items.length>0) this.curPageIndex++; 
-          //da doc duoc trang 1
-           return items;
-          
-        })
-        .catch(err => {return []})
+        });
+
+        if (items.length > 0) this.curPageIndex++;
+        //da doc duoc trang 1
+        return items;
+
+      })
+      .catch(err => { return [] })
   }
 
 
-  getPrivateNews(){
+  getPrivateNews() {
 
     if (this.userInfo) {
 
@@ -250,6 +251,7 @@ export class HomeMenuPage {
             }
 
             el.medias = medias;
+            //actions va results se lay tu csdl quyen thiet lap cua nguoi post len
             el.actions = {
               like: { name: "LIKE", color: "primary", icon: "thumbs-up", next: "LIKE" }
               , comment: { name: "COMMENT", color: "primary", icon: "chatbubbles", next: "COMMENT" }
@@ -268,12 +270,12 @@ export class HomeMenuPage {
         .catch(err => {
           loading.dismiss();
         })
-    } 
+    }
   }
 
   // Xử lý sự kiện click button theo id
   onClickAdd() {
-    this.openModal(OwnerImagesPage,{parent: this});
+    this.openModal(OwnerImagesPage, { parent: this });
   }
 
   onClickChatRoom() {
@@ -287,25 +289,25 @@ export class HomeMenuPage {
   }
 
   //thuc hien ket ban
-  onClickChatFriend(){
-    this.openModal(FriendsPage,{
+  onClickChatFriend() {
+    this.openModal(FriendsPage, {
       parent: this,
       friends: this.chatFriends,
       new_friends: this.chatNewFriends
     })
   }
 
-  doInfinite(infiniteScroll,direction) {
-    if (direction==='UP'){
+  doInfinite(infiniteScroll, direction) {
+    if (direction === 'UP') {
       console.log('UP', this.curPageIndex);
-      if (!this.isLoaded){
+      if (!this.isLoaded) {
         this.getHomeNews(true);
       }
       setTimeout(() => {
         this.isLoaded = true;
         infiniteScroll.complete();
       }, 1000);
-    }else{
+    } else {
       console.log('DOWN', this.curPageIndex);
       this.getHomeNews(false);
       this.isLoaded = false; //khi keo xuong duoi thi o tren moi cho phep
@@ -317,19 +319,70 @@ export class HomeMenuPage {
   }
 
   onClickMedia(idx, item) {
-    console.log(idx, item);
+    console.log('picture click', idx, item);
+    let paragraphs = [];
+    if (item.medias){
+      item.medias.forEach(el => {
+        paragraphs.push({
+          medias: [
+            { image: el.image}
+          ]
+        })
+      });
+    }
+    let formData = {
+      title: this.contacts[item.user]&&this.contacts[item.user].fullname?this.contacts[item.user].fullname +(this.contacts[item.user].nickname?"("+this.contacts[item.user].nickname+")":""):item.user
+      , buttons: [
+        { color: "danger", icon: "close", next: "CLOSE" }
+      ]
+      , items: [
+        {
+          short_detail: {
+            avatar: this.contacts[item.user]&&this.contacts[item.user].avatar?this.contacts[item.user].avatar:"assets/imgs/no-image-go.jpg"
+            , h1: this.contacts[item.user]&&this.contacts[item.user].fullname?this.contacts[item.user].fullname:this.contacts[item.user]&&this.contacts[item.user].nickname?this.contacts[item.user].nickname:item.user
+            , note: item.time
+            , action: { color: "primary", icon: "more", next: "MORE" }
+          }
+          , content: {
+            p: item.content //ghi noi dung bai viet
+            , paragraphs: paragraphs
+            //ghi nickname cua user viet bai
+            , note:this.contacts[item.user]&&this.contacts[item.user].nickname?this.contacts[item.user].nickname:this.contacts[item.user]&&this.contacts[item.user].fullname?this.contacts[item.user].fullname:item.user
+          }
+          , results: item.results
+          , actions: item.actions
+        }
+      ]
+    }
+
+    this.openModal(DynamicCardSocialPage, {
+      parent: this,
+      callback: this.callBackProcess,
+      form: formData
+    })
   }
 
-  onClickHeader(btn) {
-    console.log(btn);
-  }
 
+  //neu user cua user = voi user dang login
   onClickShortDetails(item) {
-    console.log(item);
+    //console.log('short details', this.userInfo.username, item.user);
+    if (this.userInfo
+      &&item.user===this.userInfo.username){
+      console.log('Menu của user, có quyền ẩn tin tức này hoặc chia sẻ với quyền hạn bạn bè, public, ...');
+    }else{
+      //day la tin tuc cua nguoi khac, minh khong muon hien thi thi report thong tin nay
+      //
+      console.log('Cần report tin tức này hoặc ẩn tin tức này trên trang của mình...');
+    }
+    
+  }
+
+  onClickAvatars(btn, item) {
+    console.log('action', btn, item);
   }
 
   onClickActions(btn, item) {
-    console.log(btn, item);
+    console.log('action', btn, item);
   }
 
 
@@ -337,5 +390,12 @@ export class HomeMenuPage {
     let modal = this.modalCtrl.create(form, data);
     modal.present();
   }
+
+
+  callBackProcess = function (res) {
+    return new Promise((resolve, reject) => {
+      resolve();
+    })
+  }.bind(this);
 
 }
