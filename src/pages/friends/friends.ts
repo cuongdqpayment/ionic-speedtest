@@ -23,6 +23,8 @@ export class FriendsPage {
   newFriends:any = [];
   publicFriends: any = [];
   morePublic:number= this.countView;
+  moreNewFriends:number= this.countView;
+  moreFriends:number= this.countView;
 
   //cac tuy chon
   dynamicFriends: any = {};
@@ -109,6 +111,12 @@ export class FriendsPage {
   onClickMore(type){
     if (type==='PUBLIC'&&this.morePublic<this.publicFriends.length) this.morePublic +=this.countView;    
     if (type==='PUBLIC-CLOSE') this.morePublic =this.countView; 
+
+    if (type==='NEW-FRIEND'&&this.moreNewFriends<this.newFriends.length) this.moreNewFriends +=this.countView;    
+    if (type==='NEW-FRIEND-CLOSE') this.moreNewFriends =this.countView; 
+    
+    if (type==='FRIEND'&&this.moreFriends<this.friends.length) this.moreFriends +=this.countView;    
+    if (type==='FRIEND-CLOSE') this.moreFriends =this.countView; 
 
   }
 
