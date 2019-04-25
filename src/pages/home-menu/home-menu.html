@@ -13,7 +13,7 @@
 				<ion-icon name="ios-chatbubbles"></ion-icon>
 				<ion-badge *ngIf="chatNewMessages" class="badge-alert" color="danger">{{ (chatNewMessages?.length>99?'99+':chatNewMessages?.length) }}</ion-badge>
 			</button>
-			<button *ngIf="chatFriends||chatNewFriends" class="badge-background" ion-button icon-only color="primary" (click)="onClickChatFriend()">
+			<button *ngIf="contacts || chatFriends || chatNewFriends" class="badge-background" ion-button icon-only color="primary" (click)="onClickChatFriend()">
 				<ion-icon name="md-contacts"></ion-icon>
 				<ion-badge *ngIf="chatNewFriends" class="badge-alert" color="danger">{{ (chatNewFriends?.length>99?'99+':chatNewFriends?.length) }}</ion-badge>
 			</button>

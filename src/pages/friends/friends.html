@@ -27,82 +27,84 @@
 
 <ion-content no-padding class="background-page gradient">
 
-  <ion-infinite-scroll *ngIf="!isLoaded" position="top" (ionInfinite)="doInfinite($event,'UP')" threshold="1%">
-    <ion-infinite-scroll-content 
-    loadingSpinner="bubbles"
-    loadingText="Load dữ liệu mới hơn...">
-    </ion-infinite-scroll-content>
-  </ion-infinite-scroll>
-
   <ion-grid>
     <ion-row>
       <ion-col class="background-card gradient grid-border" 
-      text-center col-12 
-      offset-xl-3 col-xl-6 
-      offset-lg-3 col-lg-6
+      text-center 
+      col-12 
+      offset-xl-2 col-xl-8 
+      offset-lg-2 col-lg-8
       offset-md-2 col-md-8 
-      col-sm-12 *ngIf="friendViews?.length>0">
+      col-sm-12 
+      *ngIf="publicFriends?.length>0">
 
-            <ion-list>
-
-                <ion-item-sliding #slidingItem class="background-list" *ngFor="let contact of friendViews; let idx = index">
-                    <ion-item #item class="background-item">
-
-                        <ion-icon item-start *ngIf="!contact.image" name="contact" color="primary"></ion-icon>
-                        <ion-avatar item-start *ngIf="contact.image">
-                            <img [src]="contact.image">
+            <ion-list *ngIf="publicFriends?.length>0">
+                <ion-title>Bạn có thể quen?</ion-title> 
+                <ion-item-sliding #slidingItem class="background-list" *ngFor="let contact of publicFriends; let idx = index">
+                    <ion-item #item class="background-item" *ngIf="idx<=morePublic">
+                        <ion-icon item-start *ngIf="!contact.avatar" name="contact" color="primary"></ion-icon>
+                        <ion-avatar item-start *ngIf="contact.avatar">
+                            <img [src]="contact.avatar">
                         </ion-avatar>
-
-                        <ion-title >{{contact.nickname?contact.nickname:contact.fullname?contact.fullname:""}}</ion-title>
-
-                        <ion-row *ngFor="let phone of contact.phones">
-                          <ion-col col-2>
-                              {{phone.type}}
-                          </ion-col>
-                          <ion-col col-8 style="text-align: right;">
-                              {{phone.value}}
-                          </ion-col>
-                          <ion-col col-2 style="text-align: right;">
-                              {{uniquePhones[phone.int]?.count}}
-                          </ion-col>
-                        </ion-row>
-
-                        <ion-row *ngFor="let email of contact.emails">
-                          <ion-col col-2>
-                              {{email.type}}
-                          </ion-col>
-                          <ion-col col-8 style="text-align: right;">
-                              {{email.value}}
-                          </ion-col>
-                          <ion-col col-2 style="text-align: right;">
-                              {{uniqueEmails[email.value]?.count}}
-                          </ion-col>
-                        </ion-row>
-
-                        <ion-note item-end text-wrap *ngIf="contact.relationship">{{contact.relationship}}</ion-note>
-
+                        
+                        <ion-title >{{contact.fullname?contact.fullname:contact.nickname?contact.nickname:contact.username}}</ion-title>
+                        <h3 *ngIf="contact.nickname" text-wrap>{{contact.nickname}}</h3>
+                        <p *ngIf="contact.phone" text-wrap>{{contact.phone}}</p>
+                        <p *ngIf="contact.address" text-wrap>{{contact.address}}</p>
+                        <ion-note item-end text-wrap *ngIf="contact.relationship">
+                          {{contact.relationship}}
+                          <p *ngIf="idx===morePublic">
+                            <ion-icon *ngIf="idx<publicFriends.length-1" tappable (click)="onClickMore('PUBLIC')" name="ios-arrow-down"></ion-icon>
+                            <span>...</span>
+                            <ion-icon *ngIf="idx>countView && idx<=publicFriends.length-1" tappable (click)="onClickMore('PUBLIC-CLOSE')" name="ios-arrow-up"></ion-icon>
+                          </p>
+                        </ion-note>
                     </ion-item>
 
-                    <ion-item-options>
-                        <button ion-button *ngFor="let opt of options" color="{{opt.color}}" (click)="onClickDetails(slidingItem, opt, idx)">
+                    <ion-item-options *ngIf="idx<=morePublic">
+                        <button ion-button *ngFor="let opt of options" color="{{opt.color}}" (click)="onClickDetails(slidingItem, opt, idx, contact)">
                             <ion-icon name="{{opt.icon}}"></ion-icon>
                             {{opt.name}}
                         </button>
                     </ion-item-options>
 
                 </ion-item-sliding>
+            </ion-list>
 
-            </ion-list>  
-      
+            <ion-list *ngIf="newFriends?.length>0">
+                <ion-title>Bạn từ danh bạ của bạn?</ion-title> 
+                <ion-item-sliding #slidingItem class="background-list" *ngFor="let contact of newFriends; let idx = index">
+                    <ion-item #item class="background-item" *ngIf="idx<=morePublic">
+                        <ion-icon item-start *ngIf="!contact.avatar" name="contact" color="primary"></ion-icon>
+                        <ion-avatar item-start *ngIf="contact.avatar">
+                            <img [src]="contact.avatar">
+                        </ion-avatar>
+                        
+                        <ion-title >{{contact.fullname?contact.fullname:contact.nickname?contact.nickname:contact.username}}</ion-title>
+                        <h3 *ngIf="contact.nickname" text-wrap>{{contact.nickname}}</h3>
+                        <p *ngIf="contact.phone" text-wrap>{{contact.phone}}</p>
+                        <p *ngIf="contact.address" text-wrap>{{contact.address}}</p>
+                        <ion-note item-end text-wrap *ngIf="contact.relationship">
+                          {{contact.relationship}}
+                          <p *ngIf="idx===morePublic">
+                            <ion-icon *ngIf="idx<publicFriends.length-1" tappable (click)="onClickMore('NEW-FRIEND')" name="ios-arrow-down"></ion-icon>
+                            <span>...</span>
+                            <ion-icon *ngIf="idx>countView && idx<=publicFriends.length-1" tappable (click)="onClickMore('NEW-FRIEND-CLOSE')" name="ios-arrow-up"></ion-icon>
+                          </p>
+                        </ion-note>
+                    </ion-item>
+
+                    <ion-item-options *ngIf="idx<=morePublic">
+                        <button ion-button *ngFor="let opt of options" color="{{opt.color}}" (click)="onClickDetails(slidingItem, opt, idx, contact)">
+                            <ion-icon name="{{opt.icon}}"></ion-icon>
+                            {{opt.name}}
+                        </button>
+                    </ion-item-options>
+
+                </ion-item-sliding>
+            </ion-list>
+    
       </ion-col>
     </ion-row>
   </ion-grid>
-
-  <ion-infinite-scroll (ionInfinite)="doInfinite($event,'DOWN')">
-    <ion-infinite-scroll-content 
-    loadingSpinner="bubbles" 
-    loadingText="Load dữ liệu cũ hơn...">
-    </ion-infinite-scroll-content>
-  </ion-infinite-scroll>
-
 </ion-content>

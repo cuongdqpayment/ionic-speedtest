@@ -25,16 +25,17 @@
 
 <ion-content no-padding class="background-page gradient">
 
-    <ion-grid no-padding>
+    <ion-grid class="no-margin">
         <ion-row>
-            <ion-col col-12 
+            <ion-col
+            col-12 
             offset-xl-2 col-xl-8 
             offset-lg-2 col-lg-8 
             offset-md-2 col-md-8 
             col-sm-12
                 *ngFor="let it of dynamicCards?.items">
                 <!-- Card mạng xã hội cho một chủ đề liên quan item -->
-                <ion-card class="background-card gradient grid-border">
+                <ion-card class="background-card gradient grid-border no-margin">
                     <!-- Tóm lượt chủ đề theo tác giả -->
                     <ion-item class="background-card gradient grid-border" *ngIf="it.short_detail">
                         <ion-icon *ngIf="!it.short_detail?.avatar" item-start name="contact" color="primary"></ion-icon>
@@ -122,7 +123,7 @@
                         </ion-col>
                     </ion-row>
                     
-                    <ion-card-content *ngIf="it.content">
+                    <ion-card-content class="no-margin" *ngIf="it.content" >
                         <ion-card-title *ngIf="it.content.title">
                             {{it.content.title}}
                         </ion-card-title>

@@ -190,9 +190,9 @@ export class ApiStorageService {
     getUserChatFriends(user){
         try{
             let results = JSON.parse(this.read('#chat-friends#'+user.username));
-            return results?results:null;
+            return results?results:[];
         }catch(e){
-            return null;
+            return [];
         }
     }
 

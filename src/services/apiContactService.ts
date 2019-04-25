@@ -33,16 +33,18 @@ export class ApiContactService {
     ) {
     }
 
-
+    getPhoneNumber(phoneNumber){
+        return phoneNumber.indexOf('0')===0&&phoneNumber.indexOf('+')<0?phoneNumber:'0'+phoneNumber;
+    }
 
     /**
      * lay unique Contact chua thong tin public, contactFriends
      */
     getUniqueContacts() {
-
+        
         if (this.publicUsers) {
             this.publicUsers.forEach(el => {
-                //console.log('public', el.username, el.avatar)
+                //console.log('public', el)
                 //let relationship = [];
                 //tu nguoi dung dinh nghia bang cach chon
                 //: ['public', 'friend-of-friend' , 'friend', 'closefriend', 'schoolmate', 'family', 'co-worker', 'partner', 'work', 'neigbor', 'doctor', 'teacher', 'vip', 'blacklist']
@@ -52,6 +54,8 @@ export class ApiContactService {
                         value: {
                             fullname: el.fullname,
                             nickname: el.nickname,
+                            address: el.address,
+                            phone: this.getPhoneNumber(el.phone),
                             image: el.image,
                             avatar: el.avatar,
                             relationship: [el.relationship === 1 ? 'public' : 'friend']
@@ -73,6 +77,8 @@ export class ApiContactService {
                         value: {
                             fullname: el.fullname,
                             nickname: el.nickname,
+                            address: el.address,
+                            phone: this.getPhoneNumber(el.phone),
                             image: el.image,
                             avatar: el.avatar,
                             relationship: [el.relationship === 1 ? 'public' : 'friend']

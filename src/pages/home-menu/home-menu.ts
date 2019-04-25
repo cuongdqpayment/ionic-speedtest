@@ -127,6 +127,8 @@ export class HomeMenuPage {
     if (isRenew) {
       this.lastPageIndex = this.curPageIndex > 0 ? this.curPageIndex : this.lastPageIndex;
       this.curPageIndex = 0;
+    }else{
+      this.lastPageIndex = this.curPageIndex > this.lastPageIndex ? this.curPageIndex : this.lastPageIndex;
     }
     this.getJsonPostNews(this.userInfo ? true : false)
       .then(items => {
@@ -291,7 +293,9 @@ export class HomeMenuPage {
   //thuc hien ket ban
   onClickChatFriend() {
     this.openModal(FriendsPage, {
+      user: this.userInfo,
       parent: this,
+      contacts: this.contacts,
       friends: this.chatFriends,
       new_friends: this.chatNewFriends
     })
@@ -299,7 +303,7 @@ export class HomeMenuPage {
 
   doInfinite(infiniteScroll, direction) {
     if (direction === 'UP') {
-      console.log('UP', this.curPageIndex);
+      //console.log('UP', this.curPageIndex, this.lastPageIndex);
       if (!this.isLoaded) {
         this.getHomeNews(true);
       }
@@ -308,7 +312,7 @@ export class HomeMenuPage {
         infiniteScroll.complete();
       }, 1000);
     } else {
-      console.log('DOWN', this.curPageIndex);
+      //console.log('DOWN', this.curPageIndex, this.lastPageIndex);
       this.getHomeNews(false);
       this.isLoaded = false; //khi keo xuong duoi thi o tren moi cho phep
       setTimeout(() => {
@@ -319,7 +323,7 @@ export class HomeMenuPage {
   }
 
   onClickMedia(idx, item) {
-    console.log('picture click', idx, item);
+    //console.log('picture click', idx, item);
     let paragraphs = [];
     if (item.medias){
       item.medias.forEach(el => {

@@ -1,5 +1,15 @@
 page-friends {
 
+	.avatar-image-background{
+		position: relative;
+		text-align: center;
+	}
+
+	.avatar-image-background .avatar-viewer{
+		background-size: cover;
+		min-width: 10px;
+		min-height: 10px;
+	}
 
     .padding-col{
 		padding: 2px;
@@ -10,7 +20,7 @@ page-friends {
 	}
 
 	.background-page {
-		background-color: #2d96de;
+		background-color: #f4f8fc;
 	}
 
 	.gradient {

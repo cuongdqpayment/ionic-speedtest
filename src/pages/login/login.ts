@@ -182,7 +182,9 @@ export class LoginPage {
     }else if (this.userInfo){
       //khi chua co thong tin ca nhan
       //yeu cau nhap thong tin ca nhan
-      
+      let phoneNumber = this.userInfo.data&&this.userInfo.data.phone?this.userInfo.data.phone:this.userInfo.username;
+      phoneNumber = phoneNumber.indexOf('0')===0&&phoneNumber.indexOf('+')<0?phoneNumber:'0'+phoneNumber;
+
         let data = {
           title: "TẠO THÔNG TIN CÁ NHÂN"
           , home_disable: true //khong cho nut hom
@@ -191,7 +193,7 @@ export class LoginPage {
             , { key: "nickname", name: "Biệt danh(*)", hint:"Nickname", type: "text", input_type: "text", icon: "heart", value: this.userInfo.data?this.userInfo.data.nickname:"", validators: [{required: true, min: 1}]}
             , { key: "name", name: "Họ và tên (*)", hint:"Họ và tên đầy đủ", type: "text", input_type: "text", icon: "person", value: this.userInfo.data?this.userInfo.data.fullname:"", validators: [{required: true, min: 5}]}
             , { key: "address", name: "Địa chỉ (*)", hint:"Địa chỉ đầy đủ", type: "text", input_type: "text", icon: "pin", value: this.userInfo.data?this.userInfo.data.address:"", validators: [{required: true, min: 5}]}
-            , { key: "phone", name: "Điện thoại (*)", hint: "Yêu cầu định dạng số điện thoại nhé", type: "text", input_type: "tel", icon: "call", validators: [{ pattern: "^[0-9]*$" }], value: this.userInfo.data&&this.userInfo.data.phone?this.userInfo.data.phone:this.userInfo.username}
+            , { key: "phone", name: "Điện thoại (*)", hint: "Yêu cầu định dạng số điện thoại nhé", type: "text", input_type: "tel", icon: "call", validators: [{ pattern: "^[0-9]*$" }], value: phoneNumber}
             , { key: "email", name: "email(*)", hint: "Yêu cầu định dạng email nhé", type: "text", input_type: "email", icon: "mail", validators: [{ pattern: "^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$" }], value: this.userInfo.data?this.userInfo.data.email:""}
             , { key: "broadcast_status", name: "Quyền riêng tư", hint: "Lựa chọn quyền riêng tư", type: "select", icon: "md-globe", value: this.userInfo.data?this.userInfo.data.broadcast_status:"1", options: [{ name: "Chỉ mình tôi", value: 0 }, { name: "Cho mọi người", value: 1 }, { name: "Chỉ bạn bè tôi", value: 2 }, { name: "Bạn của bạn tôi", value: 3 }]}
             , { 
@@ -219,8 +221,12 @@ export class LoginPage {
 
   callEditForm(){
     //truy van thong tin tu may chu boi user nay
+    
 
     if (this.userInfo){
+      let phoneNumber = this.userInfo.data&&this.userInfo.data.phone?this.userInfo.data.phone:this.userInfo.username;
+      phoneNumber = phoneNumber.indexOf('0')===0&&phoneNumber.indexOf('+')<0?phoneNumber:'0'+phoneNumber;
+
       let data = {
         title: "Sửa thông tin cá nhân"
         , items: [
@@ -228,7 +234,7 @@ export class LoginPage {
           , { key: "nickname", name: "Biệt danh(*)", hint:"Nickname", type: "text", input_type: "text", icon: "heart", value: this.userInfo.data?this.userInfo.data.nickname:"", validators: [{required: true, min: 1}]}
           , { key: "name", name: "Họ và tên (*)", hint:"Họ và tên đầy đủ", type: "text", input_type: "text", icon: "person", value: this.userInfo.data?this.userInfo.data.fullname:"", validators: [{required: true, min: 5}]}
           , { key: "address", name: "Địa chỉ (*)", hint:"Địa chỉ đầy đủ", type: "text", input_type: "text", icon: "pin", value: this.userInfo.data?this.userInfo.data.address:"", validators: [{required: true, min: 5}]}
-          , { key: "phone", name: "Điện thoại (*)", hint: "Yêu cầu định dạng số điện thoại nhé", type: "text", input_type: "tel", icon: "call", validators: [{ pattern: "^[0-9]*$" }], value: this.userInfo.data&&this.userInfo.data.phone?this.userInfo.data.phone:this.userInfo.username}
+          , { key: "phone", name: "Điện thoại (*)", hint: "Yêu cầu định dạng số điện thoại nhé", type: "text", input_type: "tel", icon: "call", validators: [{ pattern: "^[0-9]*$" }], value: phoneNumber}
           , { key: "email", name: "email(*)", hint: "Yêu cầu định dạng email nhé", type: "text", input_type: "email", icon: "mail", validators: [{ pattern: "^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$" }], value: this.userInfo.data?this.userInfo.data.email:""}
           , { key: "broadcast_status", name: "Quyền riêng tư", hint: "Lựa chọn quyền riêng tư", type: "select", icon: "md-globe", value: this.userInfo.data?this.userInfo.data.broadcast_status:"1", options: [{ name: "Chỉ mình tôi", value: 0 }, { name: "Cho mọi người", value: 1 }, { name: "Chỉ bạn bè tôi", value: 2 }, { name: "Bạn của bạn tôi", value: 3 }]}
           , { 
