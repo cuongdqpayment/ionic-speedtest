@@ -86,7 +86,9 @@ export class ApiChatService {
           this.chatFriends.splice(index, 1, el);
         }else{
           if (!this.chatNewFriends) this.chatNewFriends=[];
-          this.chatNewFriends.push(el); //them ban moi ket ban, minh phai xac nhan thi no moi ket ban
+          el.relationship = ['contact']
+          if (this.userInfo.username !== el.username) this.chatNewFriends.push(el); 
+          //them ban moi ket ban, minh phai xac nhan thi no moi ket ban
         }         
       });
     }else{

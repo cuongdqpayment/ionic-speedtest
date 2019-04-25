@@ -29,6 +29,7 @@ export class FriendsPage {
   //cac tuy chon
   dynamicFriends: any = {};
   options: any = [];
+  friendOptions: any = [];
   friendViews:any;
 
   isSearch: boolean = false;
@@ -58,7 +59,11 @@ export class FriendsPage {
 
     this.options = [
       { color: "secondary", icon: "contact", name: "Kết bạn", next: "ADD-FRIEND" }
-      , { color: "danger", icon: "trash", name: "Xóa", next: "REMOVE" }
+      , { color: "danger", icon: "trash", name: "Hủy", next: "REMOVE" }
+    ]
+    
+    this.friendOptions = [
+       { color: "danger", icon: "trash", name: "Hủy kết bạn", next: "REMOVE" }
     ]
 
     this.userInfo = this.navParams.get("user");
@@ -83,6 +88,7 @@ export class FriendsPage {
 
   prepairViewFriend(){
     //bạn có thể tìm một số điện thoại để yêu cầu kết bạn (user đó đang ở chế độ ẩn danh)
+    
     //danh sách bạn có thể biết (do user public contacts lấy ra - hiển thị avatar, tên và nickname, địa chỉ)
     if (this.contacts){
       for (let key in this.contacts){
@@ -101,9 +107,9 @@ export class FriendsPage {
         }
       }
     }
-    //danh sách bạn bè trong danh bạ của bạn (hiển thị 5 bạn đầu tiên - yêu cầu kết bạn)
+    //danh sách bạn bè trong danh bạ của bạn (hiển thị 2 bạn đầu tiên - yêu cầu kết bạn)
 
-    //danh sách bạn bè của bạn (hiển thị 5 bạn đầu tiên - yêu cầu hủy kết bạn)
+    //danh sách bạn bè của bạn (hiển thị 2 bạn đầu tiên - yêu cầu hủy kết bạn)
 
   }
 
@@ -114,7 +120,7 @@ export class FriendsPage {
 
     if (type==='NEW-FRIEND'&&this.moreNewFriends<this.newFriends.length) this.moreNewFriends +=this.countView;    
     if (type==='NEW-FRIEND-CLOSE') this.moreNewFriends =this.countView; 
-    
+
     if (type==='FRIEND'&&this.moreFriends<this.friends.length) this.moreFriends +=this.countView;    
     if (type==='FRIEND-CLOSE') this.moreFriends =this.countView; 
 
@@ -128,8 +134,15 @@ export class FriendsPage {
     slidingItem.setElementClass("active-options-right", false);
   }
 
-  onClickDetails(slidingItem: ItemSliding, btn: any, idx: any, contact:any) {
+  onClickDetails(slidingItem: ItemSliding, btn: any, contact:any, idx: number, type: any) {
     this.closeSwipeOptions(slidingItem);
+    console.log(btn,contact);
+    if (btn.next==="REMOVE" || btn.next==="ADD-FRIEND"){
+      if (type==="PUBLIC") this.publicFriends.splice(idx,1);
+      if (type==="NEW-FRIEND") this.newFriends.splice(idx,1);
+      if (type==="FRIEND") this.friends.splice(idx,1);
+      if (btn.next==="ADD-FRIEND") this.friends.push(contact);
+    }
 
   }
 

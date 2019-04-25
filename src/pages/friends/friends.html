@@ -18,7 +18,7 @@
       <button *ngIf="!isSearch" class="badge-background" ion-button icon-only color="{{btn.color}}"
         (click)="onClickHeader(btn)">
         <ion-icon name="{{btn.icon}}"></ion-icon>
-        <ion-badge class="badge-alert" color="danger" *ngIf="btn.alerts&&btn.alerts.length>0">
+        <ion-badge *ngIf="btn.alerts&&btn.alerts.length>0" class="badge-alert" color="danger">
           {{ (btn.alerts?.length>99?'99+':btn.alerts?.length) }}</ion-badge>
       </button>
     </ion-buttons>
@@ -36,7 +36,7 @@
       offset-lg-2 col-lg-8
       offset-md-2 col-md-8 
       col-sm-12 
-      *ngIf="publicFriends?.length>0">
+      *ngIf="publicFriends?.length>0 || newFriends?.length>0 || friends?.length>0">
 
             <ion-list *ngIf="publicFriends?.length>0">
                 <ion-title>Bạn có thể quen?</ion-title> 
@@ -55,14 +55,14 @@
                           {{contact.relationship}}
                           <p *ngIf="idx===morePublic">
                             <ion-icon *ngIf="idx<publicFriends.length-1" tappable (click)="onClickMore('PUBLIC')" name="ios-arrow-down"></ion-icon>
-                            <span>...</span>
+                            <span *ngIf="morePublic<publicFriends.length-1">{{(publicFriends.length-morePublic-1)}}</span>
                             <ion-icon *ngIf="idx>countView && idx<=publicFriends.length-1" tappable (click)="onClickMore('PUBLIC-CLOSE')" name="ios-arrow-up"></ion-icon>
                           </p>
                         </ion-note>
                     </ion-item>
 
                     <ion-item-options *ngIf="idx<=morePublic">
-                        <button ion-button *ngFor="let opt of options" color="{{opt.color}}" (click)="onClickDetails(slidingItem, opt, idx, contact)">
+                        <button ion-button *ngFor="let opt of options" color="{{opt.color}}" (click)="onClickDetails(slidingItem, opt, contact, idx, 'PUBLIC')">
                             <ion-icon name="{{opt.icon}}"></ion-icon>
                             {{opt.name}}
                         </button>
@@ -88,14 +88,14 @@
                           {{contact.relationship}}
                           <p *ngIf="idx===moreNewFriends">
                             <ion-icon *ngIf="idx<newFriends.length-1" tappable (click)="onClickMore('NEW-FRIEND')" name="ios-arrow-down"></ion-icon>
-                            <span>...</span>
+                            <span *ngIf="moreNewFriends<newFriends.length-1">{{(newFriends.length-moreNewFriends-1)}}</span>
                             <ion-icon *ngIf="idx>countView && idx<=newFriends.length-1" tappable (click)="onClickMore('NEW-FRIEND-CLOSE')" name="ios-arrow-up"></ion-icon>
                           </p>
                         </ion-note>
                     </ion-item>
 
                     <ion-item-options *ngIf="idx<=moreNewFriends">
-                        <button ion-button *ngFor="let opt of options" color="{{opt.color}}" (click)="onClickDetails(slidingItem, opt, idx, contact)">
+                        <button ion-button *ngFor="let opt of options" color="{{opt.color}}" (click)="onClickDetails(slidingItem, opt, contact, idx, 'NEW-FRIEND')">
                             <ion-icon name="{{opt.icon}}"></ion-icon>
                             {{opt.name}}
                         </button>
@@ -122,14 +122,14 @@
                           {{contact.relationship}}
                           <p *ngIf="idx===moreFriends">
                             <ion-icon *ngIf="idx<friends.length-1" tappable (click)="onClickMore('FRIEND')" name="ios-arrow-down"></ion-icon>
-                            <span>...</span>
+                            <span *ngIf="moreFriends<friends.length-1">{{(friends.length-moreFriends-1)}}</span>
                             <ion-icon *ngIf="idx>countView && idx<=friends.length-1" tappable (click)="onClickMore('FRIEND-CLOSE')" name="ios-arrow-up"></ion-icon>
                           </p>
                         </ion-note>
                     </ion-item>
 
                     <ion-item-options *ngIf="idx<=moreFriends">
-                        <button ion-button *ngFor="let opt of options" color="{{opt.color}}" (click)="onClickDetails(slidingItem, opt, idx, contact)">
+                        <button ion-button *ngFor="let opt of friendOptions" color="{{opt.color}}" (click)="onClickDetails(slidingItem, opt, contact, idx, 'FRIEND')">
                             <ion-icon name="{{opt.icon}}"></ion-icon>
                             {{opt.name}}
                         </button>
