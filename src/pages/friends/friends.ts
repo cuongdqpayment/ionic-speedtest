@@ -3,6 +3,7 @@ import { LoadingController, ToastController, ItemSliding, AlertController, Modal
 
 import { ApiAuthService } from '../../services/apiAuthService';
 import { ApiStorageService } from '../../services/apiStorageService';
+import { ApiImageService } from '../../services/apiImageService';
 
 
 @Component({
@@ -19,6 +20,7 @@ export class FriendsPage {
   callback:any;
   contacts:any = {};
 
+  removeFriends:any = [];
   friends:any = [];
   newFriends:any = [];
   publicFriends: any = [];
@@ -32,14 +34,17 @@ export class FriendsPage {
   friendOptions: any = [];
   friendViews:any;
 
+  //thanh tim kiem
   isSearch: boolean = false;
   searchString: string = '';
+  shouldShowCancel:boolean = false;
 
 
 
   constructor(
     private apiAuth: ApiAuthService,
     private apiStorage: ApiStorageService,
+    private apiImage: ApiImageService,
     private viewCtrl: ViewController,
     private loadingCtrl: LoadingController,
     private alertController: AlertController,
@@ -53,6 +58,7 @@ export class FriendsPage {
   ngOnInit() {
 
     this.dynamicFriends.title="DANH SÁCH BẠN BÈ"
+    this.dynamicFriends.search_bar="Tìm theo số điện thoại"
     this.dynamicFriends.buttons = [{
       color:"danger", icon:"close", next:"CLOSE"
     }]
@@ -73,20 +79,25 @@ export class FriendsPage {
     this.friends = this.navParams.get("friends");
     this.newFriends = this.navParams.get("new_friends");
 
-    console.log(this.userInfo, this.contacts, this.friends, this.newFriends);
+    //console.log(this.userInfo, this.contacts, this.friends, this.newFriends);
+
     this.prepairViewFriend();
 
   }
 
 
-  checkExistsFriends(username){
+  checkExistsFriends(username:string,isRemove?:boolean){
     if (this.userInfo&&this.userInfo.username===username) return true;
     if (this.friends&&this.friends.findIndex(x => x.username === username)>=0) return true;
     if (this.newFriends&&this.newFriends.findIndex(x => x.username === username)>=0) return true;
+    if (!isRemove&&this.removeFriends&&this.removeFriends.findIndex(x => x.username === username)>=0) return true;
     return false;
   }
 
   prepairViewFriend(){
+    //lay danh muc username da huy ket ban
+    this.removeFriends = this.apiStorage.getUserRemoveFriends(this.userInfo);
+
     //bạn có thể tìm một số điện thoại để yêu cầu kết bạn (user đó đang ở chế độ ẩn danh)
     
     //danh sách bạn có thể biết (do user public contacts lấy ra - hiển thị avatar, tên và nickname, địa chỉ)
@@ -136,12 +147,23 @@ export class FriendsPage {
 
   onClickDetails(slidingItem: ItemSliding, btn: any, contact:any, idx: number, type: any) {
     this.closeSwipeOptions(slidingItem);
-    console.log(btn,contact);
+    //console.log(btn,contact);
     if (btn.next==="REMOVE" || btn.next==="ADD-FRIEND"){
       if (type==="PUBLIC") this.publicFriends.splice(idx,1);
       if (type==="NEW-FRIEND") this.newFriends.splice(idx,1);
       if (type==="FRIEND") this.friends.splice(idx,1);
-      if (btn.next==="ADD-FRIEND") this.friends.push(contact);
+      if (btn.next==="ADD-FRIEND") {
+        this.friends.push(contact);
+        this.apiStorage.saveUserChatFriends(this.userInfo,this.friends);
+        let index = this.removeFriends.findIndex(x=>x.username===contact.username);
+        if (index>=0) {
+          this.removeFriends.splice(index,1);
+          this.apiStorage.saveUserRemoveFriends(this.userInfo,this.removeFriends);
+        }
+      }else{
+        this.removeFriends.push(contact);
+        this.apiStorage.saveUserRemoveFriends(this.userInfo,this.removeFriends);
+      }
     }
 
   }
@@ -169,6 +191,80 @@ export class FriendsPage {
       } 
     }
   }
+
+  //Su dung search
+  // thanh tim kiem
+  //---------------------
+  goSearch(){
+    this.isSearch = true;
+  }
+  searchEnterEsc(){
+    this.isSearch = false;
+  }
+
+  searchEnter(){
+    this.isSearch = false;
+    let username = this.searchString&&this.searchString.indexOf('0')===0?this.searchString.slice(1):this.searchString;
+    //console.log('tim user theo username',username);
+    this.searchString = "";
+    this.apiAuth.postDynamicForm(ApiStorageService.authenticationServer+"/ext-auth/post-users-info?",{username:username},true)
+    .then(async data=>{
+      if (data
+        &&data.status
+        &&data.users
+        &&data.users.length>0){
+          let user = data.users[0];
+          //console.log('user',user);
+          if (!this.checkExistsFriends(user.username,true)){
+            if (user.image){
+              user.avatar = await this.apiImage.createBase64Image(user.image,32); //thuc hien lay anh ve ghi vao luon
+            }else {
+              //tam thoi lay avatar cac user chua set nhu nay
+              user.avatar = await this.apiImage.createBase64Image(ApiStorageService.mediaServer + "/db/get-private?func=avatar&user=" + user.username + "&token=" + this.apiStorage.getToken(),32);
+              //khi cac user da set thi ta se lay kieu nay
+              //user.avatar = "/assets/imgs/no-image-go.jpg";
+            }
+            this.publicFriends.unshift({
+              username: user.username,
+              fullname: user.fullname,
+              nickname: user.nickname,
+              phone: user.phone,
+              address: user.address,
+              avatar: user.avatar,
+              image: user.image,
+              relationship: this.apiAuth.getBroadcastStatus(user.broadcast_status)
+            })
+          }else{
+            //da la ban be roi
+            this.toastCtrl.create({
+              message: "Bạn và " + username + " đã là bạn của nhau",
+              duration: 3000,
+              position: 'bottom'//pos == 0 ? 'top' : pos == 1 ? 'middle' : 'bottom'
+            }).present();
+          }
+      }else{
+        //khong tim thay ban nao
+        this.toastCtrl.create({
+          message: "Người dùng " + username + " chưa đăng ký",
+          duration: 3000,
+          position: 'middle'
+        }).present();
+      }
+    })
+    .catch(err=>{
+      //co loi khi tim kiem
+      this.toastCtrl.create({
+        message: "Có lỗi khi tìm kiếm " + JSON.stringify(err),
+        duration: 3000,
+        position: 'middle'
+      }).present();
+    })
+  }
+
+  onInputSearch(e){
+    //console.log(e.target.value,this.searchString);
+  }
+
 
 }
 

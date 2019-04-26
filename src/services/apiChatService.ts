@@ -65,21 +65,22 @@ export class ApiChatService {
         , timeout: 60000
         , reconnectionDelay: 30000
         , reconnectionDelayMax: 60000
-        //, transports: ['websocket']
-        //, wsEngine: 'wss'
       }
     };
 
-    //chat - client -->open
+    //-->1. chat - client -->open
     this.socket = new Socket(this.configSocketIo);
     //this.apiStorage.deleteUserRooms(this.userInfo)
     this.chatRooms = this.apiStorage.getUserRooms(this.userInfo);
+
+    //danh sach duoc nguoi dung ket ban, tim kiem, chu dong, trong chuc nang friends
     this.chatFriends = this.apiStorage.getUserChatFriends(this.userInfo);
 
     //tao cac kenh lien lac default
     //va cac kenh lien lac theo ban be trong danh ba
     //console.log('contact friends:',friends);
     if (friends){
+      //co ban be tim thay trong danh ba tu dong yeu cau ket ban
       friends.forEach(el => {
         let index = this.chatFriends?this.chatFriends.findIndex(x => x.username === el.username):-1;
         if (index>=0){
@@ -92,7 +93,7 @@ export class ApiChatService {
         }         
       });
     }else{
-
+      //khong co danh sach ban be trong danh ba
     }
     //tu cac rooms da co, co danh sach ban be
     //neu co ban moi chua co room thi tra ve 
@@ -142,7 +143,7 @@ export class ApiChatService {
     
     */
 
-    //1.chat - client received welcome
+    //-->1.chat - client received welcome
     this.getMessages()
       .subscribe(data => {
         let msg;
@@ -157,6 +158,9 @@ export class ApiChatService {
               rooms: this.chatRooms
             });
         }
+
+        //danh sach user dang online
+        //va socket cua no
         if (msg.step == 'USERS') {
           //msg.users = {username,{name:,nickname:,sockets:[socketid]},...}
           for (let username in msg.users) {
@@ -167,10 +171,9 @@ export class ApiChatService {
                 nickname: msg.users[username].nickname
               })
             }
-
           }
-
         }
+
         if (msg.step == 'JOINED') {
           //4.2 rooms joined first
           this.rooms = msg.rooms;
@@ -251,7 +254,8 @@ export class ApiChatService {
           //x.2 chat
           this.mySocket.sockets.splice(this.mySocket.sockets.indexOf(msg.socket_id), 1);
         }
-        //console.log('private, mysocket',this.mySocket);
+        //bao hieu cho toi co so luong socket dang thay doi
+        console.log('private, mysocket',this.mySocket);
       });
 
     //3.1 chat - client received new user
@@ -261,8 +265,6 @@ export class ApiChatService {
         msg = data;
         console.log('new user receive', msg);
         //luu trong contact de tham chieu nhanh, khong load lai cua server
-        //this.prepareContactsNewUser(msg);
-
         if (!this.users.find(user => user.username === msg.username)) {
           this.users.push({
             username: msg.username,

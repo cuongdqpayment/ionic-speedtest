@@ -18,10 +18,23 @@ export class ApiAuthService {
     public tokenObject: any;
     public userInfo: any;
 
+    public broadcastStatus = {
+        "0":"private"
+        ,"1":"public"
+        ,"2":"friend"
+        ,"3":"friend-of"
+    }
+
     constructor(private httpClient: HttpClient,
                 private apiStorage: ApiStorageService,
                 private reqInterceptor: RequestInterceptor) {
     }
+
+
+    getBroadcastStatus(status){
+        return this.broadcastStatus[status]?this.broadcastStatus[status]:"unknow";
+    }
+
 
     /**
      * Neu da luu tru trong may roi thi lay ra
@@ -371,7 +384,7 @@ export class ApiAuthService {
 
      postDynamicForm(url:string, json_data:Object, token?:any){
         //lay token cua phien xac thuc
-        this.reqInterceptor.setRequestToken(token&&token.length?token:this.tokenObject?this.tokenObject.token:'');
+        this.reqInterceptor.setRequestToken(token&&token.length?token:token&&this.tokenObject?this.tokenObject.token:'');
         return this.httpClient.post(url,JSON.stringify(json_data))
                 .toPromise()
                 .then(data => {

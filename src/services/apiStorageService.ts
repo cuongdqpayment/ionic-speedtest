@@ -196,6 +196,19 @@ export class ApiStorageService {
         }
     }
 
+    saveUserRemoveFriends(user,chatFriends){
+        this.save('#remove-friends#'+user.username,JSON.stringify(chatFriends));
+    }
+
+    getUserRemoveFriends(user){
+        try{
+            let results = JSON.parse(this.read('#remove-friends#'+user.username));
+            return results?results:[];
+        }catch(e){
+            return [];
+        }
+    }
+
     saveUserContacts(user,contacts){
         this.save('#contacts#'+user.username,JSON.stringify(contacts));
     }

@@ -7,8 +7,8 @@
     </ion-buttons>
 
     <ion-searchbar start *ngIf="isSearch && dynamicFriends?.search_bar"
-      placeholder="{{dynamicFriends?.search_bar.hint}}" [(ngModel)]="searchString"
-      [showCancelButton]="shouldShowCancel" (ionInput)="onInput($event)" (keyup.enter)="searchEnter()"
+      placeholder="{{dynamicFriends?.search_bar}}" [(ngModel)]="searchString"
+      [showCancelButton]="shouldShowCancel" (ionInput)="onInputSearch($event)" (keyup.enter)="searchEnter()"
       (keyup.esc)="searchEnter()">
     </ion-searchbar>
 
@@ -121,9 +121,9 @@
                         <ion-note item-end text-wrap *ngIf="contact.relationship">
                           {{contact.relationship}}
                           <p *ngIf="idx===moreFriends">
-                            <ion-icon *ngIf="idx<friends.length-1" tappable (click)="onClickMore('FRIEND')" name="ios-arrow-down"></ion-icon>
+                            <ion-icon color="primary" *ngIf="idx<friends.length-1" tappable (click)="onClickMore('FRIEND')" name="ios-arrow-dropdown-circle"></ion-icon>
                             <span *ngIf="moreFriends<friends.length-1">{{(friends.length-moreFriends-1)}}</span>
-                            <ion-icon *ngIf="idx>countView && idx<=friends.length-1" tappable (click)="onClickMore('FRIEND-CLOSE')" name="ios-arrow-up"></ion-icon>
+                            <ion-icon color="primary" *ngIf="idx>countView && idx<=friends.length-1" tappable (click)="onClickMore('FRIEND-CLOSE')" name="ios-arrow-dropup-circle"></ion-icon>
                           </p>
                         </ion-note>
                     </ion-item>
