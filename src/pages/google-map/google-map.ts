@@ -507,17 +507,9 @@ export class GoogleMapPage {
 
       this.apiMap.getAddressFromLatlng(this.view.header.search_bar.search_result.lat + "," + this.view.header.search_bar.search_result.lng)
         .then(data => {
-          if (data.status === 'OK' && data.results && data.results.length>0){
-            this.view.header.search_bar.search_result.address = data.results[0].formatted_address;
-          }
+          this.view.header.search_bar.search_result.address = data;
         })
-        .catch(err => {
-          this.toastCtrl.create({
-            message: "Err getAddressFromLatlng: " + JSON.stringify(err),
-            duration: 5000,
-            position: 'bottom'
-          }).present();
-        })
+        .catch(err => {})
         ;
     }
   }

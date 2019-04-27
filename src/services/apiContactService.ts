@@ -58,7 +58,10 @@ export class ApiContactService {
                             phone: this.getPhoneNumber(el.phone),
                             image: el.image,
                             avatar: el.avatar,
-                            relationship: [el.relationship === 1 ? 'public' : 'friend']
+                            relationship: el.relationship
+                            //this.apiAuth.getBroadcastStatus(user.broadcast_status)
+                            //this.apiAuth.getBroadcastStatus(el.relationship)
+                            //[el.relationship === 1 ? 'public' : 'friend']
                         },
                         writable: true, enumerable: true, configurable: false
                     });
@@ -81,7 +84,8 @@ export class ApiContactService {
                             phone: this.getPhoneNumber(el.phone),
                             image: el.image,
                             avatar: el.avatar,
-                            relationship: [el.relationship === 1 ? 'public' : 'friend']
+                            relationship: el.relationship
+                            //this.apiAuth.getBroadcastStatus(el.relationship)//[el.relationship === 1 ? 'public' : 'friend']
                         },
                         writable: true, enumerable: true, configurable: false
                     });
@@ -108,7 +112,7 @@ export class ApiContactService {
                 if (users) {
                     users.forEach(el => {
                         //ban cua minh trang thai ban
-                        el.relationship = 1; //public user
+                        el.relationship = el.relationship?el.relationship:this.apiAuth.getBroadcastStatus(el.broadcast_status);
                         let index = this.publicUsers.findIndex(x => x.username === el.username);
                         if (index >= 0) {
                             this.publicUsers.splice(index, 1, el);
@@ -132,12 +136,15 @@ export class ApiContactService {
        * thuc hien doc tren local cac thong tin
        * contactFriends, id, pass 
        * neu chua co 
+       * 
+       * Lay trong danh ba 
        */
     prepareFriends(userInfo: any, isAddFriend?: boolean) {
         return new Promise<any>(async (resolve, reject) => {
             if (userInfo) {
                 this.contactFriends = this.apiStorage.getUserContactFriends(userInfo);
                 //neu da co danh ba roi thi lay ra khong tao them nua
+                //console.log('ban be',this.contactFriends);
                 //viec ket ban se su dung chuc nang khac khong cho tu dong
                 if (!this.contactFriends || isAddFriend) {
                     //doc danh ba,
@@ -151,7 +158,7 @@ export class ApiContactService {
                     //doc tu dia len, neu co thi liet ke ra luon
                     let phoneContacts = this.apiStorage.getPhoneContacts(userInfo);
 
-                    if (phoneContacts) {
+                    if (phoneContacts.length>0) {
                         contactsProcessed = this.processContactsFromServer(phoneContacts, vn_prefix_code);
                         //console.log('uniquePhones storage', contactsProcessed.uniquePhones);
                     } else {
@@ -160,13 +167,13 @@ export class ApiContactService {
                             //truong hop chua co thi doc tu may chu
                             phoneContacts = await this.listContactsFromServer();
 
-                            if (phoneContacts) {
+                            if (phoneContacts.length>0) {
                                 contactsProcessed = this.processContactsFromServer(phoneContacts, vn_prefix_code);
                                 //console.log('uniquePhones server', contactsProcessed.uniquePhones);
                             } else {
                                 //doc danh ba tu dien thoai
                                 phoneContacts = await this.listContactsFromSmartPhone();
-                                if (phoneContacts) {
+                                if (phoneContacts.length>0) {
                                     contactsProcessed = this.processContactsFromSmartPhone(phoneContacts, vn_prefix_code);
                                     //console.log('uniquePhones smartphone', contactsProcessed.uniquePhones);
                                 }
@@ -176,7 +183,7 @@ export class ApiContactService {
                             //doc tu may len
                             //neu khong co tu may chu thi doc tu dien thoai ra
                             phoneContacts = await this.listContactsFromSmartPhone();
-                            if (phoneContacts) {
+                            if (phoneContacts.length>0) {
                                 contactsProcessed = this.processContactsFromSmartPhone(phoneContacts, vn_prefix_code);
                                 //console.log('uniquePhones smartphone', contactsProcessed.uniquePhones);
                             }
@@ -213,7 +220,7 @@ export class ApiContactService {
                                         //ghi nhan so dien thoai quoc te nhe
                                         users.forEach(el => {
                                             //ban cua minh trang thai ban
-                                            el.relationship = 2; //ban be quan he voi user
+                                            el.relationship = el.relationship?el.relationship:this.apiAuth.getBroadcastStatus(2);
                                             if (!this.contactFriends) this.contactFriends = [];
                                             let index = this.contactFriends ? this.contactFriends.findIndex(x => x.username === el.username) : null;
                                             if (index >= 0) {
@@ -237,7 +244,8 @@ export class ApiContactService {
                             if (users) {
                                 users.forEach(el => {
                                     //ban cua minh trang thai ban
-                                    el.relationship = 2; //ban be quan he voi user
+                                    el.relationship = el.relationship?el.relationship:this.apiAuth.getBroadcastStatus(2);
+
                                     if (!this.contactFriends) this.contactFriends = [];
                                     let index = this.contactFriends ? this.contactFriends.findIndex(x => x.username === el.username) : null;
                                     if (index >= 0) {
@@ -640,14 +648,14 @@ export class ApiContactService {
                     if (res.status === 1 && res.result && res.result.length > 0) {
                         resolve(res.result);
                     } else {
-                        resolve();
+                        resolve([]);
                     }
                     loading.dismiss();
                 })
                 .catch(err => {
                     console.log('loi may chu', err);
                     loading.dismiss();
-                    resolve()
+                    resolve([])
                 })
 
         })
@@ -687,7 +695,7 @@ export class ApiContactService {
                         position: 'bottom'
                     }).present();
 
-                    resolve();
+                    resolve([]);
 
                 });
         })

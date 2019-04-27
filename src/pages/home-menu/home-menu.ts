@@ -31,6 +31,7 @@ export class HomeMenuPage {
 
   isLoaded: boolean = true;
 
+  mySocket:any;
   chatRooms: any;
   chatFriends: any;
   chatNewFriends: any;
@@ -88,6 +89,7 @@ export class HomeMenuPage {
 
     this.events.subscribe('event-chat-init-room'
       , (data => {
+        this.mySocket = data.my_socket
         this.chatRooms = data.rooms;
         this.chatFriends = data.friends;
         this.chatNewFriends = data.new_friends;

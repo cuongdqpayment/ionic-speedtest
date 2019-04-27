@@ -47,7 +47,7 @@ export class FriendsPage {
     private apiImage: ApiImageService,
     private viewCtrl: ViewController,
     private loadingCtrl: LoadingController,
-    private alertController: AlertController,
+    private alertCtrl: AlertController,
     private toastCtrl: ToastController,
     private modalCtrl: ModalController,
     private navParams: NavParams,
@@ -151,7 +151,11 @@ export class FriendsPage {
     if (btn.next==="REMOVE" || btn.next==="ADD-FRIEND"){
       if (type==="PUBLIC") this.publicFriends.splice(idx,1);
       if (type==="NEW-FRIEND") this.newFriends.splice(idx,1);
-      if (type==="FRIEND") this.friends.splice(idx,1);
+        
+      if (type==="FRIEND") {
+        this.friends.splice(idx,1);
+        this.apiStorage.saveUserChatFriends(this.userInfo,this.friends);
+      }
       if (btn.next==="ADD-FRIEND") {
         this.friends.push(contact);
         this.apiStorage.saveUserChatFriends(this.userInfo,this.friends);

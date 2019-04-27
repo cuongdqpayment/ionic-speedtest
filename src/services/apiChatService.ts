@@ -1,4 +1,4 @@
-import { LoadingController, ToastController, Events } from 'ionic-angular';
+import { LoadingController, ToastController, Events, AlertController } from 'ionic-angular';
 import { Injectable } from '@angular/core';
 
 import { Socket, SocketIoConfig } from 'ng-socket-io';
@@ -6,6 +6,8 @@ import { Socket, SocketIoConfig } from 'ng-socket-io';
 import { ApiStorageService } from './apiStorageService';
 import { ApiAuthService } from './apiAuthService';
 import { Observable } from 'rxjs/Observable';
+import { ApiLocationService } from './apiLocationService';
+import { ApiMapService } from './apiMapService';
 
 @Injectable()
 export class ApiChatService {
@@ -29,9 +31,13 @@ export class ApiChatService {
   chatNewFriends:any;
 
 
-  constructor(private apiAuth: ApiAuthService,
+  constructor(
+    private apiAuth: ApiAuthService,
     private apiStorage: ApiStorageService,
     private events: Events,
+    private apiLocation: ApiLocationService,
+    private apiMap: ApiMapService,
+    private alertCtrl: AlertController,
     private loadingCtrl: LoadingController,
     private toastCtrl: ToastController
 
@@ -51,14 +57,51 @@ export class ApiChatService {
            };
   }
 
+  chatInitSuccessfull(){
+    //tu cac rooms da co, co danh sach ban be
+    //neu co ban moi chua co room thi tra ve 
+    //room, new friend (de co)
+    this.events.publish('event-chat-init-room'
+    , {
+        my_socket: this.mySocket,
+        rooms: this.chatRooms,
+        friends: this.chatFriends, 
+        new_friends: this.chatNewFriends
+      }
+    );
 
-  initChatting(token, userInfo, friends) {
+    //4. chat - join rooms
+    this.socket.emit('client-join-rooms'
+    , {
+      rooms: this.chatRooms
+    });
+  }
 
+  async initChatting(token, userInfo, friends) {
+
+    //dich vu dinh vi lay toa do va dia chi khoi tao chat
+    let location = await this.apiLocation.getCurrentLocation();
+    let address = "unknow";
+    if (location.error){
+      this.presentAlert("Bạn phải cho phép dịch vụ định vị để sử dụng hệ thống này!");
+      //await this.apiLocation.delay(5000);
+      location = await this.apiLocation.getCurrentLocation();
+    }
+
+    if (!location.error){
+      address = await this.apiMap.getAddressFromLatlng(location.lat+","+location.lng)
+    }
+    
     this.token = token;
     this.userInfo = userInfo;
 
     this.configSocketIo = {
-      url: ApiStorageService.chatServer + '?token=' + this.token
+      url: ApiStorageService.chatServer 
+      + '?token=' + this.token
+      + (!location.error?('&latlng=' + location.lat+","+location.lng
+      + '&accuracy=' + location.accuracy
+      + '&timestamp=' + location.timestamp
+      + '&address=' + address):"")
       , options: {
         path: '/media/socket.io'
         , pingInterval: 20000
@@ -87,7 +130,6 @@ export class ApiChatService {
           this.chatFriends.splice(index, 1, el);
         }else{
           if (!this.chatNewFriends) this.chatNewFriends=[];
-          el.relationship = ['contact']
           if (this.userInfo.username !== el.username) this.chatNewFriends.push(el); 
           //them ban moi ket ban, minh phai xac nhan thi no moi ket ban
         }         
@@ -95,17 +137,36 @@ export class ApiChatService {
     }else{
       //khong co danh sach ban be trong danh ba
     }
-    //tu cac rooms da co, co danh sach ban be
-    //neu co ban moi chua co room thi tra ve 
-    //room, new friend (de co)
-    this.events.publish('event-chat-init-room'
-    , {
-        rooms: this.chatRooms,
-        friends: this.chatFriends, 
-        new_friends: this.chatNewFriends
-      }
-    );
+    
+    //lang nghe vi tri thay doi de ghi nhan vi tri cua 
+    //neu yeu cau tracking thi lang nghe su kien nay nhe
+    /* 
+    this.apiLocation.startTracking();
+    this.events.subscribe("event-location-changed",(data)=>{
+      //console.log('location change',data);
+      //vi tri co thay doi, gui cho server biet vi tri thay doi nhe
+    }) 
+    */
 
+   /* console.log('location:',{
+                          lat: location.lat,
+                          lng: location.lng,
+                          accuracy: location.accuracy,
+                          timestamp: location.timestamp,
+                          address: address
+                        }); */
+
+    /* //gui vi tri thong bao cho sessions
+    if (!location.error){
+    this.socket.emit('client-send-location'
+            , {
+              lat: location.lat,
+              lng: location.lng,
+              accuracy: location.accuracy,
+              timestamp: location.timestamp,
+              address: address
+            });
+    } */
 
     /* 
     //room demo
@@ -152,11 +213,9 @@ export class ApiChatService {
         if (msg.step == 'INIT') {
           //socketid,user,sockets
           this.mySocket = msg.your_socket;
-          //4. chat - join rooms
-          this.socket.emit('client-join-rooms'
-            , {
-              rooms: this.chatRooms
-            });
+          //send event INIT OK
+          this.chatInitSuccessfull();
+          
         }
 
         //danh sach user dang online
@@ -247,15 +306,25 @@ export class ApiChatService {
       .subscribe(data => {
         let msg;
         msg = data;
+
         if (msg.step === 'START') {
           //3.2 private old socket in username inform new socket
           this.mySocket.sockets.push(msg.socket_id);
+          //them user
+          this.mySocket.users.push(msg.user);
+
         } else if (msg.step === 'END') {
           //x.2 chat
-          this.mySocket.sockets.splice(this.mySocket.sockets.indexOf(msg.socket_id), 1);
+          let index = this.mySocket.sockets.findIndex(x=>x===msg.socket_id);
+          if (index>=0){
+            this.mySocket.sockets.splice(index, 1);
+            //xoa user
+            this.mySocket.users.splice(index, 1);
+          }
+
         }
         //bao hieu cho toi co so luong socket dang thay doi
-        console.log('private, mysocket',this.mySocket);
+        console.log('private, mysocket',msg, this.mySocket);
       });
 
     //3.1 chat - client received new user
@@ -383,6 +452,15 @@ export class ApiChatService {
         observer.next(data);
       });
     })
+  }
+
+  presentAlert(message) {
+    this.alertCtrl.create({
+      title: 'Alert',
+      subTitle: 'For Administrator',
+      message: message,
+      buttons: ['OK']
+    }).present();
   }
 
 }

@@ -86,7 +86,7 @@ export class ContactsPage {
     private apiStorage: ApiStorageService,
     private apiLocation: ApiLocationService,
     private loadingCtrl: LoadingController,
-    private alertController: AlertController,
+    private alertCtrl: AlertController,
     private toastCtrl: ToastController,
     private modalCtrl: ModalController,
     private contacts: Contacts) { }
@@ -879,15 +879,13 @@ export class ContactsPage {
   }
 
 
-  async presentAlert(message) {
-    const alert = await this.alertController.create({
+  presentAlert(message) {
+    this.alertCtrl.create({
       title: 'Alert',
       subTitle: 'For Administrator',
       message: message,
       buttons: ['OK']
-    });
-
-    await alert.present();
+    }).present();
   }
 
   doInfinite(infiniteScroll, direction) {

@@ -63,8 +63,19 @@ export class ApiMapService {
             + '&key=' + this.GOOGLE_API_KEY
             )
             .toPromise()
-            .then(data => {let rtn:any;rtn = data;return rtn})
-            //.then(apiJson => apiJson.results[0].formatted_address)
+            .then(data => {
+                let rtn:any;
+                rtn = data;
+                if (rtn.status === 'OK' 
+                    && rtn.results 
+                    && rtn.results.length>0){
+                    return rtn.results[0].formatted_address;
+                }
+                return "unknow"
+            })
+            .catch(err=>{
+                return "error"
+            })
     }
 
     getLatlngFromAddress(address: string) {
@@ -74,7 +85,11 @@ export class ApiMapService {
             + '&key=' + this.GOOGLE_API_KEY
             )
             .toPromise()
-            .then(data => {let rtn:any;rtn = data;return rtn})
+            .then(data => {
+                let rtn:any;
+                rtn = data;
+                return rtn
+            })
     }
 
     
