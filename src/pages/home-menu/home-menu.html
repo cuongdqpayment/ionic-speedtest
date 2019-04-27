@@ -17,7 +17,7 @@
 				<ion-icon name="md-contacts"></ion-icon>
 				<ion-badge *ngIf="chatNewFriends?.length>0" class="badge-alert" color="danger">{{ (chatNewFriends?.length>99?'99+':chatNewFriends?.length) }}</ion-badge>
 			</button>
-			<button *ngIf="mySocket" class="badge-background" ion-button icon-only color="primary" (click)="onClickChatRoom()">
+			<button *ngIf="mySocket" class="badge-background" ion-button icon-only color="primary" (click)="onClickChatUser()">
 				<ion-icon name="contact"></ion-icon>
 				<ion-badge *ngIf="mySocket?.sockets?.length>1" class="badge-alert" color="danger">{{ (mySocket?.sockets?.length>99?'99+':mySocket?.sockets?.length) }}</ion-badge>
 			</button>

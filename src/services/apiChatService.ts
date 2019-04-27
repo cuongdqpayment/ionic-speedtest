@@ -51,6 +51,7 @@ export class ApiChatService {
    */
   getRoomsFriends(){
     return {
+              my_socket: this.mySocket,        
               rooms: this.chatRooms,
               friends: this.chatFriends, 
               new_friends: this.chatNewFriends

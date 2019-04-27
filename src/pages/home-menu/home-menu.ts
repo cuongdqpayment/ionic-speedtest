@@ -7,6 +7,7 @@ import { ApiContactService } from '../../services/apiContactService';
 import { ApiChatService } from '../../services/apiChatService';
 import { FriendsPage } from '../friends/friends';
 import { DynamicCardSocialPage } from '../dynamic-card-social/dynamic-card-social';
+import { HomeChatPage } from '../home-chat/home-chat';
 
 @Component({
   selector: 'page-home-menu',
@@ -35,6 +36,7 @@ export class HomeMenuPage {
   chatRooms: any;
   chatFriends: any;
   chatNewFriends: any;
+  chatNewMessages:any;
 
   constructor(
     private apiStorage: ApiStorageService
@@ -117,6 +119,7 @@ export class HomeMenuPage {
     //this.dynamicTree = this.apiStorage.getHome();
     let chattingData = this.apiChat.getRoomsFriends();
 
+    this.mySocket = chattingData.my_socket;
     this.chatRooms = chattingData.rooms;
     this.chatFriends = chattingData.friends;
     this.chatNewFriends = chattingData.new_friends;
@@ -282,14 +285,23 @@ export class HomeMenuPage {
     this.openModal(OwnerImagesPage, { parent: this });
   }
 
+  onClickChatUser() {
+    //ktra user cua minh login tu dau:
+    // cai nay yc co mat khau tu dat 
+    // ktra xac thuc voi may chu ok thi list ra ktra
+    console.log('my socket', this.mySocket);
+
+  }
+
+  //vao trang chat
   onClickChatRoom() {
-    /* this.navCtrl.push(HomeChatPage, {
-      token: this.token,
-      user: this.userInfo,
-      socket: this.socket,
-      users: this.users,
-      rooms: this.rooms
-    }); */
+    this.navCtrl.push(HomeChatPage, {
+      my_socket: this.mySocket,
+      parent: this,
+      friends: this.chatFriends,
+      rooms: this.chatRooms,
+      new_messages: this.chatNewMessages
+    });
   }
 
   //thuc hien ket ban
