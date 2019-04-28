@@ -44,6 +44,10 @@ export class ApiChatService {
   ) { }
 
 
+  getSocket(){
+    return this.socket;
+  }
+
   /**
    * Phuc vu kiem tra da login chua?
    * co ban moi khong?
@@ -72,6 +76,8 @@ export class ApiChatService {
     );
 
     //4. chat - join rooms
+    //neu chua co room thi mat dinh co 1 room ca nhan
+    //{roomid:{ai do}}
     this.socket.emit('client-join-rooms'
     , {
       rooms: this.chatRooms
@@ -84,7 +90,8 @@ export class ApiChatService {
     let location = await this.apiLocation.getCurrentLocation();
     let address = "unknow";
     if (location.error){
-      this.presentAlert("Bạn phải cho phép dịch vụ định vị để sử dụng hệ thống này!");
+      alert("Bạn phải cho phép dịch vụ định vị để sử dụng hệ thống này!");
+      //this.presentAlert("Bạn phải cho phép dịch vụ định vị để sử dụng hệ thống này!");
       //await this.apiLocation.delay(5000);
       location = await this.apiLocation.getCurrentLocation();
     }
@@ -210,7 +217,10 @@ export class ApiChatService {
       .subscribe(data => {
         let msg;
         msg = data;
-        console.log('send, message', msg);
+        
+        //** ****************** */
+        //console.log('send, message', msg);
+        
         if (msg.step == 'INIT') {
           //socketid,user,sockets
           this.mySocket = msg.your_socket;
@@ -310,9 +320,9 @@ export class ApiChatService {
 
         if (msg.step === 'START') {
           //3.2 private old socket in username inform new socket
-          this.mySocket.sockets.push(msg.socket_id);
+          this.mySocket.sockets.unshift(msg.socket_id);
           //them user
-          this.mySocket.users.push(msg.user);
+          this.mySocket.users.unshift(msg.user);
 
         } else if (msg.step === 'END') {
           //x.2 chat
@@ -325,7 +335,7 @@ export class ApiChatService {
 
         }
         //bao hieu cho toi co so luong socket dang thay doi
-        console.log('private, mysocket',msg, this.mySocket);
+        //console.log('private, mysocket',msg, this.mySocket);
       });
 
     //3.1 chat - client received new user
@@ -362,12 +372,22 @@ export class ApiChatService {
       });
 
 
-    //7. new message
+    //7. new private message
+    this.getPrivateMessagesEmit()
+    .subscribe(data => {
+      let msg;
+      msg = data;
+      console.log('7. new private message:', msg);
+      //msg.user.image = this.contacts[msg.user.username].image;
+      //this.events.publish('event-receiving-message', roomMsg);
+    });
+    
+    //7.1 new message
     this.getMessagesEmit()
       .subscribe(data => {
         let msg;
         msg = data;
-        console.log('7. new message:', msg, this.rooms);
+        console.log('7.1 new message:', msg, this.rooms);
         //msg.user.image = this.contacts[msg.user.username].image;
 
         let roomMsg = this.rooms.find(room => room.id === msg.room_id);
@@ -443,6 +463,14 @@ export class ApiChatService {
     return new Observable(observer => {
       this.socket.on("server-broadcast-end-user", (data) => {
         observer.next(data); //user
+      });
+    })
+  }
+
+  getPrivateMessagesEmit() {
+    return new Observable(observer => {
+      this.socket.on("server-emit-priate-message", (data) => {
+        observer.next(data);
       });
     })
   }

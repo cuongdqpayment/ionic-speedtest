@@ -246,7 +246,7 @@ export class ApiStorageService {
     getUserRooms(user){
         try{
             let rooms = JSON.parse(this.read('#rooms#'+user.username));
-            return rooms?rooms:[];
+            return [];//rooms?rooms:[];
         }catch(e){
             return [];
         }

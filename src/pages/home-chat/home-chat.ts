@@ -1,12 +1,11 @@
-import { Component, ViewChild } from '@angular/core';
-import { NavController, Events, Slides, NavParams, ModalController, ItemSliding, Item } from 'ionic-angular';
-import { Socket } from 'ng-socket-io';
+import { Component } from '@angular/core';
+import { NavController, Events, NavParams, ModalController, ItemSliding, Item } from 'ionic-angular';
 
-import { ApiAuthService } from '../../services/apiAuthService';
 import { ApiStorageService } from '../../services/apiStorageService';
-import { Observable } from 'rxjs/Observable';
 import { DynamicRangePage } from '../dynamic-range/dynamic-range';
 import { ChattingPage } from '../chatting/chatting';
+import { ChattingPrivatePage } from '../chatting-private/chatting-private';
+import { ApiChatService } from '../../services/apiChatService';
 
 @Component({
   selector: 'page-home-chat',
@@ -14,91 +13,60 @@ import { ChattingPage } from '../chatting/chatting';
 })
 
 export class HomeChatPage {
-  @ViewChild(Slides) slides: Slides;
-  slideIndex = 0;
+
+  chatManager:any ={};
+  
+  parent: any;
+
+  mySocket: any;
   token:any;
   userInfo:any;
 
-  socket: Socket;
-  //configSocketIo: SocketIoConfig;
-
-  rooms = [];
-  users = [];
-  last_time:number = new Date().getTime();
-
-  chatManager: any;
+  socket: any;
+  
+  contacts: any = {};
+  friends: any = [];
+  rooms:any = [];
+  chatNewMessages: any = [];
 
   isSearch: boolean = false;
   searchString: string = '';
   shouldShowCancel: boolean = false;
 
-  myNavCtrlLength:number;
-  isMobile:boolean = true;
-
   constructor(private navParams: NavParams, 
               private navCtrl: NavController,
               private modalCtrl: ModalController,
+              private apiChat: ApiChatService,
               private events: Events,
               private apiStorage: ApiStorageService) {}
               
   ngOnInit() {
+      
+      this.socket = this.apiChat.getSocket(); //object lien lac socket
                 
-      this.token = this.navParams.get('token'); 
-      this.userInfo = this.navParams.get('user'); 
-      this.socket = this.navParams.get('socket'); 
-      this.users = this.navParams.get('users'); 
+      this.parent = this.navParams.get('parent');  //goi tu form cha
+      this.mySocket = this.navParams.get('my_socket'); //thong tin cua owner
+      
+      this.token = this.navParams.get('token');  //thong tin owner
+      this.userInfo = this.navParams.get('user');  //thong tin owner
 
-      let rooms = this.navParams.get('rooms'); 
+      
+      this.contacts = this.navParams.get('contacts'); //unique user hien thi name, nickname, avatar
+      this.friends = this.navParams.get('friends'); //ban be da ket noi
+      this.chatNewMessages = this.navParams.get('new_messages'); //tin tuc moi
+      this.rooms = this.navParams.get('rooms');      //danh sach rooms lien lac
       //[{roomid:{name:'',...adding+...,users:[{username:[socketonline]}]}}]
-
-      rooms.forEach(room=>{
-          room.image = room.image?room.image: ApiStorageService.mediaServer + "/db/get-private?func=avatar&token="+this.token;
-          this.rooms.push(room);
-      })
-
-      console.log('rooms',this.rooms);
+      
+      console.log('rooms',this.rooms); //doi tuong lay bat cau tu service
 
      this.chatManager = {
-      title: "Chats - Nhắn tin online"
-      , search_bar: {hint: "Tìm nhóm"} 
+      title: "Chatting Rooms of " + (this.userInfo&&this.userInfo.data?this.userInfo.data.nickname:this.userInfo.username)
+      , search_bar: {hint: "Tìm số điện thoại hoặc tên nhóm"} 
       , buttons: [
-          {color:"primary", icon:"add", next:"ADD"}
+          {color:"secondary", icon:"link", next:"ADD"}
         ]
       , items: []
     };
-
-     this.myNavCtrlLength =  this.navCtrl.length();
-
-
-     //nhan ket qua dong thoi new room?? cung events voi home-menu
-     //dang ky room moi
-     //nhan tin nhan gui den
-    this.events.subscribe('event-main-received-users'
-      , (users => {
-        //console.log('event-main-received-users-home-chats', users);
-        //this.users = users;
-        users.forEach(user=>{
-        let userExists = this.users.find(u=>u.username===user.username);
-          if (!userExists){
-            this.users.push(user);
-          }
-        })
-      })
-
-    )
-
-    this.events.subscribe('event-main-received-rooms'
-      , (rooms => {
-        //console.log('event-main-received-rooms-home-chats', rooms);
-        rooms.forEach(room=>{
-          let roomExists = this.rooms.find(r=>r.id===room.id);
-          if (!roomExists){
-            this.rooms.push(room);
-          }
-        })
-        //this.rooms = rooms;
-      })
-    ) 
 
   }
 
@@ -107,10 +75,7 @@ export class HomeChatPage {
   }
 
   ionViewDidLeave() {
-    if (this.navCtrl.length() <= this.myNavCtrlLength){
-      //console.log('Form did Leave disconnect chat');
-      //this.socket.disconnect();
-    } 
+    
   }
 
   //Su dung search
@@ -141,7 +106,7 @@ export class HomeChatPage {
         }
       })
 
-      console.log('users new room:',users);
+      //console.log('users new room:',users);
       
       if (users.length>0){
         let room_id = this.userInfo.username + "#" + new Date().getTime();
@@ -174,6 +139,7 @@ export class HomeChatPage {
     })
   }.bind(this);
 
+
   onClickItem(room){
     //console.log('goto room',room);
     this.navCtrl.push(ChattingPage, {
@@ -186,36 +152,21 @@ export class HomeChatPage {
                       })
   }
 
+
+  onClickItemPrivate(socketId){
+    this.navCtrl.push(ChattingPrivatePage, {
+      parent:this,
+      socket: this.socket,
+      contacts: this.contacts,
+      socket_id: socketId,
+      my_socket: this.mySocket
+    })
+  }
+
   //onclick....
   onClickHeader(btn){
     if (btn.next==='ADD'){
       
-      console.log(this.users);
-
-      let details = [];
-      this.users.forEach(el=>{
-        details.push({key:el.username,name:el.data&&el.data.fullname?el.data.fullname+'('+el.data.nickname+')':el.username,color:"secondary",value:0})
-      })
-
-      let formData={
-        parent: this,
-        callback: this.callbackAddRoom
-        ,form: {title: "Chọn user để liên lạc"
-        , items: [
-          { type: "check", key:"danh_sach", name: "Danh bạ online",
-          details:details
-            }
-            , { 
-              type: "button"
-              , options: [
-                 { name: "Bỏ qua", next: "CLOSE" }
-                , { name: "Chọn", next: "CALLBACK"}
-              ]
-            }
-          ]
-        }
-      }
-      this.openModal(DynamicRangePage,formData);
     }
   }
 

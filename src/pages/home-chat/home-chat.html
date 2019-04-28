@@ -23,7 +23,50 @@
 </ion-header>
 
 <ion-content class="list-avatar-page">
-   
+
+    <ion-list>
+
+        <ion-item-sliding #slidingItem class="background-list" *ngFor="let socket of mySocket.sockets; let idx = index">
+            
+                <ion-item *ngIf="socket!==mySocket.socket_id" #item class="background-item" tappable (click)="onClickItemPrivate(socket)">
+                    <ion-avatar item-start>
+                        <img *ngIf="contacts[mySocket?.user?.username]?.avatar" [src]="contacts[mySocket?.user?.username]?.avatar">
+                        <img *ngIf="!contacts[mySocket?.user?.username]?.avatar" src="assets/imgs/no-image-go.jpg">
+                    </ion-avatar>
+                    <ion-title >{{contacts[mySocket?.user?.username]?.fullname?contacts[mySocket?.user?.username]?.fullname:mySocket?.user?.username}}</ion-title>
+                    <p text-wrap>{{mySocket?.users[idx]?.device}}</p>
+                    <p>{{mySocket?.users[idx]?.ip}}</p>
+                    <p text-wrap>{{mySocket?.users[idx]?.location?.address}}</p>
+                    <ion-note item-end>{{mySocket?.users[idx]?.time | timeAgo}}</ion-note>
+                </ion-item>
+    
+                <ion-item-options *ngIf="socket!==mySocket.socket_id">
+                    <button ion-button color="bg-blue" (click)="onClickDetails(slidingItem, room, 1)">
+                        <ion-icon name="ios-arrow-dropup"></ion-icon>
+                        Pin
+                    </button>
+                    <button ion-button color="secondary" (click)="onClickDetails(slidingItem, room, 2)">
+                        <ion-icon name="volume-off"></ion-icon>
+                        Mute
+                    </button>
+                    <button ion-button color="danger" (click)="onClickDetails(slidingItem, room, 3)">
+                        <ion-icon name="trash"></ion-icon>
+                        Delete
+                    </button>
+                </ion-item-options>
+    
+                <ion-item-options *ngIf="socket!==mySocket.socket_id" side="left">
+                    <button ion-button color="primary" expandable (click)="onClickDetails(slidingItem, room, 4)">
+                        <ion-icon name="checkmark"></ion-icon>
+                        <div>Read</div>
+                        <ion-spinner id="archive-spinner"></ion-spinner>
+                    </button>
+                </ion-item-options>
+
+        </ion-item-sliding>
+
+    </ion-list>
+
     <ion-list>
 
         <ion-item-sliding #slidingItem class="background-list" *ngFor="let room of rooms">
@@ -66,7 +109,5 @@
         </ion-item-sliding>
 
     </ion-list>
-
-
 
 </ion-content>

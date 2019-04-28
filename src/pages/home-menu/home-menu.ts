@@ -71,7 +71,7 @@ export class HomeMenuPage {
                 nickname: this.userInfo.nickname,
                 image: this.userInfo.data && this.userInfo.data.image ? this.userInfo.data.image : undefined,
                 avatar: this.userInfo.data && this.userInfo.data.avatar ? this.userInfo.data.avatar : undefined,
-                relationship: [this.userInfo.relationship === 1 ? 'public' : 'friend']
+                relationship: ['private']
               },
               writable: true, enumerable: true, configurable: false
             });
@@ -296,11 +296,17 @@ export class HomeMenuPage {
   //vao trang chat
   onClickChatRoom() {
     this.navCtrl.push(HomeChatPage, {
-      my_socket: this.mySocket,
-      parent: this,
-      friends: this.chatFriends,
-      rooms: this.chatRooms,
-      new_messages: this.chatNewMessages
+      parent: this,             //biet goi parent
+      my_socket: this.mySocket, //thong tin owner
+      token: this.token,       //thong tin owner
+      user: this.userInfo,     //thong tin owner
+
+      contacts: this.contacts, //thong tin cua user co anh dai dien unique
+      friends: this.chatFriends, //thong tin ban be chat (<contacts array)
+      //neu rooms co > 2 user thi goi la room neu khong goi la ca nhan 
+      rooms: this.chatRooms,     //thong tin dang online chat
+      new_messages: this.chatNewMessages //thong tin unread
+      //
     });
   }
 

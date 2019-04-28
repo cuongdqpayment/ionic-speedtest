@@ -66,6 +66,8 @@ import { CordovaPage } from '../pages/cordova-info/cordova-info';
 import { ApiContactService } from '../services/apiContactService';
 import { ApiChatService } from '../services/apiChatService';
 import { FriendsPage } from '../pages/friends/friends';
+import { ReversePipe } from '../pipes/reverse-pipe';
+import { ChattingPrivatePage } from '../pages/chatting-private/chatting-private';
 
 
 @NgModule({
@@ -98,8 +100,10 @@ import { FriendsPage } from '../pages/friends/friends';
     HandDrawPage,
     TimeAgoPipe,
     SafePipe,
+    ReversePipe,
     Autosize,
-    FriendsPage
+    FriendsPage,
+    ChattingPrivatePage
   ],
   imports: [
     BrowserModule,
@@ -137,7 +141,8 @@ import { FriendsPage } from '../pages/friends/friends';
     HomeChatPage,
     ChattingPage,
     HandDrawPage,
-    FriendsPage
+    FriendsPage,
+    ChattingPrivatePage
   ],
   providers: [
     StatusBar,
