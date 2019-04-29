@@ -31,6 +31,30 @@ export class ApiAuthService {
     }
 
 
+    createObjectKey = (obj,key,value)=>{
+        Object.defineProperty(obj, key, {value: value, writable: true, enumerable: true, configurable: true});
+        obj.length = obj.length?obj.length+1:1;
+        return obj;
+    } 
+    
+    deleteObjectKey = (obj,key)=>{
+        if (delete obj[key]) obj.length = obj.length?obj.length - 1: undefined;
+        return obj;
+    } 
+
+    /**
+     * clone đối tượng thành đối tượng mới (sử dụng để gán đối tượng mới)
+     * @param {*} obj 
+     */
+    cloneObject =(obj) => {
+        if (null == obj || "object" != typeof obj) return obj;
+        var copy = obj.constructor();
+        for (var attr in obj) {
+            if (obj.hasOwnProperty(attr)) copy[attr] = obj[attr];
+        }
+        return copy;
+    }
+
     getBroadcastStatus(status){
         return this.broadcastStatus[status]?this.broadcastStatus[status]:"unknow";
     }

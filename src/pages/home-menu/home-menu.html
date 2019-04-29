@@ -9,9 +9,9 @@
 		<ion-title>{{dynamicTree?.title}}</ion-title>
 
 		<ion-buttons right *ngIf="userInfo">
-			<button *ngIf="chatRooms||chatFriends||chatNewMessages" class="badge-background" ion-button icon-only color="primary" (click)="onClickChatRoom()">
+			<button *ngIf="chatRooms||chatFriends|| unreadMssages" class="badge-background" ion-button icon-only color="primary" (click)="onClickChatRoom()">
 				<ion-icon name="ios-chatbubbles"></ion-icon>
-				<ion-badge *ngIf="chatNewMessages?.length>0" class="badge-alert" color="danger">{{ (chatNewMessages?.length>99?'99+':chatNewMessages?.length) }}</ion-badge>
+				<ion-badge *ngIf="unreadMssages?.length>0" class="badge-alert" color="danger">{{ (unreadMssages?.length>99?'99+':unreadMssages?.length)}}</ion-badge>
 			</button>
 			<button *ngIf="contacts || chatFriends || chatNewFriends" class="badge-background" ion-button icon-only color="primary" (click)="onClickChatFriend()">
 				<ion-icon name="md-contacts"></ion-icon>

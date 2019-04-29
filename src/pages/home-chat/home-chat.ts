@@ -26,8 +26,10 @@ export class HomeChatPage {
   
   contacts: any = {};
   friends: any = [];
-  rooms:any = [];
-  chatNewMessages: any = [];
+  
+  unreadMessages: any = {};
+  mySocketPrivateRooms:any = {}; //{room_id:[{msg}],rooms:[{id:..,name:,avatar:}...],length:count}
+  chatRooms:any = {}; //{room_id:[{msg}],rooms:[{id:..,name:,avatar:}...],length:count}
 
   isSearch: boolean = false;
   searchString: string = '';
@@ -50,14 +52,15 @@ export class HomeChatPage {
       this.token = this.navParams.get('token');  //thong tin owner
       this.userInfo = this.navParams.get('user');  //thong tin owner
 
+      this.unreadMessages = this.navParams.get('unread_messages'); //tin tuc chua doc
+      this.mySocketPrivateRooms = this.navParams.get('private_rooms'); //danh sach chatRooms lien lac
+      this.chatRooms = this.navParams.get('rooms'); //danh sach chatRooms lien lac
       
       this.contacts = this.navParams.get('contacts'); //unique user hien thi name, nickname, avatar
       this.friends = this.navParams.get('friends'); //ban be da ket noi
-      this.chatNewMessages = this.navParams.get('new_messages'); //tin tuc moi
-      this.rooms = this.navParams.get('rooms');      //danh sach rooms lien lac
       //[{roomid:{name:'',...adding+...,users:[{username:[socketonline]}]}}]
       
-      console.log('rooms',this.rooms); //doi tuong lay bat cau tu service
+      console.log('chatRooms',this.chatRooms); //doi tuong lay bat cau tu service
 
      this.chatManager = {
       title: "Chatting Rooms of " + (this.userInfo&&this.userInfo.data?this.userInfo.data.nickname:this.userInfo.username)
@@ -156,6 +159,8 @@ export class HomeChatPage {
   onClickItemPrivate(socketId){
     this.navCtrl.push(ChattingPrivatePage, {
       parent:this,
+      unread_messages: this.unreadMessages,
+      private_rooms: this.mySocketPrivateRooms, //doi tuong hung tin rieng
       socket: this.socket,
       contacts: this.contacts,
       socket_id: socketId,

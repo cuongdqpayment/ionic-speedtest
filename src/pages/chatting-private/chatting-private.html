@@ -27,27 +27,25 @@
 <ion-content class="list-avatar-page" #contentMessages>
     <ion-grid>
         <ion-row *ngFor="let message of messages">
-            <ion-col class="card-background-parent" col-2 *ngIf="message?.user?.username !== userInfo?.username">
-                <div *ngIf="message?.user?.image" class="avatar-height" [style.background-image]="'url('+message?.user?.image+')'">
+            <ion-col col-2 *ngIf="message?.sender_id !== mySocket?.socket_id">
+                <div class="card-background-parent">
+                    <div 
+                    *ngIf="contacts[message?.sender?.username]?.avatar" 
+                    class="avatar-height" 
+                    [style.background-image]="'url('+contacts[message?.sender?.username]?.avatar+')'">
+                    </div>
                 </div>
             </ion-col>
-            <ion-col class="message other_message" col-10 *ngIf="message?.user?.username !== userInfo?.username">
-                <div class="nick-name" *ngIf="message?.user&&!message?.user?.image">{{ message?.user?.data?.nickname?message?.user?.data?.nickname: message?.user?.data?.fullname?message?.user?.data?.fullname:message?.user?.username }}:</div>
-                <br *ngIf="!message?.user?.image">
-                <span text-wrap>{{ message?.text }}</span>
+            <ion-col class="message other_message" col-10 *ngIf="message?.sender_id !== mySocket?.socket_id">
+                <p text-wrap>{{ message?.text }}</p>
                 <ion-note class="time">{{message?.created | timeAgo}}</ion-note>
             </ion-col>
         
-            <ion-col col-10 class="message other_message" *ngIf="message?.user?.username === userInfo?.username">
-                <ion-title class="nick-name" *ngIf="!message?.user?.image">{{ message?.user?.data?.nickname?message?.user?.data?.nickname: message?.user?.data?.fullname?message?.user?.data?.fullname:message?.user?.username }}:</ion-title>
-                <br *ngIf="!message?.user?.image">
-                <span text-wrap>{{ message?.text }}</span>
+            <ion-col col-11 class="message my_message" *ngIf="message?.sender_id === mySocket?.socket_id">
+                <p text-wrap>{{ message?.text }}</p>
                 <ion-note class="time">{{message?.created | timeAgo}}</ion-note>
             </ion-col>
-            <ion-col col-2 class="card-background-parent" *ngIf="message?.user?.username === userInfo?.username">
-                <div *ngIf="message?.user?.image" class="avatar-height" [style.background-image]="'url('+message?.user?.image+')'">
-                </div>
-            </ion-col>
+
         </ion-row>
     </ion-grid>
 </ion-content>

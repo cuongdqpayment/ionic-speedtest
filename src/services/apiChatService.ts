@@ -18,15 +18,19 @@ export class ApiChatService {
 
   configSocketIo: SocketIoConfig;
 
-
   mySocket: any;
-  last_time: number = Date.now();
+  //chi luu room truyen qua lai voi nhau khong luu tru
+  mySocketPrivateRooms:any = {}; // {room_id/socketid:[{message}], length:count_room} 
+  unreadMessages: any = {}; //{room_id/socketid:[{message}], length:count_room}
+  //luu lai lich su 
+  chatRooms:any = {}; // {room_id/socketid:[{message}], length:count_room, rooms:[room_id...]} 
+  //ban dau la khong co room, neu login roi thi moi co room
+  
+  //rooms: any = {}  //cac room {room_id/socketid:[{message}]}
+  //last_time: number = Date.now();
+  //users = []        //users online
+  //rooms = [];       //room online
 
-  users = []        //users online
-  rooms = [];       //room online
-
-
-  chatRooms:any; // ban dau la khong co room, neu login roi thi moi co room
   chatFriends:any;
   chatNewFriends:any;
 
@@ -48,6 +52,17 @@ export class ApiChatService {
     return this.socket;
   }
 
+  createUnreadMessages(msg){
+
+    if (this.unreadMessages[msg.sender_id]){
+      this.unreadMessages[msg.sender_id].push(msg);
+    }else{
+      this.unreadMessages = this.apiAuth.createObjectKey( this.unreadMessages, msg.sender_id, [msg]);
+    }
+
+    //console.log('tao khi nao',this.unreadMessages);
+
+  }
   /**
    * Phuc vu kiem tra da login chua?
    * co ban moi khong?
@@ -56,6 +71,8 @@ export class ApiChatService {
   getRoomsFriends(){
     return {
               my_socket: this.mySocket,        
+              unread_messages: this.unreadMessages,        
+              private_rooms: this.mySocketPrivateRooms,
               rooms: this.chatRooms,
               friends: this.chatFriends, 
               new_friends: this.chatNewFriends
@@ -69,6 +86,8 @@ export class ApiChatService {
     this.events.publish('event-chat-init-room'
     , {
         my_socket: this.mySocket,
+        unread_messages: this.unreadMessages, 
+        private_rooms: this.mySocketPrivateRooms,
         rooms: this.chatRooms,
         friends: this.chatFriends, 
         new_friends: this.chatNewFriends
@@ -80,7 +99,8 @@ export class ApiChatService {
     //{roomid:{ai do}}
     this.socket.emit('client-join-rooms'
     , {
-      rooms: this.chatRooms
+      rooms: this.chatRooms 
+      //phai xu ly cho server vi truyen danh sach nay
     });
   }
 
@@ -234,18 +254,19 @@ export class ApiChatService {
         if (msg.step == 'USERS') {
           //msg.users = {username,{name:,nickname:,sockets:[socketid]},...}
           for (let username in msg.users) {
-            if (!this.users.find(user => user.username === username)) {
+            /* if (!this.users.find(user => user.username === username)) {
               this.users.push({
                 username: username,
                 name: msg.users[username].name,
                 nickname: msg.users[username].nickname
               })
-            }
+            } */
           }
         }
 
         if (msg.step == 'JOINED') {
           //4.2 rooms joined first
+          /* 
           this.rooms = msg.rooms;
 
           let chatRooms = []; //reset
@@ -273,12 +294,14 @@ export class ApiChatService {
           //luu room de load lan sau
           this.apiStorage.saveUserRooms(this.userInfo, chatRooms);
 
-          this.events.publish('event-main-received-rooms', this.rooms);
+          this.events.publish('event-main-received-rooms', this.rooms); 
+          */
         }
 
         if (msg.step == 'ACCEPTED') {
           //5.1 + 6.2 accepted room
 
+          /* 
           //this.chatRooms
           let chatRooms = this.apiStorage.getUserRooms(this.userInfo);
 
@@ -307,13 +330,14 @@ export class ApiChatService {
           //luu room de load lan sau
           this.apiStorage.saveUserRooms(this.userInfo, chatRooms);
 
-          this.events.publish('event-main-received-rooms', this.rooms);
+          this.events.publish('event-main-received-rooms', this.rooms); 
+          */
         }
 
       });
 
     //2.chat - client received new/disconnect socket the same user
-    this.getPrivateMessages()
+    this.getPrivateStartEnd()
       .subscribe(data => {
         let msg;
         msg = data;
@@ -321,16 +345,16 @@ export class ApiChatService {
         if (msg.step === 'START') {
           //3.2 private old socket in username inform new socket
           this.mySocket.sockets.unshift(msg.socket_id);
-          //them user
-          this.mySocket.users.unshift(msg.user);
-
+          //them user {}
+          this.mySocket.users = this.apiAuth.createObjectKey(this.mySocket.users, msg.socket_id, msg.user);
         } else if (msg.step === 'END') {
           //x.2 chat
           let index = this.mySocket.sockets.findIndex(x=>x===msg.socket_id);
           if (index>=0){
+            this.mySocket.users = this.apiAuth.deleteObjectKey(this.mySocket.users, msg.socket_id);
             this.mySocket.sockets.splice(index, 1);
             //xoa user
-            this.mySocket.users.splice(index, 1);
+
           }
 
         }
@@ -344,7 +368,7 @@ export class ApiChatService {
         let msg;
         msg = data;
         console.log('new user receive', msg);
-        //luu trong contact de tham chieu nhanh, khong load lai cua server
+        /* //luu trong contact de tham chieu nhanh, khong load lai cua server
         if (!this.users.find(user => user.username === msg.username)) {
           this.users.push({
             username: msg.username,
@@ -352,7 +376,7 @@ export class ApiChatService {
             nickname: msg.data ? msg.data.nickname : "no nickname"
           });
           this.events.publish('event-main-received-users', this.users);
-        }
+        } */
       });
 
     //4.1 + 6.1 invite join this room
@@ -377,9 +401,15 @@ export class ApiChatService {
     .subscribe(data => {
       let msg;
       msg = data;
-      console.log('7. new private message:', msg);
       //msg.user.image = this.contacts[msg.user.username].image;
-      //this.events.publish('event-receiving-message', roomMsg);
+      if (this.mySocketPrivateRooms[msg.sender_id]&&this.mySocketPrivateRooms[msg.sender_id].isActive)
+      {
+        this.mySocketPrivateRooms[msg.sender_id].push(msg);
+        //bao co tin moi
+        this.events.publish("event-trigger-new-message-active");
+      }else{
+        this.createUnreadMessages(msg);
+      }
     });
     
     //7.1 new message
@@ -387,13 +417,13 @@ export class ApiChatService {
       .subscribe(data => {
         let msg;
         msg = data;
-        console.log('7.1 new message:', msg, this.rooms);
+        console.log('7.1 new message:', msg);
         //msg.user.image = this.contacts[msg.user.username].image;
 
-        let roomMsg = this.rooms.find(room => room.id === msg.room_id);
+        /* let roomMsg = this.rooms.find(room => room.id === msg.room_id);
 
         roomMsg.messages.push(msg);
-        this.events.publish('event-receiving-message', roomMsg);
+        this.events.publish('event-receiving-message', roomMsg); */
       });
 
     //x.1 chat - client user disconnect
@@ -401,8 +431,8 @@ export class ApiChatService {
       .subscribe(data => {
         let msg;
         msg = data;
-        this.users = this.users.splice(this.users.indexOf(msg.username), 1);
-        this.events.publish('event-main-received-users', this.users);
+        /* this.users = this.users.splice(this.users.indexOf(msg.username), 1);
+        this.events.publish('event-main-received-users', this.users); */
       });
 
   }
@@ -412,8 +442,7 @@ export class ApiChatService {
   jointRooms() {
     this.socket.emit('client-joint-room'
       , {
-        rooms: this.chatRooms,
-        last_time: this.last_time
+        rooms: this.chatRooms
       });
   }
 
@@ -426,7 +455,7 @@ export class ApiChatService {
     })
   }
 
-  getPrivateMessages() {
+  getPrivateStartEnd() {
     return new Observable(observer => {
       this.socket.on("server-private-emit", (data) => {
         observer.next(data);

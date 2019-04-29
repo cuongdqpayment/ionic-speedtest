@@ -34,10 +34,15 @@
                         <img *ngIf="!contacts[mySocket?.user?.username]?.avatar" src="assets/imgs/no-image-go.jpg">
                     </ion-avatar>
                     <ion-title >{{contacts[mySocket?.user?.username]?.fullname?contacts[mySocket?.user?.username]?.fullname:mySocket?.user?.username}}</ion-title>
-                    <p text-wrap>{{mySocket?.users[idx]?.device}}</p>
-                    <p>{{mySocket?.users[idx]?.ip}}</p>
-                    <p text-wrap>{{mySocket?.users[idx]?.location?.address}}</p>
-                    <ion-note item-end>{{mySocket?.users[idx]?.time | timeAgo}}</ion-note>
+                    <p text-wrap>{{mySocket?.users[socket]?.device}}</p>
+                    <p>{{mySocket?.users[socket]?.ip}}</p>
+                    <p text-wrap>{{mySocket?.users[socket]?.location?.address}}</p>
+                    <ion-note item-end>
+                        {{mySocket?.users[socket]?.time | timeAgo}}
+                        <p style="text-align: right;" *ngIf="unreadMessages[socket]">
+                            <ion-badge color="danger">{{ unreadMessages[socket].length }}</ion-badge>
+                        </p>
+                    </ion-note>
                 </ion-item>
     
                 <ion-item-options *ngIf="socket!==mySocket.socket_id">
@@ -69,17 +74,17 @@
 
     <ion-list>
 
-        <ion-item-sliding #slidingItem class="background-list" *ngFor="let room of rooms">
+        <ion-item-sliding #slidingItem class="background-list" *ngFor="let room of chatRooms?.rooms">
             
                 <ion-item #item class="background-item" tappable (click)="onClickItem(room)">
-                    <ion-avatar item-start *ngIf="room.image">
-                        <img [src]="room.image">
+                    <ion-avatar item-start *ngIf="room?.image">
+                        <img [src]="room?.image">
                     </ion-avatar>
-                    <ion-title >{{room.name}}</ion-title>
-                    <p *ngIf="room.messages">{{room.messages[room.messages.length-1]?.text}}</p>
-                    <ion-note item-end *ngIf="room.messages">{{room.messages[room.messages.length-1]?.created | timeAgo}}</ion-note>
-                    <ion-icon *ngIf="!isMobile" item-end [style.color]="room.visible?'darkgoldenrod':'darkblue'" 
-                              name="{{room.visible?'ios-arrow-forward':'ios-arrow-back'}}" 
+                    <ion-title >{{room?.name}}</ion-title>
+                    <p *ngIf="room?.messages">{{room?.messages[room?.messages?.length-1]?.text}}</p>
+                    <ion-note item-end *ngIf="room?.messages">{{room?.messages[room?.messages?.length-1]?.created | timeAgo}}</ion-note>
+                    <ion-icon *ngIf="!isMobile" item-end [style.color]="room?.visible?'darkgoldenrod':'darkblue'" 
+                              name="{{room?.visible?'ios-arrow-forward':'ios-arrow-back'}}" 
                               tappable (click)="openSwipeOptions(slidingItem, item, room)"></ion-icon>
                 </ion-item>
     

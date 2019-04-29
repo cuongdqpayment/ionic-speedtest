@@ -9,14 +9,21 @@ import { ApiStorageService } from '../../services/apiStorageService';
   templateUrl: 'chatting-private.html'
 })
 
+/**
+ * cho biet day la room nao
+ * chuyen doi du lieu chua doc thanh doc 
+ * ghi lai lich su trao doi thong tin
+ */
 export class ChattingPrivatePage {
 
   @ViewChild(Content) contentMessages: Content;
 
-  parent: any;
-  socketId: any;
+  parent: any;            //noi goi no
+  socketId: any;          //room id
+  unreadMessages: any = {};    //doi tuong chung 
+  mySocketPrivateRooms: any = {};    //doi tuong chung 
 
-  contacts: any;
+  contacts: any = {};
   mySocket: any;
 
   socket: any;
@@ -39,14 +46,17 @@ export class ChattingPrivatePage {
 
   ngOnInit() {
      
+    this.socketId = this.navParams.get('socket_id'); //lay phien rieng
      this.parent = this.navParams.get('parent'); //lay phien rieng
-     this.socketId = this.navParams.get('socket_id'); //lay phien rieng
+     this.unreadMessages = this.navParams.get('unread_messages'); //lay phien rieng
+     this.mySocketPrivateRooms = this.navParams.get('private_rooms'); //lay phien rieng
+
      this.mySocket = this.navParams.get('my_socket'); //lay phien rieng
+     //cai nay nhu la rooms moi room chua messages
      this.contacts = this.navParams.get('contacts');  //lay avatar, name
-     this.socket = this.navParams.get('socket'); 
+     this.socket = this.navParams.get('socket');      //doi tuong lien lac
      
-     let index = this.mySocket.sockets.findIndex(x=>x==this.socketId);
-     let ip = this.mySocket.users[index]?this.mySocket.users[index].ip:this.socketId;
+     let ip = this.mySocket.users[this.socketId]?this.mySocket.users[this.socketId].ip:this.socketId;
      
      this.chatManager = {
       title: "Kênh riêng " + ip
@@ -57,18 +67,54 @@ export class ChattingPrivatePage {
         ]
       , items: []
     }
+  
+    setTimeout(()=>{
+      try{
+        this.contentMessages.scrollToBottom();
+      }catch(e){}
+     },200);
 
-      
-     setTimeout(()=>{
-       try{
-         this.contentMessages.scrollToBottom();
-       }catch(e){}
-      },200);
+    this.events.subscribe("event-trigger-new-message-active",()=>{
+      setTimeout(()=>{
+        try{
+          this.contentMessages.scrollToBottom();
+        }catch(e){}
+       },200);
+    })
+
 
   }
 
+  //sau khi load xong
   ionViewDidLoad() {
+    let messages = [];
+    if (this.unreadMessages[this.socketId]){
+      messages = this.apiAuth.cloneObject(this.unreadMessages[this.socketId]);
+      this.apiAuth.deleteObjectKey(this.unreadMessages,this.socketId)
+    }
+
+    if (!this.mySocketPrivateRooms[this.socketId]){
+      this.apiAuth.createObjectKey(
+        this.mySocketPrivateRooms,
+        this.socketId,messages);
+    }else{
+      messages.forEach(el=>{
+        this.mySocketPrivateRooms[this.socketId].push(el);
+      })
+    }
+
+    this.mySocketPrivateRooms[this.socketId].isActive = true;
+    this.messages = this.mySocketPrivateRooms[this.socketId];
     
+    //chuyen doi du lieu sang doc
+    //console.log('doc message',this.messages);
+    
+  }
+  
+  ionViewDidLeave(){
+    this.mySocketPrivateRooms[this.socketId].isActive = false;
+    //console.log('roi trang nay',this.socketId, this.mySocketPrivateRooms[this.socketId]);
+
   }
 
   //Su dung search
@@ -117,10 +163,24 @@ export class ChattingPrivatePage {
 
     if (this.message.length>0){
       this.socket.emit('client-send-private-message', 
-        { socket_id: this.socketId, //chi gui den socketId nay thoi
+        { socket_id: this.socketId, //receiver_id
           text: this.message,
-          created: new Date().getTime()
+          created: Date.now()
        });
+
+       //ghi lai message[] va mySocketPrivateRooms
+       this.messages.push({
+         sender_id: this.mySocket.socket_id,
+         text: this.message,
+         created: Date.now()
+       })
+
+       setTimeout(()=>{
+          try{   
+            this.contentMessages.scrollToBottom();
+          }catch(e){}
+        },200);
+
     }
     
     this.message = '';

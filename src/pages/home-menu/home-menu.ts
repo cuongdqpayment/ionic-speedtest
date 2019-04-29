@@ -33,10 +33,12 @@ export class HomeMenuPage {
   isLoaded: boolean = true;
 
   mySocket:any;
+  unreadMssages: any;
+  mySocketPrivateRooms: any;
   chatRooms: any;
   chatFriends: any;
   chatNewFriends: any;
-  chatNewMessages:any;
+  
 
   constructor(
     private apiStorage: ApiStorageService
@@ -91,7 +93,9 @@ export class HomeMenuPage {
 
     this.events.subscribe('event-chat-init-room'
       , (data => {
-        this.mySocket = data.my_socket
+        this.mySocket = data.my_socket;
+        this.unreadMssages = data.unread_messages;
+        this.mySocketPrivateRooms = data.private_rooms;
         this.chatRooms = data.rooms;
         this.chatFriends = data.friends;
         this.chatNewFriends = data.new_friends;
@@ -120,6 +124,8 @@ export class HomeMenuPage {
     let chattingData = this.apiChat.getRoomsFriends();
 
     this.mySocket = chattingData.my_socket;
+    this.unreadMssages = chattingData.unread_messages;
+    this.mySocketPrivateRooms = chattingData.private_rooms;
     this.chatRooms = chattingData.rooms;
     this.chatFriends = chattingData.friends;
     this.chatNewFriends = chattingData.new_friends;
@@ -293,7 +299,7 @@ export class HomeMenuPage {
 
   }
 
-  //vao trang chat
+  //vao trang home-chat
   onClickChatRoom() {
     this.navCtrl.push(HomeChatPage, {
       parent: this,             //biet goi parent
@@ -301,11 +307,13 @@ export class HomeMenuPage {
       token: this.token,       //thong tin owner
       user: this.userInfo,     //thong tin owner
 
+      unread_messages: this.unreadMssages, //thong tin chua doc
+      rooms: this.chatRooms,    //thong tin dang online chat
+      private_rooms: this.mySocketPrivateRooms,    //thong tin dang online chat
+
       contacts: this.contacts, //thong tin cua user co anh dai dien unique
-      friends: this.chatFriends, //thong tin ban be chat (<contacts array)
+      friends: this.chatFriends //thong tin ban be chat (<contacts array)
       //neu rooms co > 2 user thi goi la room neu khong goi la ca nhan 
-      rooms: this.chatRooms,     //thong tin dang online chat
-      new_messages: this.chatNewMessages //thong tin unread
       //
     });
   }
