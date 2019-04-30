@@ -98,6 +98,7 @@
 
 		<!-- single select -->
 		<ion-item class="input-item" *ngIf="it.type == 'select'">
+			<ion-icon item-left name="{{it.icon}}" *ngIf="it.icon"></ion-icon>
 			<ion-label color="primary" text-wrap style="text-align: justify;">{{it.name?it.name:it.hint}}</ion-label>
 			<ion-select [(ngModel)]="it.value" style="background-color: rgb(103, 112, 230); color:whitesmoke; border-radius: 1em;">
 				<ion-option *ngFor="let mySet of it.options" value="{{mySet.value}}" >{{mySet.name}}</ion-option>
@@ -106,6 +107,7 @@
 
 		<!-- multiple select -->
 		<ion-item class="input-item" *ngIf="it.type == 'select_multiple'">
+			<ion-icon item-left name="{{it.icon}}" *ngIf="it.icon"></ion-icon>
 			<ion-label color="primary" text-wrap style="text-align: justify;">{{it.name?it.name:it.hint}}</ion-label>
 			<ion-select [(ngModel)]="it.value" multiple="true" style="background-color: rgb(103, 112, 230); color:whitesmoke; border-radius: 1em;">
 				<ion-option *ngFor="let mySet of it.options" value="{{mySet.value}}">{{mySet.name}}</ion-option>
