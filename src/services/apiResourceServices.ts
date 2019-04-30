@@ -1,21 +1,15 @@
-import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-
 import { ApiStorageService } from './apiStorageService';
-import { RequestInterceptor } from '../interceptors/requestInterceptor';
+import { ApiAuthService } from './apiAuthService';
 
 @Injectable()
 export class ApiResourceService {
 
     resourceServer = ApiStorageService.resourceServer;
-    token:any;
 
-    constructor(private httpClient: HttpClient,
-                private reqInterceptor: RequestInterceptor //muon thay doi token gui kem thi ghi token moi
-                ) {}
-
-
-
+    constructor(
+        private apiAuth: ApiAuthService
+    ) {}
 
     /**
      * Tao file pdf de in an
@@ -24,18 +18,14 @@ export class ApiResourceService {
      * @param billCycle 
      */    
     createPdfInvoices(billCycle){
-        return this.httpClient.post(this.resourceServer+'/db/pdf-invoices'
-                                    ,JSON.stringify({
+        return this.apiAuth.postDynamicForm(this.resourceServer+'/db/pdf-invoices'
+                                    ,{
                                         bill_cycle: billCycle.bill_cycle,
                                         cust_id: billCycle.cust_id,
                                         background:billCycle.background
-                                    }))
-        .toPromise()
-        .then(data => {
-            let rtn:any;
-            rtn = data;
-            return rtn;
-        });
+                                    }
+                                    ,true)
+        
     }
 
     /**
@@ -47,13 +37,10 @@ export class ApiResourceService {
             'responseType'  : 'arraybuffer' as 'json'
              //'responseType'  : 'blob' as 'json'        //This also worked
           };
-        return this.httpClient.get(this.resourceServer+'/db/pdf-invoices/'+yyyymm_cust_id,httpOptions)
-        .toPromise()
-        .then(data => {
-            let rtn:any;
-            rtn = data;
-            return rtn;
-        });
+          return this.apiAuth.getDynamicUrl(
+              this.resourceServer+'/db/pdf-invoices/'+yyyymm_cust_id,
+              true,
+              httpOptions);
     }
 
     /**
@@ -66,65 +53,36 @@ export class ApiResourceService {
      * }
      */
     createInvoices(billCycle){
-        return this.httpClient.post(this.resourceServer+'/db/create-invoices'
-        ,JSON.stringify({
+        return this.apiAuth.postDynamicForm(this.resourceServer+'/db/create-invoices'
+        ,{
             bill_cycle: billCycle.bill_cycle,
             bill_date: billCycle.bill_date,
             invoice_no: billCycle.invoice_no,
             cust_id: billCycle.cust_id
-        }))
-        .toPromise()
-        .then(data => {
-            let rtn:any;
-            rtn = data;
-            return rtn;
-        });
+        },
+        true)
     }
 
     /**
      * yyyymm_custId = 201901 hoac 201901/R000000001
      */
     getInvoices(yyyymm_custId){
-        return this.httpClient.get(this.resourceServer+'/db/json-invoices/'+yyyymm_custId)
-        .toPromise()
-        .then(data => {
-            let rtn:any;
-            rtn = data;
-            return rtn;
-        })
+        return this.apiAuth.getDynamicUrl(this.resourceServer+'/db/json-invoices/'+yyyymm_custId,true)
     }
 
     /**
      * lay ky cuoc da tao trong csdl
      */
     getBillCycle(){
-        return this.httpClient.get(this.resourceServer+'/db/json-bill-cycles')
-        .toPromise()
-        .then(data => {
-            let rtn:any;
-            rtn = data;
-            return rtn;
-        })
+        return this.apiAuth.getDynamicUrl(this.resourceServer+'/db/json-bill-cycles',true)
     }
 
     getAllCutomers(){
-        return this.httpClient.get(this.resourceServer+'/db/json-customers')
-        .toPromise()
-        .then(data => {
-            let rtn:any;
-            rtn = data;
-            return rtn;
-        })
+        return this.apiAuth.getDynamicUrl(this.resourceServer+'/db/json-customers',true)
     }
 
     getParamters(){
-        return this.httpClient.get(this.resourceServer+'/db/json-parameters')
-        .toPromise()
-        .then(data => {
-            let rtn:any;
-            rtn = data;
-            return rtn;
-        })
+        return this.apiAuth.getDynamicUrl(this.resourceServer+'/db/json-parameters',true)
     }
 
 
@@ -133,20 +91,7 @@ export class ApiResourceService {
      * @param jsonString 
      */
     authorizeFromResource(token){
-        this.reqInterceptor.setRequestToken(token); //neu thanh cong thi cac phien sau se gan them bear
-        return this.httpClient.post(this.resourceServer + '/auth/authorize-token', JSON.stringify({check: true}))
-            .toPromise()
-            .then(data => {
-                let rtn:any;
-                rtn = data;
-                this.token = token;
-                return rtn;
-            })
-            .catch(err=>{
-                this.token = null;
-                this.reqInterceptor.setRequestToken(null); 
-                throw err;
-            });
+        return this.apiAuth.postDynamicForm(this.resourceServer + '/auth/authorize-token', {check: true}, token)
     }
 
 }

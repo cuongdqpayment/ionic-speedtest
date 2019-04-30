@@ -418,10 +418,10 @@ export class ApiAuthService {
                 });
     }
 
-    getDynamicUrl(url:string, token?:any){
+    getDynamicUrl(url:string, token?:any, options?: any){
         //lay token cua phien xac thuc
         this.reqInterceptor.setRequestToken(token&&token.length?token:this.tokenObject?this.tokenObject.token:'');
-        return this.httpClient.get(url)
+        return this.httpClient.get(url, options)
                 .toPromise()
                 .then(data => {
                     let rtn:any;
