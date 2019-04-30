@@ -61,7 +61,7 @@ export class ChattingRoomPage {
      
      //let ip = this.mySocket.users[this.socketId]?this.mySocket.users[this.socketId].ip:this.socketId;
      
-     console.log('room:',this.room)
+     console.log('go in room:',this.room)
 
      this.chatManager = {
       title: this.room.name
@@ -93,23 +93,23 @@ export class ChattingRoomPage {
   //sau khi load xong
   ionViewDidLoad() {
     let messages = [];
-    /* if (this.unreadMessages[this.socketId]){
-      messages = this.apiAuth.cloneObject(this.unreadMessages[this.socketId]);
-      this.apiAuth.deleteObjectKey(this.unreadMessages,this.socketId)
+    if (this.unreadMessages[this.room.id]){
+      messages = this.apiAuth.cloneObject(this.unreadMessages[this.room.id]);
+      this.apiAuth.deleteObjectKey(this.unreadMessages,this.room.id)
     }
 
-    if (!this.roomsMessages[this.socketId]){
+    if (!this.roomsMessages[this.room.id]){
       this.apiAuth.createObjectKey(
         this.roomsMessages,
-        this.socketId,messages);
+        this.room.id,messages);
     }else{
       messages.forEach(el=>{
-        this.roomsMessages[this.socketId].push(el);
+        this.roomsMessages[this.room.id].push(el);
       })
     }
 
-    this.roomsMessages[this.socketId].isActive = true;
-    this.messages = this.roomsMessages[this.socketId]; */
+    this.roomsMessages[this.room.id].isActive = true;
+    this.messages = this.roomsMessages[this.room.id];
     
     //chuyen doi du lieu sang doc
     //console.log('doc message',this.messages);
@@ -117,7 +117,7 @@ export class ChattingRoomPage {
   }
   
   ionViewDidLeave(){
-    //this.roomsMessages[this.socketId].isActive = false;
+    this.roomsMessages[this.room.id].isActive = false;
     //console.log('roi trang nay',this.socketId, this.roomsMessages[this.socketId]);
 
   }
@@ -174,11 +174,15 @@ export class ChattingRoomPage {
        });
 
        //ghi lai message[] va roomsMessages
+       //neu room.id ko phai private
+
+       /* 
        this.messages.push({
          sender_id: this.mySocket.user.username,
          text: this.message,
          created: Date.now()
-       })
+       }) 
+       */
 
        setTimeout(()=>{
           try{   
