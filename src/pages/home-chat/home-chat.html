@@ -70,22 +70,15 @@
 
         </ion-item-sliding>
 
-    </ion-list>
-
-    <ion-list>
-
-        <ion-item-sliding #slidingItem class="background-list" *ngFor="let room of chatRooms?.rooms">
+        <ion-item-sliding #slidingItem class="background-list" *ngFor="let room of chatRooms">
             
                 <ion-item #item class="background-item" tappable (click)="onClickItem(room)">
-                    <ion-avatar item-start *ngIf="room?.image">
-                        <img [src]="room?.image">
+                    <ion-avatar item-start *ngIf="room?.avatar">
+                        <img [src]="room?.avatar">
                     </ion-avatar>
                     <ion-title >{{room?.name}}</ion-title>
                     <p *ngIf="room?.messages">{{room?.messages[room?.messages?.length-1]?.text}}</p>
                     <ion-note item-end *ngIf="room?.messages">{{room?.messages[room?.messages?.length-1]?.created | timeAgo}}</ion-note>
-                    <ion-icon *ngIf="!isMobile" item-end [style.color]="room?.visible?'darkgoldenrod':'darkblue'" 
-                              name="{{room?.visible?'ios-arrow-forward':'ios-arrow-back'}}" 
-                              tappable (click)="openSwipeOptions(slidingItem, item, room)"></ion-icon>
                 </ion-item>
     
                 <ion-item-options>

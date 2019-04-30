@@ -34,7 +34,9 @@ export class HomeMenuPage {
 
   mySocket:any;
   unreadMssages: any;
-  mySocketPrivateRooms: any;
+  privateMessages: any;
+  roomsMessages: any;
+
   chatRooms: any;
   chatFriends: any;
   chatNewFriends: any;
@@ -95,7 +97,8 @@ export class HomeMenuPage {
       , (data => {
         this.mySocket = data.my_socket;
         this.unreadMssages = data.unread_messages;
-        this.mySocketPrivateRooms = data.private_rooms;
+        this.privateMessages = data.private_messages;
+        this.roomsMessages = data.rooms_messages;
         this.chatRooms = data.rooms;
         this.chatFriends = data.friends;
         this.chatNewFriends = data.new_friends;
@@ -125,9 +128,12 @@ export class HomeMenuPage {
 
     this.mySocket = chattingData.my_socket;
     this.unreadMssages = chattingData.unread_messages;
-    this.mySocketPrivateRooms = chattingData.private_rooms;
+    this.privateMessages = chattingData.private_messages;
+    this.roomsMessages = chattingData.rooms_messages;
+
     this.chatRooms = chattingData.rooms;
     this.chatFriends = chattingData.friends;
+    
     this.chatNewFriends = chattingData.new_friends;
 
 
@@ -309,7 +315,8 @@ export class HomeMenuPage {
 
       unread_messages: this.unreadMssages, //thong tin chua doc
       rooms: this.chatRooms,    //thong tin dang online chat
-      private_rooms: this.mySocketPrivateRooms,    //thong tin dang online chat
+      private_messages: this.privateMessages,    //thong tin dang online chat
+      rooms_messages: this.roomsMessages,    //thong tin dang online chat
 
       contacts: this.contacts, //thong tin cua user co anh dai dien unique
       friends: this.chatFriends //thong tin ban be chat (<contacts array)

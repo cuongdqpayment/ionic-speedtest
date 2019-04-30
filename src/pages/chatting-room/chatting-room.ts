@@ -5,8 +5,8 @@ import { ApiAuthService } from '../../services/apiAuthService';
 import { ApiStorageService } from '../../services/apiStorageService';
 
 @Component({
-  selector: 'page-chatting-private',
-  templateUrl: 'chatting-private.html'
+  selector: 'page-chatting-room',
+  templateUrl: 'chatting-room.html'
 })
 
 /**
@@ -14,14 +14,16 @@ import { ApiStorageService } from '../../services/apiStorageService';
  * chuyen doi du lieu chua doc thanh doc 
  * ghi lai lich su trao doi thong tin
  */
-export class ChattingPrivatePage {
+export class ChattingRoomPage {
 
   @ViewChild(Content) contentMessages: Content;
 
   parent: any;            //noi goi no
-  socketId: any;          //room id
+  
+  room: any;          //room thong tin cua room
+
   unreadMessages: any = {};    //doi tuong chung 
-  privateMessages: any = {};    //doi tuong chung 
+  roomsMessages: any = {};    //doi tuong chung 
 
   contacts: any = {};
   mySocket: any;
@@ -46,20 +48,23 @@ export class ChattingPrivatePage {
 
   ngOnInit() {
      
-    this.socketId = this.navParams.get('socket_id'); //lay phien rieng
+    this.room = this.navParams.get('room'); //lay room dang chat
+
      this.parent = this.navParams.get('parent'); //lay phien rieng
      this.unreadMessages = this.navParams.get('unread_messages'); //lay phien rieng
-     this.privateMessages = this.navParams.get('private_messages'); //lay phien rieng
+     this.roomsMessages = this.navParams.get('rooms_messages'); //lay phien rieng
 
      this.mySocket = this.navParams.get('my_socket'); //lay phien rieng
      //cai nay nhu la rooms moi room chua messages
      this.contacts = this.navParams.get('contacts');  //lay avatar, name
      this.socket = this.navParams.get('socket');      //doi tuong lien lac
      
-     let ip = this.mySocket.users[this.socketId]?this.mySocket.users[this.socketId].ip:this.socketId;
+     //let ip = this.mySocket.users[this.socketId]?this.mySocket.users[this.socketId].ip:this.socketId;
      
+     console.log('room:',this.room)
+
      this.chatManager = {
-      title: "Kênh riêng " + ip
+      title: this.room.name
       //+ (this.mySocket&&this.mySocket.user?this.mySocket.user.nickname:this.mySocket.user)
       , search_bar: {hint: "Tìm trong nội dung trong nhóm"}
       , buttons: [
@@ -88,23 +93,23 @@ export class ChattingPrivatePage {
   //sau khi load xong
   ionViewDidLoad() {
     let messages = [];
-    if (this.unreadMessages[this.socketId]){
+    /* if (this.unreadMessages[this.socketId]){
       messages = this.apiAuth.cloneObject(this.unreadMessages[this.socketId]);
       this.apiAuth.deleteObjectKey(this.unreadMessages,this.socketId)
     }
 
-    if (!this.privateMessages[this.socketId]){
+    if (!this.roomsMessages[this.socketId]){
       this.apiAuth.createObjectKey(
-        this.privateMessages,
+        this.roomsMessages,
         this.socketId,messages);
     }else{
       messages.forEach(el=>{
-        this.privateMessages[this.socketId].push(el);
+        this.roomsMessages[this.socketId].push(el);
       })
     }
 
-    this.privateMessages[this.socketId].isActive = true;
-    this.messages = this.privateMessages[this.socketId];
+    this.roomsMessages[this.socketId].isActive = true;
+    this.messages = this.roomsMessages[this.socketId]; */
     
     //chuyen doi du lieu sang doc
     //console.log('doc message',this.messages);
@@ -112,8 +117,8 @@ export class ChattingPrivatePage {
   }
   
   ionViewDidLeave(){
-    this.privateMessages[this.socketId].isActive = false;
-    //console.log('roi trang nay',this.socketId, this.privateMessages[this.socketId]);
+    //this.roomsMessages[this.socketId].isActive = false;
+    //console.log('roi trang nay',this.socketId, this.roomsMessages[this.socketId]);
 
   }
 
@@ -162,15 +167,15 @@ export class ChattingPrivatePage {
   sendMessage() {
 
     if (this.message.length>0){
-      this.socket.emit('client-send-private-message', 
-        { socket_id: this.socketId, //receiver_id
+      this.socket.emit('client-send-message', 
+        { room: this.room, //receiver_room
           text: this.message,
           created: Date.now()
        });
 
-       //ghi lai message[] va privateMessages
+       //ghi lai message[] va roomsMessages
        this.messages.push({
-         sender_id: this.mySocket.socket_id,
+         sender_id: this.mySocket.user.username,
          text: this.message,
          created: Date.now()
        })

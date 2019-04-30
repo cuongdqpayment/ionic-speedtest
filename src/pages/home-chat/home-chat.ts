@@ -6,6 +6,7 @@ import { DynamicRangePage } from '../dynamic-range/dynamic-range';
 import { ChattingPage } from '../chatting/chatting';
 import { ChattingPrivatePage } from '../chatting-private/chatting-private';
 import { ApiChatService } from '../../services/apiChatService';
+import { ChattingRoomPage } from '../chatting-room/chatting-room';
 
 @Component({
   selector: 'page-home-chat',
@@ -26,11 +27,12 @@ export class HomeChatPage {
   
   contacts: any = {};
   friends: any = [];
+  chatRooms:any = []; 
   
   unreadMessages: any = {};
-  mySocketPrivateRooms:any = {}; //{room_id:[{msg}],rooms:[{id:..,name:,avatar:}...],length:count}
-  chatRooms:any = {}; //{room_id:[{msg}],rooms:[{id:..,name:,avatar:}...],length:count}
-
+  privateMessages:any = {}; //{room_id:[{msg}],rooms:[{id:..,name:,avatar:}...],length:count}
+  roomsMessages:any = {}; //{room_id:[{msg}],rooms:[{id:..,name:,avatar:}...],length:count}
+  
   isSearch: boolean = false;
   searchString: string = '';
   shouldShowCancel: boolean = false;
@@ -53,7 +55,9 @@ export class HomeChatPage {
       this.userInfo = this.navParams.get('user');  //thong tin owner
 
       this.unreadMessages = this.navParams.get('unread_messages'); //tin tuc chua doc
-      this.mySocketPrivateRooms = this.navParams.get('private_rooms'); //danh sach chatRooms lien lac
+      this.privateMessages = this.navParams.get('private_messages'); //
+      this.roomsMessages = this.navParams.get('rooms_messages'); //
+
       this.chatRooms = this.navParams.get('rooms'); //danh sach chatRooms lien lac
       
       this.contacts = this.navParams.get('contacts'); //unique user hien thi name, nickname, avatar
@@ -144,26 +148,26 @@ export class HomeChatPage {
 
 
   onClickItem(room){
-    //console.log('goto room',room);
-    this.navCtrl.push(ChattingPage, {
+    this.navCtrl.push(ChattingRoomPage, {
+                        room: room,
                         parent:this,
                         socket: this.socket,
-                        user: this.userInfo,
-                        token: this.token,
-                        callback: this.callbackChatRoom,
-                        room: room
+                        unread_messages: this.unreadMessages,
+                        rooms_messages: this.roomsMessages, //doi nhan tin chat
+                        contacts: this.contacts,
+                        my_socket: this.mySocket
                       })
   }
 
 
   onClickItemPrivate(socketId){
     this.navCtrl.push(ChattingPrivatePage, {
-      parent:this,
-      unread_messages: this.unreadMessages,
-      private_rooms: this.mySocketPrivateRooms, //doi tuong hung tin rieng
-      socket: this.socket,
-      contacts: this.contacts,
       socket_id: socketId,
+      parent:this,
+      socket: this.socket,
+      unread_messages: this.unreadMessages,
+      private_messages: this.privateMessages, //doi tuong hung tin rieng
+      contacts: this.contacts,
       my_socket: this.mySocket
     })
   }

@@ -18,21 +18,18 @@ export class ApiChatService {
 
   configSocketIo: SocketIoConfig;
 
-  mySocket: any;
   //chi luu room truyen qua lai voi nhau khong luu tru
-  mySocketPrivateRooms:any = {}; // {room_id/socketid:[{message}], length:count_room} 
   unreadMessages: any = {}; //{room_id/socketid:[{message}], length:count_room}
+  privateMessags:any = {}; // {room_id/socketid:[{message}], length:count_room} 
+  roomsMessags:any = {}; // {room_id/socketid:[{message}], length:count_room} 
   //luu lai lich su 
-  chatRooms:any = {}; // {room_id/socketid:[{message}], length:count_room, rooms:[room_id...]} 
   //ban dau la khong co room, neu login roi thi moi co room
-  
-  //rooms: any = {}  //cac room {room_id/socketid:[{message}]}
-  //last_time: number = Date.now();
-  //users = []        //users online
   //rooms = [];       //room online
-
-  chatFriends:any;
-  chatNewFriends:any;
+  
+  mySocket: any;  //{sockets:[]}
+  chatFriends:any = []; //[{}]
+  chatRooms:any = []; // [{room_id=$U/R#user#time:{username:true/false,length:2},name:,avatar:,created,time}]
+  chatNewFriends:any = [];
 
 
   constructor(
@@ -70,9 +67,10 @@ export class ApiChatService {
    */
   getRoomsFriends(){
     return {
-              my_socket: this.mySocket,        
+              my_socket: this.mySocket,        //chua private sockets
               unread_messages: this.unreadMessages,        
-              private_rooms: this.mySocketPrivateRooms,
+              private_messages: this.privateMessags, //chua private message ko luu
+              rooms_messages: this.roomsMessags, //chua messages cua cac room // co luu
               rooms: this.chatRooms,
               friends: this.chatFriends, 
               new_friends: this.chatNewFriends
@@ -86,10 +84,11 @@ export class ApiChatService {
     this.events.publish('event-chat-init-room'
     , {
         my_socket: this.mySocket,
-        unread_messages: this.unreadMessages, 
-        private_rooms: this.mySocketPrivateRooms,
         rooms: this.chatRooms,
         friends: this.chatFriends, 
+        unread_messages: this.unreadMessages, 
+        private_messages: this.privateMessags,
+        rooms_messages: this.roomsMessags, //chua messages cua cac room // co luu
         new_friends: this.chatNewFriends
       }
     );
@@ -99,8 +98,7 @@ export class ApiChatService {
     //{roomid:{ai do}}
     this.socket.emit('client-join-rooms'
     , {
-      rooms: this.chatRooms 
-      //phai xu ly cho server vi truyen danh sach nay
+      rooms: this.chatRooms //bao gom rooms cua friends va room tu tao
     });
   }
 
@@ -155,17 +153,53 @@ export class ApiChatService {
       friends.forEach(el => {
         let index = this.chatFriends?this.chatFriends.findIndex(x => x.username === el.username):-1;
         if (index>=0){
+          //thay ten moi neu co, mat dinh tao room chat
           this.chatFriends.splice(index, 1, el);
         }else{
+          //yeu cau ket ban truoc khi chat
           if (!this.chatNewFriends) this.chatNewFriends=[];
           if (this.userInfo.username !== el.username) this.chatNewFriends.push(el); 
           //them ban moi ket ban, minh phai xac nhan thi no moi ket ban
         }         
       });
     }else{
-      //khong co danh sach ban be trong danh ba
+      //khong co danh sach ban be trong danh ba (ko chat friend default)
     }
+
+
+    //thuc hien tao rooms de join
+    //truong hop trong chatRooms co room cua user friend thi thoi
+    //minh chu dong ket noi voi ban, ban chap nhan se joinroom
+    //truong hop ban cung chu dong ket noi???
     
+    this.chatFriends.forEach(el=>{
+      //chatRooms:any = []; // [{id:room_id, users:[username,...], name:,avatar:,created,time}]
+      let index = this.chatRooms.findIndex(x=>
+        (
+        x.users
+        &&x.users.length===2
+        &&x.users.findIndex(y=>y===el.username)>=0
+        )
+        );
+
+        //console.log(el);
+
+      if (index<0){
+        this.chatRooms.unshift({
+          id: "$U#"+el.username+"#"+Date.now(),
+          name: el.fullname,
+          nickname: el.nickname,
+          avatar: el.avatar,
+          users: [this.userInfo.username, el.username],
+          created: Date.now()
+        })
+      } //neu co roi thi room da co khong can them
+    })
+
+    //cac rooms khac thi duoc khoi tao chuc nang tao rooms tren home-chat nhe
+    //chatRooms:any = []; // [{id:room_id, users:{username:true/false,length:2}, name:,avatar:,created,time}]
+
+
     //lang nghe vi tri thay doi de ghi nhan vi tri cua 
     //neu yeu cau tracking thi lang nghe su kien nay nhe
     /* 
@@ -402,9 +436,9 @@ export class ApiChatService {
       let msg;
       msg = data;
       //msg.user.image = this.contacts[msg.user.username].image;
-      if (this.mySocketPrivateRooms[msg.sender_id]&&this.mySocketPrivateRooms[msg.sender_id].isActive)
+      if (this.privateMessags[msg.sender_id]&&this.privateMessags[msg.sender_id].isActive)
       {
-        this.mySocketPrivateRooms[msg.sender_id].push(msg);
+        this.privateMessags[msg.sender_id].push(msg);
         //bao co tin moi
         this.events.publish("event-trigger-new-message-active");
       }else{
