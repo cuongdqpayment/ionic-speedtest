@@ -2,8 +2,6 @@ import { Component } from '@angular/core';
 import { NavController, Events, NavParams, ModalController, ItemSliding, Item } from 'ionic-angular';
 
 import { ApiStorageService } from '../../services/apiStorageService';
-import { DynamicRangePage } from '../dynamic-range/dynamic-range';
-import { ChattingPage } from '../chatting/chatting';
 import { ChattingPrivatePage } from '../chatting-private/chatting-private';
 import { ApiChatService } from '../../services/apiChatService';
 import { ChattingRoomPage } from '../chatting-room/chatting-room';
