@@ -207,7 +207,7 @@ export class DynamicFormMobilePage {
 
       if (btn.url) {
 
-        if (btn.token && keyResults) {
+        if (keyResults) {
 
           let loading = this.loadingCtrl.create({
             content: 'Đang xử lý dữ liệu từ máy chủ token....'
@@ -237,37 +237,7 @@ export class DynamicFormMobilePage {
               loading.dismiss();
             });
 
-        } else if (keyResults) {
-
-          let loading = this.loadingCtrl.create({
-            content: 'Đang xử lý dữ liệu từ máy chủ ....'
-          });
-          loading.present();
-
-          this.pubService.postDynamicForm(btn.url, keyResults)
-            .then(data => {
-              //console.log('data --> next', data, btn.next);
-              btn.next_data = {
-                step: this.step,
-                button: btn, //chuyen dieu khien nut cho ben ngoai
-                data: data
-              }
-              this.next(btn);
-              loading.dismiss();
-            })
-            .catch(err => {
-              //console.log('err', err);
-              btn.next_data = {
-                step: this.step,
-                error: err,
-                button: btn, //chuyen dieu khien nut cho ben ngoai
-                keyResults:keyResults
-              }
-              this.next(btn);
-              loading.dismiss();
-            });
-
-        }
+        } 
 
       } else {
 

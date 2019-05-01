@@ -314,7 +314,7 @@ export class ApiChatService {
 
         if (msg.step == 'JOINED') {
           //4.2 rooms joined first
-          console.log('JOINED rooms',msg.rooms);
+          //console.log('JOINED rooms',msg.rooms);
           //room cu truoc do, + rooms moi join duoc
           if (msg.rooms){
             msg.rooms.forEach(el=>{
@@ -329,7 +329,7 @@ export class ApiChatService {
 
         if (msg.step == 'ACCEPTED') {
           //5.1 + 6.2 accepted room
-          console.log('join rooms ACCEPTED', msg)
+          //console.log('join rooms ACCEPTED', msg)
           /* 
           //this.chatRooms
           let chatRooms = this.apiStorage.getUserRooms(this.userInfo);
@@ -396,7 +396,7 @@ export class ApiChatService {
       .subscribe(data => {
         let msg;
         msg = data;
-        console.log('new user receive', msg);
+        //console.log('new user receive', msg);
         /* //luu trong contact de tham chieu nhanh, khong load lai cua server
         if (!this.users.find(user => user.username === msg.username)) {
           this.users.push({
@@ -414,7 +414,7 @@ export class ApiChatService {
         let msg;
         msg = data;
         //{roomId:{name:,messages[],users:[{username:[socketonline,...]}]}}
-        console.log('new room from other', msg);
+        //console.log('new room from other', msg);
         //join-new-room
         for (let key in msg) {
           msg[key].id = key;
@@ -446,7 +446,7 @@ export class ApiChatService {
       .subscribe(data => {
         let msg;
         msg = data;
-        console.log('7.1 new message:', msg);
+        //console.log('7.1 new message:', msg);
         
         if (this.roomsMessags[msg.receiver_id]&&this.roomsMessags[msg.receiver_id].isActive)
         {

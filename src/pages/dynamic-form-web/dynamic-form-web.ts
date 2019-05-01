@@ -209,44 +209,14 @@ export class DynamicFormWebPage {
 
       if (btn.url) {
 
-        if (btn.token && keyResults) {
+        if (keyResults) {
 
           let loading = this.loadingCtrl.create({
-            content: 'Đang xử lý dữ liệu từ máy chủ xác thực....'
+            content: 'Đang xử lý dữ liệu từ máy chủ....'
           });
           loading.present();
 
           this.authService.postDynamicForm(btn.url, keyResults, btn.token)
-            .then(data => {
-              //console.log('data --> next', data, btn.next);
-              btn.next_data = {
-                step: this.step,
-                button: btn, //chuyen dieu khien nut cho ben ngoai
-                data: data
-              }
-              this.next(btn);
-              loading.dismiss();
-            })
-            .catch(err => {
-              //console.log('err keyResults', keyResults);
-              btn.next_data = {
-                step: this.step,
-                error: err,
-                button: btn, //chuyen dieu khien nut cho ben ngoai
-                keyResults:keyResults
-              }
-              this.next(btn);
-              loading.dismiss();
-            });
-
-        } else if (keyResults) {
-
-          let loading = this.loadingCtrl.create({
-            content: 'Đang xử lý dữ liệu từ máy chủ công cộng....'
-          });
-          loading.present();
-
-          this.pubService.postDynamicForm(btn.url, keyResults)
             .then(data => {
               //console.log('data --> next', data, btn.next);
               btn.next_data = {
