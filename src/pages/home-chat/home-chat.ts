@@ -128,7 +128,7 @@ export class HomeChatPage {
       }
     })
     //doi tuong lay bat cau tu service
-     console.log('chatRooms:',this.chatRooms); 
+     //console.log('chatRooms:',this.chatRooms); 
   }
 
   ionViewDidLeave() {

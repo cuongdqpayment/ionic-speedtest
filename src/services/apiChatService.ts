@@ -49,15 +49,23 @@ export class ApiChatService {
     return this.socket;
   }
 
-  createUnreadMessages(msg){
+  createUnreadMessages(msg,isGroup?:boolean){
 
-    if (this.unreadMessages[msg.sender_id]){
-      this.unreadMessages[msg.sender_id].push(msg);
+    if (isGroup){
+        if (this.unreadMessages[msg.receiver_id]){
+          this.unreadMessages[msg.receiver_id].push(msg);
+        }else{
+          this.unreadMessages = this.apiAuth.createObjectKey( this.unreadMessages, msg.receiver_id, [msg]);
+        }
     }else{
-      this.unreadMessages = this.apiAuth.createObjectKey( this.unreadMessages, msg.sender_id, [msg]);
+        if (this.unreadMessages[msg.sender_id]){
+          this.unreadMessages[msg.sender_id].push(msg);
+        }else{
+          this.unreadMessages = this.apiAuth.createObjectKey( this.unreadMessages, msg.sender_id, [msg]);
+        }
     }
 
-    //console.log('tao khi nao',this.unreadMessages);
+    console.log('Tao message',this.unreadMessages);
 
   }
   /**
@@ -399,10 +407,8 @@ export class ApiChatService {
           //bao co tin moi
           this.events.publish("event-trigger-new-message-active");
         }else{
-          this.createUnreadMessages(msg);
+          this.createUnreadMessages(msg,true); //tao tin bang nhom
         }
-
-        
       });
 
     //x.1 chat - client user disconnect
