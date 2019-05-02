@@ -106,6 +106,7 @@ export class ApiChatService {
       let index = this.chatRooms.findIndex(x=>
         (
         x.users
+        &&x.type==='friend'
         &&x.users.length===2
         &&x.users.findIndex(y=>y===el.username)>=0
         )
@@ -118,13 +119,12 @@ export class ApiChatService {
           id: "$U#"+this.userInfo.username+"-"+el.username, 
           reverse_id: "$U#"+el.username+"-"+this.userInfo.username, 
           //tren server no la duy nhat neu nhieu session cua cung user
+          type: 'friend', //type='private','friend','group'
           //truong hop user cua doi tac thi se tu dong tim nguoc lai tren may chu de join hay khong
-          name: el.fullname,
-          nickname: el.nickname,
           admins: [this.userInfo.username],
-          avatar: el.avatar,
           users: [this.userInfo.username, el.username],
-          created: Date.now()
+          created: Date.now(),
+          time: Date.now()
         })
       } //neu co roi thi room da co khong can them
     });
@@ -244,41 +244,7 @@ export class ApiChatService {
             });
     } */
 
-    /* 
-    //room demo
-    if (this.userInfo && this.chatRooms.length === 0 && this.userInfo.username === '903500888') {
-      this.chatRooms = [
-        {
-          id: this.userInfo.username + '-0#xxxx',
-          name: 'demo 1',
-          users: ['903500888', '702418821'],
-          created: new Date().getTime(),
-          time: new Date().getTime(),
-          messages: [{
-            //romm_id: room_id,
-            //user: this.userInfo,
-            text: (this.userInfo.data ? this.userInfo.data.fullname : this.userInfo.username) + " Create group",
-            created: new Date().getTime()
-          }]
-        }
-        ,
-        {
-          id: this.userInfo.username + '-1#yyyy',
-          name: 'demo 2',
-          users: ['903500888', '702418821', '905300888'],
-          created: new Date().getTime(),
-          time: new Date().getTime(),
-          messages: [{
-            //romm_id: room_id,
-            //user: this.userInfo,
-            text: (this.userInfo.data ? this.userInfo.data.fullname : this.userInfo.username) + " Create group",
-            created: new Date().getTime()
-          }]
-        }
-      ]; //lay tu storage de join lai cac room
-    } 
     
-    */
 
     //-->1.chat - client received welcome
     this.getMessages()
@@ -314,12 +280,18 @@ export class ApiChatService {
 
         if (msg.step == 'JOINED') {
           //4.2 rooms joined first
-          //console.log('JOINED rooms',msg.rooms);
+          console.log('JOINED rooms',msg.rooms);
           //room cu truoc do, + rooms moi join duoc
+          //vi kieu rôm
           if (msg.rooms){
             msg.rooms.forEach(el=>{
+              //neu room la friend thi ghi ten, avatar cua user doi phuong lay tu contacts
               let index = this.chatRooms.findIndex(x=>x.id === el.id);
-              if (index<0) this.chatRooms.push(el);
+              if (index<0) {
+                this.chatRooms.push(el);
+              }else{
+                this.chatRooms.splice(index,1,el);  //thay th luon doi tuong moi
+              };
             })
           }
           //luu room de load lan sau
@@ -329,38 +301,17 @@ export class ApiChatService {
 
         if (msg.step == 'ACCEPTED') {
           //5.1 + 6.2 accepted room
-          //console.log('join rooms ACCEPTED', msg)
-          /* 
-          //this.chatRooms
-          let chatRooms = this.apiStorage.getUserRooms(this.userInfo);
+          console.log('join rooms ACCEPTED', msg.room);
 
-          if (msg.room) {
+          let index = this.chatRooms.findIndex(x=>x.id === msg.room.id);
+          if (index<0) {
+            this.chatRooms.push(msg.room);
+          }else{
+            this.chatRooms.splice(index,1,msg.room);  //thay th luon doi tuong moi
+          };
 
-            this.rooms.push(msg.room);
+          this.apiStorage.saveUserRooms(this.userInfo, this.chatRooms);
 
-            let users = [];
-            msg.room.users.forEach(user => {
-              for (let uname in user) {
-                users.push(uname);
-              }
-            });
-
-            chatRooms.push({
-              id: msg.room.id,
-              name: msg.room.name,
-              created: msg.room.created,
-              time: msg.room.time,
-              image: msg.room.image,
-              admin: msg.room.admin,
-              users: users,
-              messages: msg.room.messages
-            })
-          }
-          //luu room de load lan sau
-          this.apiStorage.saveUserRooms(this.userInfo, chatRooms);
-
-          this.events.publish('event-main-received-rooms', this.rooms); 
-          */
         }
 
       });
@@ -411,16 +362,10 @@ export class ApiChatService {
     //4.1 + 6.1 invite join this room
     this.getInvitedRoom()
       .subscribe(data => {
-        let msg;
-        msg = data;
         //{roomId:{name:,messages[],users:[{username:[socketonline,...]}]}}
-        //console.log('new room from other', msg);
-        //join-new-room
-        for (let key in msg) {
-          msg[key].id = key;
-          //5. accept room
-          this.socket.emit('client-accept-room', msg[key]);
-        }
+        //console.log('request new 1 room from other', data); //mot room thoi
+        this.socket.emit('client-accept-room', data);
+        //join-new-room //se gui room o cho ACCEPTED
 
       });
 

@@ -23,8 +23,8 @@ export class ResponseInterceptor implements HttpInterceptor {
       }
     }, (err: any) => {
       if (err instanceof HttpErrorResponse) {
-        console.log('May chu Khong cho phep hoac loi:');
-        console.log(err);
+        //console.log('May chu Khong cho phep hoac loi:');
+        //console.log(err);
       }
     });
   }

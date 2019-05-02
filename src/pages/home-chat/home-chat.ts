@@ -62,7 +62,7 @@ export class HomeChatPage {
       this.friends = this.navParams.get('friends'); //ban be da ket noi
       //[{roomid:{name:'',...adding+...,users:[{username:[socketonline]}]}}]
       
-      console.log('chatRooms',this.chatRooms); //doi tuong lay bat cau tu service
+      
 
      this.chatManager = {
       title: "Chatting Rooms of " + (this.userInfo&&this.userInfo.data?this.userInfo.data.nickname:this.userInfo.username)
@@ -75,8 +75,60 @@ export class HomeChatPage {
 
   }
 
+  //lay user cua ban trong danh muc ban be
+  getFriendUser(users){
+   // console.log('users',this.userInfo.username,users);
+    if (users&&users.length===2){
+      for (let i=0;i<users.length;i++){
+        //console.log('user 1', users[i], this.userInfo.username);
+        if (users[i]!==this.userInfo.username) return users[i];
+      }
+    }
+    return this.userInfo.username;
+  }
+
   ionViewDidLoad() {
     //console.log('Form load home-chats')
+    // console.log('chatRooms:',this.chatRooms); 
+    // console.log('contacts:', this.contacts); 
+    // console.log('friends:', this.friends); 
+    //chuyen doi friends sang contacts
+    this.friends.forEach(el=>{
+      if (!this.contacts[el.username]){
+        Object.defineProperty(this.contacts, el.username, {
+          value: {
+              fullname: el.fullname,
+              nickname: el.nickname,
+              address: el.address,
+              image: el.image,
+              avatar: el.avatar,
+              relationship: 'friend'
+          },
+          //cho edit, cho for (let key in obj), khong cho xoa
+          writable: true, enumerable: true, configurable: false 
+      });
+      }
+    })
+
+    this.chatRooms.forEach(el=>{
+      if (el.type==="friend"){
+        let friendUsername = this.getFriendUser(el.users);
+        //console.log('ten ban ne',friendUsername);
+        if (this.contacts[friendUsername]){
+          el.name = this.contacts[friendUsername].fullname;
+          el.avatar = this.contacts[friendUsername].avatar;
+          el.nickname = this.contacts[friendUsername].nickname;
+        }else if (!el.name){
+          el.name = friendUsername;
+        }
+      }else if (el.type==="private"){
+        el.name = 'OWNER: ' + this.contacts[this.userInfo.username].fullname;
+        el.avatar = this.contacts[this.userInfo.username].avatar;
+        el.nickname = this.contacts[this.userInfo.username].nickname;
+      }
+    })
+    //doi tuong lay bat cau tu service
+     console.log('chatRooms:',this.chatRooms); 
   }
 
   ionViewDidLeave() {
@@ -97,7 +149,7 @@ export class HomeChatPage {
     console.log(this.searchString);
   }
 
-  callbackAddRoom = function(res){
+  /* callbackAddRoom = function(res){
     return new Promise((resolve,reject)=>{
       let users = [];
       let groupName;
@@ -135,14 +187,14 @@ export class HomeChatPage {
 
       resolve({next:'CLOSE'});
     })
-  }.bind(this);
+  }.bind(this); */
 
   
-  callbackChatRoom = function(res){
+/*   callbackChatRoom = function(res){
     return new Promise((resolve,reject)=>{
       resolve();
     })
-  }.bind(this);
+  }.bind(this); */
 
 
   onClickItem(room){

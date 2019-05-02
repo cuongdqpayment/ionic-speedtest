@@ -55,7 +55,6 @@ import { DynamicTreePage } from '../pages/dynamic-tree/dynamic-tree';
 import { ApiMediaService } from '../services/apiMediaService';
 import { OwnerImagesPage } from '../pages/owner-images/owner-images';
 import { HomeChatPage } from '../pages/home-chat/home-chat';
-import { ChattingPage } from '../pages/chatting/chatting';
 import { Autosize } from '../components/autosize';
 import { LinkPage } from '../pages/link/link';
 import { SafePipe } from '../pipes/safe-pipe';
@@ -97,7 +96,6 @@ import { ChattingRoomPage } from '../pages/chatting-room/chatting-room';
     DynamicListOrderPage,
     GoogleMapPage,
     HomeChatPage,
-    ChattingPage,
     HandDrawPage,
     TimeAgoPipe,
     SafePipe,
@@ -141,7 +139,6 @@ import { ChattingRoomPage } from '../pages/chatting-room/chatting-room';
     DynamicListOrderPage,
     GoogleMapPage,
     HomeChatPage,
-    ChattingPage,
     HandDrawPage,
     FriendsPage,
     ChattingPrivatePage,

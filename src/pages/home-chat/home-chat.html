@@ -79,11 +79,20 @@
                     <ion-title>{{room?.name}}</ion-title>
                    <!--  <p>{{room?.messages[room?.messages?.length-1]?.text}}</p> -->
                     <ion-note item-end>
-                        <!-- {{room?.messages[room?.messages?.length-1]?.created | timeAgo}} -->
+                        <p>
+                            {{room?.type}}
+                        </p>
+                        {{room?.time | timeAgo}}
                         <p style="text-align: right;" *ngIf="unreadMessages[room.id]">
                             <ion-badge color="danger">{{ unreadMessages[room.id]?.length }}</ion-badge>
                         </p>
                     </ion-note>
+                    <!-- <ion-note item-end>
+                        {{mySocket?.users[socket]?.time | timeAgo}}
+                        <p style="text-align: right;" *ngIf="unreadMessages[socket]">
+                            <ion-badge color="danger">{{ unreadMessages[socket]?.length }}</ion-badge>
+                        </p>
+                    </ion-note> -->
                 </ion-item>
     
                 <ion-item-options>
