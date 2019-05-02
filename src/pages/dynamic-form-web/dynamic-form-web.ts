@@ -231,7 +231,7 @@ export class DynamicFormWebPage {
               //console.log('err keyResults', keyResults);
               btn.next_data = {
                 step: this.step,
-                error: err,
+                error: err&&err.error?err.error:err,
                 button: btn, //chuyen dieu khien nut cho ben ngoai
                 keyResults:keyResults
               }

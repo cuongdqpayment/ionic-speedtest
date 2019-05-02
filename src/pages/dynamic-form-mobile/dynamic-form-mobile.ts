@@ -230,7 +230,7 @@ export class DynamicFormMobilePage {
               btn.next_data = {
                 step: this.step,
                 button: btn, //chuyen dieu khien nut cho ben ngoai
-                error: err,
+                error: err&&err.error?err.error:err,
                 keyResults:keyResults
               }
               this.next(btn);
