@@ -10,43 +10,47 @@ import { RequestInterceptor } from '../interceptors/requestInterceptor';
 import NodeRSA from 'node-rsa';
 /* import jwt from 'jsonwebtoken'; */
 
+//import crypto, { CipherGCM } from 'crypto';
+
 @Injectable()
 export class ApiAuthService {
 
-    public authServer = ApiStorageService.authenticationServer;
+    authServer = ApiStorageService.authenticationServer;
 
-    public tokenObject: any;
-    public userInfo: any;
+    tokenObject: any;
+    userInfo: any;
 
-    public broadcastStatus = {
-        "0":"private"
-        ,"1":"public"
-        ,"2":"friend"
-        ,"3":"friend-of"
+    broadcastStatus = {
+        "0": "private"
+        , "1": "public"
+        , "2": "friend"
+        , "3": "friend-of"
     }
+
+    cryptoKey = 'cuongdq@3500888$cryptotestkey032';
+    algorithm = 'aes-256-gcm';
 
     constructor(private httpClient: HttpClient,
-                private apiStorage: ApiStorageService,
-                private reqInterceptor: RequestInterceptor) {
+        private apiStorage: ApiStorageService,
+        private reqInterceptor: RequestInterceptor) {
     }
 
+    createObjectKey = (obj, key, value) => {
+        Object.defineProperty(obj, key, { value: value, writable: true, enumerable: true, configurable: true });
+        obj.length = obj.length ? obj.length + 1 : 1;
+        return obj;
+    }
 
-    createObjectKey = (obj,key,value)=>{
-        Object.defineProperty(obj, key, {value: value, writable: true, enumerable: true, configurable: true});
-        obj.length = obj.length?obj.length+1:1;
+    deleteObjectKey = (obj, key) => {
+        if (delete obj[key]) obj.length = obj.length ? obj.length - 1 : undefined;
         return obj;
-    } 
-    
-    deleteObjectKey = (obj,key)=>{
-        if (delete obj[key]) obj.length = obj.length?obj.length - 1: undefined;
-        return obj;
-    } 
+    }
 
     /**
      * clone đối tượng thành đối tượng mới (sử dụng để gán đối tượng mới)
      * @param {*} obj 
      */
-    cloneObject =(obj) => {
+    cloneObject = (obj) => {
         if (null == obj || "object" != typeof obj) return obj;
         var copy = obj.constructor();
         for (var attr in obj) {
@@ -55,62 +59,71 @@ export class ApiAuthService {
         return copy;
     }
 
-    getBroadcastStatus(status){
-        return this.broadcastStatus[status]?this.broadcastStatus[status]:"unknow";
+    getBroadcastStatus(status) {
+        return this.broadcastStatus[status] ? this.broadcastStatus[status] : "unknow";
     }
 
     /**
      * sign, verify, encrypt, decrypt by public, private
      */
 
-     /**
-      * 
-      * @param obj //doi tuong can ky 
-      * @param key //key la privatekey neu ky theo kieu nay
-      * @param id  //id la publickey neu ky theo kieu nay
-      * neu truyen ca private va public thi ky bang private
-      * 
-      */
-     signObject(obj, privateKey:any){
-         let rsaKey = this.importKey({id:undefined,key:privateKey},'private')
-         if (rsaKey){
-            return rsaKey.sign(JSON.stringify(obj), 'base64','utf8');
-         }
-         return null;
-     }
 
-     verifyObject(obj, signature:string, publicKey:any){
-         let rsaKey = this.importKey({id:publicKey,key:undefined},'public')
-         if (rsaKey){
-            return rsaKey.verify(JSON.stringify(obj), signature, 'utf8', 'base64');
-         }
-         return false;
-     }
-
-
-     encryptObject(obj, privateKey?:any, publicKey?:any){
-         let rsaKey = this.importKey({id: publicKey, key:privateKey},(privateKey?'private':'public'))
-         if (rsaKey){
-            if (privateKey) {
-                return rsaKey.encryptPrivate(JSON.stringify(obj), 'base64','utf8');
-            } else {
-                return rsaKey.encrypt(JSON.stringify(obj), 'base64','utf8');
+    /**
+     * 
+     * @param obj //doi tuong can ky 
+     * @param key //key la privatekey neu ky theo kieu nay
+     * @param id  //id la publickey neu ky theo kieu nay
+     * neu truyen ca private va public thi ky bang private
+     * 
+     */
+    signObject(obj, privateKey) {
+        try {
+            let rsaKey = this.importKey({ key: privateKey }, 'private')
+            if (rsaKey) {
+                return rsaKey.sign(JSON.stringify(obj), 'base64', 'utf8');
             }
-         }
-         return null;
-     }
+        } catch (e) { }
+        return null;
+    }
 
-     decryptObject(obj, privateKey?:any, publicKey?:any){
-        let rsaKey = this.importKey({id: publicKey, key:privateKey},(privateKey?'private':'public'))
-         if (rsaKey){
-            if (privateKey) {
-                return rsaKey.decrypt(JSON.stringify(obj), 'base64','utf8');
-            } else {
-                return rsaKey.decryptPublic(JSON.stringify(obj), 'base64','utf8');
+    verifyObject(obj, signature, publicKey) {
+        try {
+            let rsaKey = this.importKey({ id: publicKey }, 'public')
+            if (rsaKey) {
+                return rsaKey.verify(JSON.stringify(obj), signature, 'utf8', 'base64');
             }
-         }
-         return null;
-     }
+        } catch (e) { }
+        return false;
+    }
+
+    encryptObjectRSA(obj, privateKey, publicKey) {
+        try {
+            let rsaKey = this.importKey({ id: publicKey, key: privateKey }, (privateKey ? 'private' : 'public'))
+            if (rsaKey) {
+                if (privateKey) {
+                    return rsaKey.encryptPrivate(JSON.stringify(obj), 'base64', 'utf8');
+                } else {
+                    return rsaKey.encrypt(JSON.stringify(obj), 'base64', 'utf8');
+                }
+            }
+        } catch (e) { }
+        return null;
+    }
+
+    decryptObjectRSA(text64, privateKey, publicKey) {
+        try {
+            let rsaKey = this.importKey({ id: publicKey, key: privateKey }, (privateKey ? 'private' : 'public'))
+            if (rsaKey) {
+                if (privateKey) {
+                    return JSON.parse(rsaKey.decrypt(text64, 'utf8'));
+                } else {
+                    return JSON.parse(rsaKey.decryptPublic(text64, 'utf8'));
+                }
+            }
+        } catch (e) { }
+        return null;
+    }
+
 
     /**
      * Neu da luu tru trong may roi thi lay ra
@@ -121,17 +134,17 @@ export class ApiAuthService {
                                                             ip: yourDevice.ip,
                                                             origin: yourDevice.origin}}
      */
-    generatorKeyPairDevice(){
-        return new Promise(async (resolve,reject)=>{
+    generatorKeyPairDevice() {
+        return new Promise(async (resolve, reject) => {
             let deviceKey;
             deviceKey = this.apiStorage.getDeviceKey();
             if (deviceKey) {
                 let savedKeyOnServe;
-                try{
-                    savedKeyOnServe = await this.postDynamicForm(this.authServer+"/ext-auth/key-device-json",{id:deviceKey.id});
-                }catch(e){}
+                try {
+                    savedKeyOnServe = await this.postDynamicForm(this.authServer + "/ext-auth/key-device-json", { id: deviceKey.id });
+                } catch (e) { }
 
-                if (savedKeyOnServe){
+                if (savedKeyOnServe) {
                     //kiem tra bang luu tru tren may chu va may ca nhan co dung khong??
                     //last update time from this device
                     resolve(deviceKey);
@@ -141,62 +154,65 @@ export class ApiAuthService {
             }
 
             //console.log('key in',deviceKey);
-            
-            const key = new NodeRSA({b: 512}, { signingScheme: 'pkcs1-sha256' });
-            const publicKey = key.exportKey("public").replace('-----BEGIN PUBLIC KEY-----\n','').replace('-----END PUBLIC KEY-----','').replace(/[\n\r]/g, '');
-            const privateKey = key.exportKey("private").replace('-----BEGIN RSA PRIVATE KEY-----\n','').replace('-----END RSA PRIVATE KEY-----','').replace(/[\n\r]/g, '');
-            
+
+            const key = new NodeRSA({ b: 512 }, { signingScheme: 'pkcs1-sha256' });
+            const publicKey = key.exportKey("public").replace('-----BEGIN PUBLIC KEY-----\n', '').replace('-----END PUBLIC KEY-----', '').replace(/[\n\r]/g, '');
+            const privateKey = key.exportKey("private").replace('-----BEGIN RSA PRIVATE KEY-----\n', '').replace('-----END RSA PRIVATE KEY-----', '').replace(/[\n\r]/g, '');
+
             let yourDevice;
-            try{
-                yourDevice = await this.getDynamicUrl(this.authServer+"/ext-public/your-device");
-            }catch(e){}
-            
+            try {
+                yourDevice = await this.getDynamicUrl(this.authServer + "/ext-public/your-device");
+            } catch (e) { }
+
             //console.log('your device',yourDevice);
-            if (yourDevice&&yourDevice.device){
+            if (yourDevice && yourDevice.device) {
                 let time = Date.now();
-                
-                let signature =  key.sign( JSON.stringify({
-                                                            time : time,
-                                                            device: yourDevice.device,
-                                                            ip: yourDevice.ip,
-                                                            origin: yourDevice.origin,
-                                                            }
+
+                let signature = key.sign(JSON.stringify({
+                    time: time,
+                    device: yourDevice.device,
+                    ip: yourDevice.ip,
+                    origin: yourDevice.origin,
+                }
                 )
-                , 'base64','utf8');
-    
-                deviceKey = {id: publicKey              //key for verify
-                            , time: time                //data in signature
-                            , device: yourDevice.device //data in signature
-                            , ip: yourDevice.ip         //data in signature
-                            , origin: yourDevice.origin //data in signature
-                            , signature: signature      //xac thuc chu ky
-                            , key: privateKey           //su dung ma hoa luu pass va sign //co mat khau de luu private key xuong
-                            }
-                
-    
+                    , 'base64', 'utf8');
+
+                deviceKey = {
+                    id: publicKey              //key for verify
+                    , time: time                //data in signature
+                    , device: yourDevice.device //data in signature
+                    , ip: yourDevice.ip         //data in signature
+                    , origin: yourDevice.origin //data in signature
+                    , signature: signature      //xac thuc chu ky
+                    , key: privateKey           //su dung ma hoa luu pass va sign //co mat khau de luu private key xuong
+                }
+
+
                 let serverKey = await this.getServerPublicRSAKey();
-                if (serverKey){
+                if (serverKey) {
                     //ma hoa key nay de server giai ma 
                     let encrypted = serverKey.encrypt(JSON.stringify(
-                        {id: publicKey
-                        , time: time
-                        , device: yourDevice.device
-                        , ip: yourDevice.ip
-                        , origin: yourDevice.origin
-                        , signature: signature}
+                        {
+                            id: publicKey
+                            , time: time
+                            , device: yourDevice.device
+                            , ip: yourDevice.ip
+                            , origin: yourDevice.origin
+                            , signature: signature
+                        }
                     )
-                    , 'base64','utf8');
+                        , 'base64', 'utf8');
                     //console.log(encrypted);
-                    this.postDynamicForm(this.authServer+"/ext-auth/key-device",{encrypted: encrypted})
-                    .then(data=>{
-                        this.apiStorage.saveDeviceKey(deviceKey);
-                        resolve(deviceKey);
-                    })
-                    .catch(err=>{
-                        resolve()
-                    })
+                    this.postDynamicForm(this.authServer + "/ext-auth/key-device", { encrypted: encrypted })
+                        .then(data => {
+                            this.apiStorage.saveDeviceKey(deviceKey);
+                            resolve(deviceKey);
+                        })
+                        .catch(err => {
+                            resolve()
+                        })
                 }
-            }else{
+            } else {
                 resolve()
             }
         })
@@ -208,30 +224,29 @@ export class ApiAuthService {
      * @param keySave 
      * @param keyType 
      */
-    importKey(keySave:{id:string,key:string},keyType:'public'|'private'){
+    importKey(keySave: { id?: string, key?: string }, keyType: 'public' | 'private') {
         const rsaKey = new NodeRSA(null, { signingScheme: 'pkcs1-sha256' });
-        try{
-            if (keyType==='private'){
-                rsaKey.importKey('-----BEGIN RSA PRIVATE KEY-----\n'+keySave.key+'\n-----END RSA PRIVATE KEY-----');
-            }else{
-                rsaKey.importKey('-----BEGIN PUBLIC KEY-----\n'+keySave.id+'\n-----END PUBLIC KEY-----');
+        try {
+            if (keyType === 'private') {
+                rsaKey.importKey('-----BEGIN RSA PRIVATE KEY-----\n' + keySave.key + '\n-----END RSA PRIVATE KEY-----');
+            } else {
+                rsaKey.importKey('-----BEGIN PUBLIC KEY-----\n' + keySave.id + '\n-----END PUBLIC KEY-----');
             }
             return rsaKey;
-        }catch(e){
-            return null;
-        }
+        } catch (e) {}
+        return null;
     }
 
-    generatorKeyPairUser(user){
+    generatorKeyPairUser(user) {
         if (!user) return null;
         let userKey;
         userKey = this.apiStorage.getUserKey(user);
         if (userKey) return userKey;
-        const key = new NodeRSA({b: 512}, { signingScheme: 'pkcs1-sha256' });
-        const publicKey = key.exportKey("public").replace('-----BEGIN PUBLIC KEY-----\n','').replace('-----END PUBLIC KEY-----','').replace(/[\n\r]/g, '');
-        const privateKey = key.exportKey("private").replace('-----BEGIN RSA PRIVATE KEY-----\n','').replace('-----END RSA PRIVATE KEY-----','').replace(/[\n\r]/g, '');
-        userKey = {id: publicKey, key: privateKey}
-        this.apiStorage.saveUserKey(user,userKey);
+        const key = new NodeRSA({ b: 512 }, { signingScheme: 'pkcs1-sha256' });
+        const publicKey = key.exportKey("public").replace('-----BEGIN PUBLIC KEY-----\n', '').replace('-----END PUBLIC KEY-----', '').replace(/[\n\r]/g, '');
+        const privateKey = key.exportKey("private").replace('-----BEGIN RSA PRIVATE KEY-----\n', '').replace('-----END RSA PRIVATE KEY-----', '').replace(/[\n\r]/g, '');
+        userKey = { id: publicKey, key: privateKey }
+        this.apiStorage.saveUserKey(user, userKey);
         return userKey;
     }
 
@@ -239,33 +254,37 @@ export class ApiAuthService {
      * ham nay phai lay sau khi xac thuc token OTP bang dien thoai
      * tranh viec hacker ma hoa du lieu lung tung gui len server
      */
-    getServerPublicRSAKey(isRenew?:boolean) {
+    getServerPublicRSAKey(isRenew?: boolean) {
         //{id: publicKey, info:thong tin may chu, signature: chu ky cua may chu}
         let serverId = this.apiStorage.getServerKey();
         //console.log('severId',serverId);
-        if (!serverId || !serverId.id || isRenew){
+        if (!serverId || !serverId.id || isRenew) {
             let serverPublicKey;
             return this.httpClient.get(this.authServer + '/ext-auth/key-json')
-                            .toPromise()
-                            .then(data => {
-                               let sData;
-                               sData =  data;
-                               if (sData && sData.public_key) {
-                                    let rsaServerPublicKey = this.importKey({id: sData.public_key,
-                                                                             key:""},"public");
-                                    this.apiStorage.saveServerKey({id: serverPublicKey});                                         
-                                    return rsaServerPublicKey;
-                                } else {
-                                    return null;
-                                }
-                            })
-            
+                .toPromise()
+                .then(data => {
+                    let sData;
+                    sData = data;
+                    if (sData && sData.public_key) {
+                        let rsaServerPublicKey = this.importKey({
+                            id: sData.public_key,
+                            key: ""
+                        }, "public");
+                        this.apiStorage.saveServerKey({ id: serverPublicKey });
+                        return rsaServerPublicKey;
+                    } else {
+                        return null;
+                    }
+                })
+
         } else {
             return (new Promise((resolve, reject) => {
-                let rsaServerPublicKey = this.importKey({id: serverId.id,
-                                                         key:""},"public");
+                let rsaServerPublicKey = this.importKey({
+                    id: serverId.id,
+                    key: ""
+                }, "public");
                 resolve(rsaServerPublicKey);
-            })); 
+            }));
         }
     }
 
@@ -278,15 +297,15 @@ export class ApiAuthService {
                 this.reqInterceptor.setRequestToken(this.tokenObject.token); //login nguoi khac
                 return this.tokenObject.token;
             });
-        }
-        
+    }
+
     logout() {
 
         //xoa bo token luu tru
         this.apiStorage.deleteToken();
 
         if (this.tokenObject && this.tokenObject.token) {
-                //truong hop user co luu tren session thi xoa session di
+            //truong hop user co luu tren session thi xoa session di
             this.reqInterceptor.setRequestToken(this.tokenObject.token); //login nguoi khac
             return this.httpClient.get(this.authServer + '/ext-auth/logout')
                 .toPromise()
@@ -318,7 +337,7 @@ export class ApiAuthService {
                 console.log(data);
                 return true;
             })
-            .catch(err=>{
+            .catch(err => {
                 console.log(err);
                 return false;
             });
@@ -334,7 +353,7 @@ export class ApiAuthService {
                 console.log(data);
                 return true;
             })
-            .catch(err=>{
+            .catch(err => {
                 console.log(err);
                 return false;
             });
@@ -358,7 +377,7 @@ export class ApiAuthService {
             }));
         }
     }
-    
+
     //get userInfo from token
     getUserInfo() {
         return this.userInfo;
@@ -369,9 +388,9 @@ export class ApiAuthService {
      * dong thoi luu xuong dia token da login thanh cong
      * @param token 
      */
-    saveToken(token){
+    saveToken(token) {
         this.apiStorage.saveToken(token);
-        this.tokenObject={token:token};
+        this.tokenObject = { token: token };
     }
 
     /**
@@ -379,41 +398,41 @@ export class ApiAuthService {
      * token da het hieu luc, 
      * ta se xoa khoi de khong tu dong login duoc nua
      */
-    deleteToken(){
+    deleteToken() {
         this.apiStorage.deleteToken();
-        this.tokenObject=null;
+        this.tokenObject = null;
     }
 
     /**
      * Gui len server kiem tra token co verify thi tra ve token, khong thi khong ghi 
      * @param token 
      */
-    authorize(token){
-        return this.httpClient.post(this.authServer + '/ext-auth/authorize-token',JSON.stringify({
+    authorize(token) {
+        return this.httpClient.post(this.authServer + '/ext-auth/authorize-token', JSON.stringify({
             token: token
         }))
             .toPromise()
             .then(data => {
-                let rtn:any;
+                let rtn: any;
                 rtn = data;
-                this.tokenObject={token: token};
+                this.tokenObject = { token: token };
                 this.userInfo = rtn.user_info;
-                return rtn; 
+                return rtn;
             })
     }
 
 
     //send sms
-    sendSMS(isdn,sms){
-       return this.httpClient.post(this.authServer + '/ext-auth/send-sms', JSON.stringify({
-            isdn:isdn,
-            sms:sms
-            }))
+    sendSMS(isdn, sms) {
+        return this.httpClient.post(this.authServer + '/ext-auth/send-sms', JSON.stringify({
+            isdn: isdn,
+            sms: sms
+        }))
             .toPromise()
             .then(data => {
-                let rtn:any;
-                    rtn = data;
-                    return rtn;
+                let rtn: any;
+                rtn = data;
+                return rtn;
             });
     }
 
@@ -421,80 +440,80 @@ export class ApiAuthService {
      * yeu cau mot OTP tu phone
      * @param jsonString 
      */
-    requestIsdn(jsonString){
+    requestIsdn(jsonString) {
         //chuyen len bang form co ma hoa
         return this.httpClient.post(this.authServer + '/ext-auth/request-isdn', jsonString)
-             .toPromise()
-             .then(data => {
-                let rtn:any;
+            .toPromise()
+            .then(data => {
+                let rtn: any;
                 rtn = data;
                 return rtn;
-             });
-     }
+            });
+    }
 
 
-     /**
-      * confirm OTP key
-      * @param jsonString 
-      */
-    confirmKey(jsonString){
-         //chuyen di bang form co ma hoa
+    /**
+     * confirm OTP key
+     * @param jsonString 
+     */
+    confirmKey(jsonString) {
+        //chuyen di bang form co ma hoa
         return this.httpClient.post(this.authServer + '/ext-auth/confirm-key', jsonString)
-             .toPromise()
-             .then(data => {
-                 this.tokenObject = data;
-                 if (this.tokenObject&&this.tokenObject.token){
+            .toPromise()
+            .then(data => {
+                this.tokenObject = data;
+                if (this.tokenObject && this.tokenObject.token) {
                     this.reqInterceptor.setRequestToken(this.tokenObject.token); //gan token ap dung cho cac phien tiep theo
                     return this.tokenObject.token;
-                }else{
+                } else {
                     //neu ho nhap so dien thoai nhieu lan sai so spam thi ??
                     throw 'Không đúng máy chủ<br>';
                 }
-             });
-     }
+            });
+    }
 
 
-     injectToken(token?:any){
-        this.tokenObject={token: token?token:this.tokenObject.token};
+    injectToken(token?: any) {
+        this.tokenObject = { token: token ? token : this.tokenObject.token };
         this.reqInterceptor.setRequestToken(this.tokenObject.token);
-     }
-
-
-
-     postDynamicForm(url:string, json_data:Object, token?:any){
-        //lay token cua phien xac thuc
-        this.reqInterceptor.setRequestToken(token&&token.length?token:token&&this.tokenObject?this.tokenObject.token:'');
-        return this.httpClient.post(url,JSON.stringify(json_data))
-                .toPromise()
-                .then(data => {
-                    let rtn:any;
-                    rtn = data;
-                    return rtn;
-                });
     }
 
-    getDynamicUrl(url:string, token?:any, options?: any){
+
+
+    postDynamicForm(url: string, json_data: Object, token?: any) {
         //lay token cua phien xac thuc
-        this.reqInterceptor.setRequestToken(token&&token.length?token:this.tokenObject?this.tokenObject.token:'');
+        this.reqInterceptor.setRequestToken(token && token.length ? token : token && this.tokenObject ? this.tokenObject.token : '');
+        return this.httpClient.post(url, JSON.stringify(json_data))
+            .toPromise()
+            .then(data => {
+                let rtn: any;
+                rtn = data;
+                return rtn;
+            });
+    }
+
+    getDynamicUrl(url: string, token?: any, options?: any) {
+        //lay token cua phien xac thuc
+        this.reqInterceptor.setRequestToken(token && token.length ? token : this.tokenObject ? this.tokenObject.token : '');
         return this.httpClient.get(url, options)
-                .toPromise()
-                .then(data => {
-                    let rtn:any;
-                    rtn = data;
-                    return rtn;
-                });
+            .toPromise()
+            .then(data => {
+                let rtn: any;
+                rtn = data;
+                return rtn;
+            });
     }
 
-    postDynamicFormData(url:string, form_data:any, token?:any){
+    postDynamicFormData(url: string, form_data: any, token?: any) {
         //lay token cua phien xac thuc
-        this.reqInterceptor.setRequestToken(token?token:this.tokenObject?this.tokenObject.token:'');
-        return this.httpClient.post(url,form_data)
-                .toPromise()
-                .then(data => {
-                    let rtn:any;
-                    rtn = data;
-                    return rtn;
-                });
+        this.reqInterceptor.setRequestToken(token ? token : this.tokenObject ? this.tokenObject.token : '');
+        return this.httpClient.post(url, form_data)
+            .toPromise()
+            .then(data => {
+                let rtn: any;
+                rtn = data;
+                return rtn;
+            });
     }
 
 }
