@@ -131,11 +131,19 @@
 							</ion-row>
 
 							<ion-item class="background-item">
-								<ion-avatar item-start>
+
+								<ion-avatar item-start *ngIf="userInfo?.username===it.user">
+									<img *ngIf="userInfo?.data?.image" [src]="userInfo?.data?.image">
+									<img *ngIf="!(userInfo?.data?.image)" src="assets/imgs/no-image-go.jpg">
+								</ion-avatar>
+								<ion-title *ngIf="userInfo?.username===it.user">{{userInfo?.data?.fullname?userInfo?.data?.fullname:userInfo?.username}}</ion-title>
+
+								<ion-avatar item-start *ngIf="userInfo?.username!==it.user">
 									<img *ngIf="contacts[it.user]&&contacts[it.user].avatar" [src]="contacts[it.user].avatar">
 									<img *ngIf="!(contacts[it.user]&&contacts[it.user].avatar)" src="assets/imgs/no-image-go.jpg">
 								</ion-avatar>
-								<ion-title>{{contacts[it.user]&&contacts[it.user].fullname?contacts[it.user].fullname:it.user}}</ion-title>
+								<ion-title *ngIf="userInfo?.username!==it.user">{{contacts[it.user]&&contacts[it.user].fullname?contacts[it.user].fullname:it.user}}</ion-title>
+
 								<p text-wrap>{{it.content | slice:0:50}}<ion-note *ngIf="it.content?.length>50">...more</ion-note><br><span style="color: blue">{{it.time | timeAgo}}</span></p>
 								<button item-end icon-only ion-button clear small color="primary" (click)="onClickShortDetails(it)">
 									<ion-icon name="more"></ion-icon>

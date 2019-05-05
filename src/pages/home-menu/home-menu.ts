@@ -67,21 +67,23 @@ export class HomeMenuPage {
 
         //console.log('Contact for new',this.contacts);
         //them danh ba cua nguoi login vao
-        if (this.userInfo) {
+        if (this.userInfo&&this.userInfo.data) {
           if (!this.contacts[this.userInfo.username]) {
             Object.defineProperty(this.contacts, this.userInfo.username, {
               value: {
-                fullname: this.userInfo.fullname,
-                nickname: this.userInfo.nickname,
-                image: this.userInfo.data && this.userInfo.data.image ? this.userInfo.data.image : undefined,
-                avatar: this.userInfo.data && this.userInfo.data.avatar ? this.userInfo.data.avatar : undefined,
+                fullname: this.userInfo.data.fullname,
+                nickname: this.userInfo.data.nickname,
+                image: this.userInfo.data.image ? this.userInfo.data.image : undefined,
+                avatar: this.userInfo.data.avatar ? this.userInfo.data.avatar : this.userInfo.data.image,
                 relationship: ['private']
               },
-              writable: true, enumerable: true, configurable: false
+              writable: true, enumerable: true, configurable: true
             });
           } else {
-            if (this.userInfo.data && this.userInfo.data.image) this.contacts[this.userInfo.username].image = this.userInfo.data.image;
-            if (this.userInfo.data && this.userInfo.data.avatar) this.contacts[this.userInfo.username].avatar = this.userInfo.data.avatar;
+            if (this.userInfo.data.image){
+              this.contacts[this.userInfo.username].image = this.userInfo.data.image;
+              this.contacts[this.userInfo.username].avatar = this.userInfo.data.avatar ? this.userInfo.data.avatar : this.userInfo.data.image;
+            } 
           }
         }
         //doi 3 giay sau neu login tu dong bang token
